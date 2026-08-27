@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --mg-neutral: #0A0A0B;
+    --mg-tertiary: #1C1C1E;
+    --mg-card: #141416;
+    --mg-primary: #8B5CF6;
+    --mg-secondary: #6D28D9;
+    --mg-accent: #A78BFA;
+    --mg-lavender: #DDD6FE;
+    --mg-border: rgba(139, 92, 246, 0.18);
+  }
+
+  body {
+    background-color: #0A0A0B;
+    color: #F5F3FF;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+}
+
+/* MotorGrid Dot Matrix Background Pattern */
+.bg-motorgrid-pattern {
+  background-color: #0A0A0B;
+  background-image: radial-gradient(rgba(139, 92, 246, 0.12) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-motorgrid-card {
+  background-color: #1C1C1E;
+  border: 1px solid rgba(139, 92, 246, 0.15);
+}
+
+.bg-motorgrid-surface {
+  background-color: #141416;
+}
+
+/* MotorGrid Glow effects */
+.glow-primary {
+  box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.4);
+}
+
+.glow-subtle {
+  box-shadow: 0 0 15px -3px rgba(139, 92, 246, 0.18);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0B;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272A;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8B5CF6;
+}
