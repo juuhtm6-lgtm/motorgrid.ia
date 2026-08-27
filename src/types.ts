@@ -87,14 +87,39 @@ export interface MetricSummary {
   nrr: number; // Net Revenue Retention %
 }
 
+export type UserRole =
+  | 'Administrador'
+  | 'Gestor de Frotas'
+  | 'Engenheiro de Telemetria'
+  | 'Customer Success'
+  | 'Analista de Operações'
+  | 'Gestor de Vendas'
+  | 'Desenvolvedor'
+  | 'Analista';
+
 export interface TeamMember {
   id: string;
   name: string;
   email: string;
-  role: 'Administrador' | 'Gestor de Vendas' | 'Customer Success' | 'Desenvolvedor' | 'Analista';
+  role: UserRole;
   status: 'Ativo' | 'Pendente';
   avatar: string;
   lastLogin: string;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  company: string;
+  avatar?: string;
+  plan: PlanTier;
+  phone?: string;
+  twoFactorEnabled?: boolean;
+  lastLogin: string;
+  createdAt: string;
+  status: 'Ativo' | 'Inativo';
 }
 
 export interface ActivityNotification {

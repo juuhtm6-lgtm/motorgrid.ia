@@ -11,6 +11,9 @@ import {
   ArrowRight,
   Zap,
   Building2,
+  UserPlus,
+  LogOut,
+  Globe,
 } from 'lucide-react';
 import { ActiveTab } from './Sidebar';
 import { Customer, ProjectTask } from '../types';
@@ -24,6 +27,8 @@ interface CommandPaletteProps {
   onSelectCustomer: (customer: Customer) => void;
   onOpenNewCustomer: () => void;
   onOpenNewTask: () => void;
+  onOpenCreateUser?: () => void;
+  onOpenLogoutModal?: () => void;
 }
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({
@@ -35,6 +40,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   onSelectCustomer,
   onOpenNewCustomer,
   onOpenNewTask,
+  onOpenCreateUser,
+  onOpenLogoutModal,
 }) => {
   const [query, setQuery] = useState('');
 
@@ -78,6 +85,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     { label: 'Ir para Operações & Sprints', tab: 'projects' as ActiveTab, icon: KanbanSquare },
     { label: 'Ir para Planos & Faturamento', tab: 'billing' as ActiveTab, icon: CreditCard },
     { label: 'Abrir Copilot IA Gemini', tab: 'ai-copilot' as ActiveTab, icon: Sparkles },
+    { label: 'Ver Página de Vendas & Planos', tab: 'sales' as ActiveTab, icon: Globe },
     { label: 'Ir para Relatórios & Métricas', tab: 'reports' as ActiveTab, icon: BarChart3 },
     { label: 'Ir para Configurações', tab: 'settings' as ActiveTab, icon: Settings },
   ].filter((n) => n.label.toLowerCase().includes(query.toLowerCase()));
@@ -117,12 +125,23 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               <button
+                id="cmd-new-user-btn"
+                onClick={() => {
+                  onClose();
+                  onOpenCreateUser?.();
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 rounded-xl transition-colors text-left cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4 text-[#A78BFA]" />
+                Criar Novo Usuário / Operador
+              </button>
+              <button
                 id="cmd-new-customer-btn"
                 onClick={() => {
                   onClose();
                   onOpenNewCustomer();
                 }}
-                className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 rounded-xl transition-colors text-left"
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 rounded-xl transition-colors text-left cursor-pointer"
               >
                 <Plus className="w-4 h-4 text-blue-400" />
                 Cadastrar Novo Cliente
@@ -133,10 +152,21 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   onClose();
                   onOpenNewTask();
                 }}
-                className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 rounded-xl transition-colors text-left"
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 rounded-xl transition-colors text-left cursor-pointer"
               >
                 <Plus className="w-4 h-4 text-emerald-400" />
                 Adicionar Nova Tarefa
+              </button>
+              <button
+                id="cmd-logout-btn"
+                onClick={() => {
+                  onClose();
+                  onOpenLogoutModal?.();
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors text-left cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 text-rose-400" />
+                Sair da Conta (Logout)
               </button>
             </div>
           </div>

@@ -8,6 +8,7 @@ import {
   initialTeamMembers,
   initialWebhooks,
   initialNotifications,
+  initialAuthUsers,
 } from './data/mockData';
 import {
   Customer,
@@ -20,6 +21,7 @@ import {
   PipelineStage,
   TaskStatus,
   PlanTier,
+  AuthUser,
 } from './types';
 import { Sidebar, ActiveTab } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
@@ -35,8 +37,59 @@ import { ReportsView } from './components/views/ReportsView';
 import { SettingsView } from './components/views/SettingsView';
 import { NewCustomerModal } from './components/modals/NewCustomerModal';
 import { NewTaskModal } from './components/modals/NewTaskModal';
+import { CreateUserModal } from './components/modals/CreateUserModal';
+import { LogoutConfirmModal } from './components/modals/LogoutConfirmModal';
+import { AuthPortal } from './components/auth/AuthPortal';
+import { SalesLandingPage } from './components/sales/SalesLandingPage';
 
 export default function App() {
+  // Authentication & Users State
+  const [authUsers, setAuthUsers] = useState<AuthUser[]>(() => {
+    try {
+      const saved = localStorage.getItem('motorgrid_auth_users');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Error reading auth users:', e);
+    }
+    return initialAuthUsers;
+  });
+
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('motorgrid_current_user');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Error reading current user:', e);
+    }
+    return initialAuthUsers[0] || null;
+  });
+
+  // Modal States for Auth
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  // Sync users to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('motorgrid_auth_users', JSON.stringify(authUsers));
+    } catch (e) {
+      console.error('Error saving users:', e);
+    }
+  }, [authUsers]);
+
+  // Sync currentUser to localStorage
+  useEffect(() => {
+    try {
+      if (currentUser) {
+        localStorage.setItem('motorgrid_current_user', JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem('motorgrid_current_user');
+      }
+    } catch (e) {
+      console.error('Error saving current user:', e);
+    }
+  }, [currentUser]);
+
   // Navigation & UI States
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -69,7 +122,103 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Handlers
+  // Auth Handlers
+  const handleLogin = (user: AuthUser) => {
+    setCurrentUser(user);
+    const newNotif: ActivityNotification = {
+      id: `notif-${Date.now()}`,
+      title: 'Sessão Autenticada',
+      description: `Bem-vindo de volta, ${user.name}! Login efetuado com sucesso.`,
+      timestamp: 'Agora',
+      type: 'system',
+      read: false,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  };
+
+  const handleRegister = (newUser: AuthUser) => {
+    setAuthUsers((prev) => [...prev, newUser]);
+    setCurrentUser(newUser);
+
+    // Also add to team members
+    const teamMember: TeamMember = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      status: 'Ativo',
+      avatar: newUser.avatar,
+      lastLogin: 'Agora',
+    };
+    setTeamMembers((prev) => [...prev, teamMember]);
+
+    const newNotif: ActivityNotification = {
+      id: `notif-${Date.now()}`,
+      title: 'Nova Conta Criada & Autenticada',
+      description: `Usuário ${newUser.name} registrado com o cargo de ${newUser.role}.`,
+      timestamp: 'Agora',
+      type: 'system',
+      read: false,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  };
+
+  const handleCreateUser = (newUser: AuthUser) => {
+    setAuthUsers((prev) => [...prev, newUser]);
+
+    // Also add to team members
+    const teamMember: TeamMember = {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      status: 'Ativo',
+      avatar: newUser.avatar,
+      lastLogin: 'Nunca',
+    };
+    setTeamMembers((prev) => [...prev, teamMember]);
+
+    const newNotif: ActivityNotification = {
+      id: `notif-${Date.now()}`,
+      title: 'Novo Usuário Criado',
+      description: `${newUser.name} (${newUser.role}) foi adicionado com sucesso ao MotorGrid.`,
+      timestamp: 'Agora',
+      type: 'system',
+      read: false,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  };
+
+  const handleSwitchUser = (user: AuthUser) => {
+    setCurrentUser(user);
+    const newNotif: ActivityNotification = {
+      id: `notif-${Date.now()}`,
+      title: 'Alternância de Perfil',
+      description: `Você agora está operando como ${user.name} (${user.role}).`,
+      timestamp: 'Agora',
+      type: 'system',
+      read: false,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  };
+
+  const handleConfirmLogout = () => {
+    const prevName = currentUser?.name || 'Usuário';
+    setCurrentUser(null);
+    setIsLogoutModalOpen(false);
+
+    const newNotif: ActivityNotification = {
+      id: `notif-${Date.now()}`,
+      title: 'Sessão Encerrada',
+      description: `O usuário ${prevName} desconectou da plataforma.`,
+      timestamp: 'Agora',
+      type: 'system',
+      read: false,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  };
+
+  // Data Handlers
   const handleAddCustomer = (newCust: Omit<Customer, 'id' | 'healthScore'>) => {
     const created: Customer = {
       ...newCust,
@@ -163,6 +312,18 @@ export default function App() {
   const unreadCount = notifications.filter((n) => !n.read).length;
   const customersRiskCount = customers.filter((c) => c.healthScore < 60).length;
 
+  // If not authenticated, display full screen SalesLandingPage with integrated Login & Registration Checkout
+  if (!currentUser) {
+    return (
+      <SalesLandingPage
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        availableUsers={authUsers}
+        currentUser={null}
+      />
+    );
+  }
+
   return (
     <div className="flex h-screen bg-[#0A0A0B] text-zinc-100 font-sans antialiased overflow-hidden selection:bg-[#8B5CF6] selection:text-white">
       {/* Global Command Palette */}
@@ -183,6 +344,14 @@ export default function App() {
         onOpenNewTask={() => {
           setIsCommandOpen(false);
           setIsNewTaskModalOpen(true);
+        }}
+        onOpenCreateUser={() => {
+          setIsCommandOpen(false);
+          setIsCreateUserModalOpen(true);
+        }}
+        onOpenLogoutModal={() => {
+          setIsCommandOpen(false);
+          setIsLogoutModalOpen(true);
         }}
       />
 
@@ -225,6 +394,21 @@ export default function App() {
         onAddTask={handleAddTask}
       />
 
+      {/* Create User Modal */}
+      <CreateUserModal
+        isOpen={isCreateUserModalOpen}
+        onClose={() => setIsCreateUserModalOpen(false)}
+        onCreateUser={handleCreateUser}
+      />
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirmLogout={handleConfirmLogout}
+        user={currentUser}
+      />
+
       {/* Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}
@@ -234,6 +418,11 @@ export default function App() {
         customersRiskCount={customersRiskCount}
         unreadNotifications={unreadCount}
         onOpenNotifications={() => setIsNotificationOpen(true)}
+        currentUser={currentUser}
+        onOpenCreateUser={() => setIsCreateUserModalOpen(true)}
+        onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
+        availableUsers={authUsers}
+        onSwitchUser={handleSwitchUser}
       />
 
       {/* Main Content Area */}
@@ -247,6 +436,11 @@ export default function App() {
           onOpenNewCustomer={() => setIsNewCustomerModalOpen(true)}
           onOpenNewTask={() => setIsNewTaskModalOpen(true)}
           onOpenAiCopilot={() => setActiveTab('ai-copilot')}
+          currentUser={currentUser}
+          onOpenCreateUser={() => setIsCreateUserModalOpen(true)}
+          onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
+          availableUsers={authUsers}
+          onSwitchUser={handleSwitchUser}
         />
 
         {/* Scrollable View Area */}
@@ -302,6 +496,19 @@ export default function App() {
             />
           )}
 
+          {activeTab === 'sales' && (
+            <div className="-m-4 sm:-m-6 lg:-m-8 -mt-6">
+              <SalesLandingPage
+                onLogin={handleLogin}
+                onRegister={handleRegister}
+                availableUsers={authUsers}
+                currentUser={currentUser}
+                onGoToDashboard={() => setActiveTab('dashboard')}
+                onLogout={() => setIsLogoutModalOpen(true)}
+              />
+            </div>
+          )}
+
           {activeTab === 'reports' && (
             <ReportsView metrics={metrics} />
           )}
@@ -312,6 +519,10 @@ export default function App() {
               webhooks={webhooks}
               onAddTeamMember={handleAddTeamMember}
               onAddWebhook={handleAddWebhook}
+              currentUser={currentUser}
+              onOpenCreateUser={() => setIsCreateUserModalOpen(true)}
+              onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
+              authUsers={authUsers}
             />
           )}
         </main>

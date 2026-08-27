@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -12,8 +12,15 @@ import {
   ShieldCheck,
   Bell,
   Cpu,
+  LogOut,
+  UserPlus,
+  UserCheck,
+  ChevronUp,
+  MoreVertical,
+  Globe,
 } from 'lucide-react';
 import { MotorGridLogo, MotorGridIcon } from './MotorGridLogo';
+import { AuthUser } from '../types';
 
 export type ActiveTab =
   | 'dashboard'
@@ -22,7 +29,8 @@ export type ActiveTab =
   | 'billing'
   | 'ai-copilot'
   | 'reports'
-  | 'settings';
+  | 'settings'
+  | 'sales';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -32,6 +40,11 @@ interface SidebarProps {
   customersRiskCount: number;
   unreadNotifications: number;
   onOpenNotifications: () => void;
+  currentUser: AuthUser | null;
+  onOpenCreateUser: () => void;
+  onOpenLogoutModal: () => void;
+  availableUsers: AuthUser[];
+  onSwitchUser: (user: AuthUser) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -42,7 +55,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   customersRiskCount,
   unreadNotifications,
   onOpenNotifications,
+  currentUser,
+  onOpenCreateUser,
+  onOpenLogoutModal,
+  availableUsers,
+  onSwitchUser,
 }) => {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
   const menuItems = [
     {
       id: 'dashboard' as ActiveTab,
@@ -76,6 +96,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badge: 'PRO',
       badgeColor: 'bg-[#8B5CF6]/20 text-[#C4B5FD] border-[#8B5CF6]/40',
       highlight: true,
+    },
+    {
+      id: 'sales' as ActiveTab,
+      label: 'Página de Vendas & Planos',
+      icon: Globe,
+      badge: 'Pública',
+      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     },
     {
       id: 'reports' as ActiveTab,
@@ -113,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           id="toggle-sidebar-btn"
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors border border-transparent hover:border-zinc-700"
+          className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors border border-transparent hover:border-zinc-700 cursor-pointer"
           title={collapsed ? 'Expandir menu' : 'Recolher menu'}
         >
           {collapsed ? <ChevronRight className="w-4 h-4 text-[#A78BFA]" /> : <ChevronLeft className="w-4 h-4 text-zinc-400" />}
@@ -151,7 +178,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               title={collapsed ? item.label : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                 isActive
                   ? 'bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] text-white shadow-lg shadow-[#8B5CF6]/25 font-semibold'
                   : item.highlight
@@ -185,7 +212,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Quick Action Footer */}
-      <div className="p-3 border-t border-[#8B5CF6]/15 bg-[#0A0A0B]/80">
+      <div className="p-3 border-t border-[#8B5CF6]/15 bg-[#0A0A0B]/80 relative">
         {!collapsed ? (
           <div className="p-3 rounded-xl bg-[#1C1C1E] border border-[#8B5CF6]/20 space-y-2.5 shadow-sm">
             <div className="flex items-center justify-between">
@@ -196,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 id="sidebar-notifications-btn"
                 onClick={onOpenNotifications}
-                className="relative p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                className="relative p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
                 title="Ver notificações"
               >
                 <Bell className="w-4 h-4 text-[#A78BFA]" />
@@ -213,7 +240,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             id="sidebar-notifications-collapsed-btn"
             onClick={onOpenNotifications}
-            className="w-full flex justify-center p-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors relative"
+            className="w-full flex justify-center p-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors relative cursor-pointer"
             title="Notificações"
           >
             <Bell className="w-5 h-5 text-[#A78BFA]" />
@@ -223,19 +250,149 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         )}
 
-        {/* User profile capsule */}
-        <div className="mt-3 flex items-center gap-3 pt-3 border-t border-zinc-800/80">
-          <div className="w-9 h-9 rounded-full ring-2 ring-[#8B5CF6]/50 overflow-hidden shrink-0 bg-gradient-to-tr from-[#6D28D9] to-[#8B5CF6] flex items-center justify-center font-bold text-white text-xs">
-            AL
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold text-zinc-200 truncate">Ana Luísa Castilho</div>
-              <div className="text-[11px] text-[#A78BFA] truncate font-medium">Head de Operações SaaS</div>
+        {/* User Profile Popover / Dropdown when open */}
+        {userMenuOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setUserMenuOpen(false)}
+            />
+            <div
+              id="sidebar-user-popover"
+              className={`absolute bottom-16 ${
+                collapsed ? 'left-20 w-64' : 'left-3 right-3'
+              } rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/30 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1`}
+            >
+              <div className="p-2.5 rounded-xl bg-[#0A0A0B] border border-zinc-800 mb-1">
+                <div className="text-xs font-bold text-white truncate">
+                  {currentUser?.name || 'Usuário MotorGrid'}
+                </div>
+                <div className="text-[11px] text-zinc-400 truncate">
+                  {currentUser?.email}
+                </div>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-[#8B5CF6]/20 text-[#DDD6FE] border border-[#8B5CF6]/30">
+                    {currentUser?.role || 'Operador'}
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-medium">● Online</span>
+                </div>
+              </div>
+
+              {/* Action: Create User */}
+              <button
+                id="sidebar-create-user-action-btn"
+                onClick={() => {
+                  setUserMenuOpen(false);
+                  onOpenCreateUser();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-200 hover:text-white hover:bg-[#8B5CF6]/20 rounded-xl transition-colors text-left cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4 text-[#A78BFA]" />
+                <span>Criar Novo Usuário</span>
+              </button>
+
+              {/* Action: Switch User demo */}
+              <div className="pt-1 border-t border-zinc-800/80">
+                <div className="px-2 py-1 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+                  Alternar Conta
+                </div>
+                <div className="max-h-28 overflow-y-auto space-y-0.5">
+                  {availableUsers
+                    .filter((u) => u.id !== currentUser?.id)
+                    .map((u) => (
+                      <button
+                        key={u.id}
+                        onClick={() => {
+                          onSwitchUser(u);
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] text-zinc-300 hover:text-white hover:bg-zinc-800 text-left transition-colors cursor-pointer"
+                      >
+                        <img src={u.avatar} alt={u.name} className="w-5 h-5 rounded-full object-cover" />
+                        <span className="truncate flex-1">{u.name}</span>
+                        <span className="text-[9px] text-[#A78BFA]">{u.role.split(' ')[0]}</span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+
+              {/* Action: Logout Button (Botão Sair) */}
+              <div className="pt-1 border-t border-zinc-800/80">
+                <button
+                  id="sidebar-logout-btn"
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    onOpenLogoutModal();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-rose-400 hover:text-white hover:bg-rose-600/25 rounded-xl transition-colors text-left cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 text-rose-400" />
+                  <span>Sair da Conta (Logout)</span>
+                </button>
+              </div>
             </div>
+          </>
+        )}
+
+        {/* User profile capsule with click-to-open menu & fast logout */}
+        <div className="mt-3 flex items-center justify-between gap-2 pt-3 border-t border-zinc-800/80">
+          <button
+            id="sidebar-user-profile-btn"
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            className={`flex items-center gap-2.5 p-1 rounded-xl hover:bg-zinc-800/60 transition-all text-left flex-1 min-w-0 cursor-pointer ${
+              collapsed ? 'justify-center' : ''
+            }`}
+            title="Menu do Usuário / Criar Usuário / Sair"
+          >
+            {currentUser?.avatar ? (
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="w-8 h-8 rounded-full ring-2 ring-[#8B5CF6]/50 object-cover shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full ring-2 ring-[#8B5CF6]/50 overflow-hidden shrink-0 bg-gradient-to-tr from-[#6D28D9] to-[#8B5CF6] flex items-center justify-center font-bold text-white text-xs">
+                {currentUser?.name
+                  ? currentUser.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()
+                  : 'MG'}
+              </div>
+            )}
+
+            {!collapsed && (
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-zinc-200 truncate flex items-center gap-1">
+                  <span>{currentUser?.name || 'Ana Luísa'}</span>
+                </div>
+                <div className="text-[10px] text-[#A78BFA] truncate font-medium">
+                  {currentUser?.role || 'Head de Operações'}
+                </div>
+              </div>
+            )}
+
+            {!collapsed && (
+              <ChevronUp className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+            )}
+          </button>
+
+          {/* Dedicated direct Logout button in footer */}
+          {!collapsed && (
+            <button
+              id="sidebar-quick-logout-btn"
+              onClick={onOpenLogoutModal}
+              className="p-2 rounded-xl text-zinc-400 hover:text-rose-400 hover:bg-rose-500/15 transition-all border border-transparent hover:border-rose-500/30 cursor-pointer shrink-0"
+              title="Sair da Conta (Logout)"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           )}
         </div>
       </div>
     </aside>
   );
 };
+

@@ -16,14 +16,24 @@ import {
   X,
   Lock,
   Car,
+  User,
+  LogOut,
+  UserPlus,
+  Mail,
+  Phone,
+  ShieldCheck,
 } from 'lucide-react';
-import { TeamMember, WebhookEndpoint } from '../../types';
+import { TeamMember, WebhookEndpoint, AuthUser } from '../../types';
 
 interface SettingsViewProps {
   teamMembers: TeamMember[];
   webhooks: WebhookEndpoint[];
   onAddTeamMember: (member: Omit<TeamMember, 'id'>) => void;
   onAddWebhook: (webhook: Omit<WebhookEndpoint, 'id'>) => void;
+  currentUser?: AuthUser | null;
+  onOpenCreateUser?: () => void;
+  onOpenLogoutModal?: () => void;
+  authUsers?: AuthUser[];
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -31,8 +41,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   webhooks,
   onAddTeamMember,
   onAddWebhook,
+  currentUser,
+  onOpenCreateUser,
+  onOpenLogoutModal,
+  authUsers = [],
 }) => {
-  const [activeTab, setActiveTab] = useState<'company' | 'team' | 'api' | 'security'>('company');
+  const [activeTab, setActiveTab] = useState<'profile' | 'company' | 'team' | 'api' | 'security'>('profile');
+
+  // Profile Edit State
+  const [profileName, setProfileName] = useState(currentUser?.name || 'Ana Luísa Castilho');
+  const [profileEmail, setProfileEmail] = useState(currentUser?.email || 'ana.castilho@motorgrid.com');
+  const [profilePhone, setProfilePhone] = useState(currentUser?.phone || '+55 (11) 98765-4321');
+  const [savedProfile, setSavedProfile] = useState(false);
 
   // Company State
   const [companyName, setCompanyName] = useState('MotorGrid Automotive Technology Ltda.');
@@ -56,6 +76,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [apiKey, setApiKey] = useState('mg_live_9f82a184b29c4819e99a8174_motorgrid');
   const [copiedKey, setCopiedKey] = useState(false);
   const [webhookTestStatus, setWebhookTestStatus] = useState<string | null>(null);
+
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavedProfile(true);
+    setTimeout(() => setSavedProfile(false), 2500);
+  };
 
   const handleSaveCompany = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +136,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       {/* Sub Tabs */}
       <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/15">
         <button
+          id="settings-tab-profile"
+          onClick={() => setActiveTab('profile')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'profile'
+              ? 'bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/25'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          <User className="w-4 h-4" />
+          Meu Perfil & Sessão
+        </button>
+
+        <button
+          id="settings-tab-company"
           onClick={() => setActiveTab('company')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'company'
@@ -122,6 +162,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </button>
 
         <button
+          id="settings-tab-team"
           onClick={() => setActiveTab('team')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'team'
@@ -130,10 +171,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           }`}
         >
           <Users className="w-4 h-4" />
-          Membros da Equipe ({teamMembers.length})
+          Membros & Usuários ({authUsers.length > 0 ? authUsers.length : teamMembers.length})
         </button>
 
         <button
+          id="settings-tab-api"
           onClick={() => setActiveTab('api')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'api'
@@ -142,10 +184,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           }`}
         >
           <Key className="w-4 h-4" />
-          Chaves de API & Webhooks MotorGrid
+          Chaves de API & Webhooks
         </button>
 
         <button
+          id="settings-tab-security"
           onClick={() => setActiveTab('security')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'security'
@@ -157,6 +200,146 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           Segurança Automotiva & LGPD
         </button>
       </div>
+
+      {/* TAB 0: USER PROFILE & SESSION */}
+      {activeTab === 'profile' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* User Card */}
+          <div className="p-6 rounded-3xl bg-[#1C1C1E] border border-[#8B5CF6]/20 shadow-xl space-y-5">
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="relative">
+                <img
+                  src={currentUser?.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80'}
+                  alt={currentUser?.name}
+                  className="w-20 h-20 rounded-2xl object-cover ring-2 ring-[#8B5CF6]/50 shadow-lg"
+                />
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-[#1C1C1E] shadow-[0_0_8px_#10B981]" />
+              </div>
+
+              <div>
+                <h3 className="text-base font-bold text-white tracking-tight">{currentUser?.name}</h3>
+                <p className="text-xs text-[#A78BFA] font-medium">{currentUser?.role}</p>
+                <p className="text-[11px] text-zinc-400 mt-0.5">{currentUser?.company}</p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#8B5CF6]/20 text-[#DDD6FE] border border-[#8B5CF6]/30">
+                  Plano {currentUser?.plan || 'Enterprise'}
+                </span>
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3" /> 2FA Ativo
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-zinc-800 space-y-2 text-xs">
+              <div className="flex justify-between py-1 text-zinc-400 border-b border-zinc-800/50">
+                <span>E-mail:</span>
+                <span className="text-white font-mono">{currentUser?.email}</span>
+              </div>
+              <div className="flex justify-between py-1 text-zinc-400 border-b border-zinc-800/50">
+                <span>Último Login:</span>
+                <span className="text-zinc-200">{currentUser?.lastLogin || 'Hoje'}</span>
+              </div>
+              <div className="flex justify-between py-1 text-zinc-400">
+                <span>Status da Conta:</span>
+                <span className="text-emerald-400 font-semibold">● Ativo</span>
+              </div>
+            </div>
+
+            {/* Quick Actions inside Card: Create User & Logout */}
+            <div className="pt-3 border-t border-zinc-800 space-y-2">
+              <button
+                id="profile-create-user-btn"
+                onClick={onOpenCreateUser}
+                className="w-full py-2.5 rounded-xl bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 border border-[#8B5CF6]/40 text-[#DDD6FE] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4 text-[#A78BFA]" />
+                <span>Criar Novo Usuário / Operador</span>
+              </button>
+
+              {/* Botão Sair */}
+              <button
+                id="profile-logout-btn"
+                onClick={onOpenLogoutModal}
+                className="w-full py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 text-rose-400" />
+                <span>Sair da Conta (Logout)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Profile Form */}
+          <div className="lg:col-span-2 p-6 rounded-3xl bg-[#1C1C1E] border border-[#8B5CF6]/15 shadow-xl space-y-5">
+            <div>
+              <h3 className="text-sm font-bold text-white tracking-tight">Editar Dados Pessoais</h3>
+              <p className="text-xs text-zinc-400 mt-0.5">Atualize seus dados de contato e preferências da conta</p>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-zinc-300 font-semibold block mb-1">Nome Completo</label>
+                  <input
+                    type="text"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-zinc-200 focus:outline-none focus:border-[#8B5CF6]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-zinc-300 font-semibold block mb-1">E-mail Corporativo</label>
+                  <input
+                    type="email"
+                    value={profileEmail}
+                    onChange={(e) => setProfileEmail(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-zinc-200 focus:outline-none focus:border-[#8B5CF6]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-zinc-300 font-semibold block mb-1">Telefone / WhatsApp</label>
+                  <input
+                    type="text"
+                    value={profilePhone}
+                    onChange={(e) => setProfilePhone(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-zinc-200 focus:outline-none focus:border-[#8B5CF6]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-zinc-300 font-semibold block mb-1">Cargo / Função no Sistema</label>
+                  <input
+                    type="text"
+                    disabled
+                    value={currentUser?.role || 'Administrador'}
+                    className="w-full p-2.5 rounded-xl bg-[#0A0A0B]/60 border border-zinc-800 text-zinc-400 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 flex items-center justify-between">
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] hover:from-[#7C3AED] hover:to-[#6D28D9] text-white font-bold transition-all shadow-lg shadow-[#8B5CF6]/25 cursor-pointer"
+                >
+                  Salvar Alterações do Perfil
+                </button>
+
+                {savedProfile && (
+                  <span className="text-xs text-emerald-400 flex items-center gap-1 font-semibold">
+                    <CheckCircle2 className="w-4 h-4" /> Perfil atualizado com sucesso!
+                  </span>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* TAB 1: COMPANY */}
       {activeTab === 'company' && (
@@ -230,13 +413,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <h3 className="text-sm font-bold text-white">Membros da Equipe & Permissões MotorGrid</h3>
               <p className="text-xs text-zinc-400">Gerencie acessos por perfil de telemetria e frotas</p>
             </div>
-            <button
-              onClick={() => setIsInviteModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold transition-all shadow-lg shadow-[#8B5CF6]/25 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Convidar Membro</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                id="team-create-user-btn"
+                onClick={onOpenCreateUser}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 border border-[#8B5CF6]/40 text-[#DDD6FE] text-xs font-bold transition-all cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4 text-[#A78BFA]" />
+                <span>Criar Usuário</span>
+              </button>
+              <button
+                onClick={() => setIsInviteModalOpen(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold transition-all shadow-lg shadow-[#8B5CF6]/25 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Convidar Membro</span>
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
