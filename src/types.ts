@@ -1,100 +1,564 @@
 export type ActiveTab =
   | 'dashboard'
   | 'atendimento'
+  | 'crm'
+  | 'estoque'
+  | 'automacoes'
+  | 'grid-ai'
+  | 'integracoes'
+  | 'relatorios'
+  | 'ajustes'
   | 'leads'
   | 'pipeline'
-  | 'estoque'
-  | 'automacao'
   | 'performance'
-  | 'administracao'
-  | 'sales'
   | 'customers'
   | 'projects'
   | 'billing'
+  | 'settings'
+  | 'sales'
   | 'ai-copilot'
-  | 'reports'
-  | 'settings';
+  | 'administracao';
 
 export type PlanTier = 'Starter' | 'Pro' | 'Enterprise' | 'Custom';
+export type LeadTemperature = 'Frio' | 'Morno' | 'Quente' | 'Pronto para Fechar';
 
-export type LeadStatus = 'Novo' | 'Em Contato' | 'Qualificado' | 'Proposta Enviada' | 'Ganho' | 'Perdido';
-export type LeadSource = 'Site / Landing Page' | 'WhatsApp Direto' | 'Indicação de Frotista' | 'Tráfego Pago' | 'Feira Automotiva' | 'Outbound';
+export interface IntegrationItem {
+  id: string;
+  name: string;
+  category: 'mensageria' | 'portais' | 'financiamento' | 'ia';
+  status: 'Conectado' | 'Desconectado';
+  icon: string;
+  description: string;
+  lastSync?: string;
+}
 
-export interface LeadItem {
+// Multi-tenant Types
+export interface TenantUnit {
+  id: string;
+  name: string;
+  city: string;
+  state: string;
+  address: string;
+  phone: string;
+  vehicleCount: number;
+  sellersCount: number;
+}
+
+export interface Tenant {
+  id: string;
+  name: string;
+  tradeName: string;
+  cnpj: string;
+  logo: string;
+  address: string;
+  phone: string;
+  timezone: string;
+  plan: PlanTier;
+  units: TenantUnit[];
+  activeUnitId: string;
+}
+
+// User & RBAC
+export type UserRole =
+  | 'Administrador'
+  | 'Gestor'
+  | 'SDR / ACO'
+  | 'Vendedor'
+  | 'Documentação'
+  | 'Marketing'
+  | 'Admin / Diretor'
+  | 'Diretor / Sócio'
+  | 'Gerente Geral'
+  | 'Vendedor Showroom'
+  | 'SDR / Pré-vendas'
+  | 'Operador F&I'
+  | 'Gestor de Vendas'
+  | 'Customer Success'
+  | 'Desenvolvedor'
+  | 'Analista'
+  | 'Gestor de Frotas';
+
+export type UserTeam =
+  | 'Pré-Atendimento'
+  | 'Vendas Matriz'
+  | 'Vendas Filial Jardins'
+  | 'Vendas Barra'
+  | 'Recuperação'
+  | 'Documentação & F&I'
+  | 'Pós-Venda'
+  | 'Comercial'
+  | 'Operações'
+  | 'Diretoria';
+
+export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  phone: string;
+  role: UserRole;
+  team?: string;
   company: string;
-  fleetSize: number; // quantidade estimada de veículos
-  estimatedValue: number; // em R$
-  source: LeadSource;
-  status: LeadStatus;
-  notes?: string;
-  assignedTo: string;
+  unitId?: string;
+  avatar?: string;
+  plan: PlanTier;
+  phone?: string;
+  twoFactorEnabled?: boolean;
+  lastLogin: string;
   createdAt: string;
-  lastContact: string;
-  tags?: string[];
+  status: 'Ativo' | 'Inativo';
+  leadsCount?: number;
+  salesMonth?: number;
+  avgResponseTimeMin?: number;
+  scoreAi?: number;
 }
 
-export type EstoqueStatus = 'Disponível' | 'Instalado' | 'Em Teste' | 'Em Manutenção' | 'Reservado';
-export type DeviceType = 'Rastreador OBD-II 4G' | 'Sensor CAN-Bus Pro' | 'Módulo GPS Satelital' | 'Câmera Veicular ADAS' | 'Sensor de Combustível Ultrassônico';
-
-export interface EstoqueItem {
-  id: string;
-  serialNumber: string; // IMEI ou Serial
-  model: DeviceType;
-  supplier: string;
-  status: EstoqueStatus;
-  batteryHealth: number; // 0 a 100%
-  firmwareVersion: string;
-  installedInVehicle?: string; // Placa ou identificador
-  installedInCompany?: string;
-  lastPing?: string;
-  receivedDate: string;
-  locationStock: string;
-}
-
-export interface AutomacaoRule {
+export interface TeamMember {
   id: string;
   name: string;
-  trigger: string;
-  action: string;
-  channel: 'WhatsApp' | 'Email' | 'Webhook' | 'SMS' | 'Push / Notificação';
-  enabled: boolean;
-  executionsCount: number;
-  lastExecuted: string;
-  category: 'Telemetria' | 'Comercial' | 'Financeiro' | 'Segurança';
+  email: string;
+  role: UserRole;
+  team?: string;
+  unitId?: string;
+  status: 'Ativo' | 'Pendente';
+  avatar: string;
+  lastLogin: string;
+  phone?: string;
+}
+
+// Channels & Tags
+export type CommunicationChannel =
+  | 'WhatsApp'
+  | 'Instagram'
+  | 'Messenger'
+  | 'Webmotors'
+  | 'iCarros'
+  | 'OLX'
+  | 'WebChat'
+  | 'Telefone';
+
+export interface LeadTag {
+  id: string;
+  label: string;
+  color: string; // Hex color or Tailwind class
+}
+
+// Automotive Stock
+export type VehicleStatus = 'Disponível' | 'Reservado' | 'Vendido' | 'Preparação' | 'Inativo';
+export type TransmissionType = 'Automático' | 'Manual' | 'CVT' | 'Dupla Embreagem';
+export type FuelType = 'Flex' | 'Gasolina' | 'Diesel' | 'Híbrido' | 'Elétrico';
+
+export interface Vehicle {
+  id: string;
+  brand: string;
+  model: string;
+  version: string;
+  fabYear: number;
+  modelYear: number;
+  km: number;
+  gearbox: TransmissionType;
+  fuel: FuelType;
+  color: string;
+  licensePlate: string;
+  chassis: string;
+  price: number; // Preço de venda
+  costPrice: number; // Preço de custo
+  options: string[];
+  photos: string[];
+  videoUrl?: string;
+  status: VehicleStatus;
+  storeUnit: string;
+  viewsCount: number;
+  leadsCount: number;
+  createdAt: string;
+}
+
+// Lead Tracking
+export interface LeadTrackingInfo {
+  origin: string; // 'Instagram Ads' | 'Webmotors' | 'Google Search' | 'Facebook' | 'OLX' | 'WhatsApp Direto'
+  campaign?: string;
+  adSet?: string;
+  adName?: string;
+  vehicleOfInterest?: {
+    id: string;
+    brand: string;
+    model: string;
+    version: string;
+    year: number;
+    km: number;
+    price: number;
+    gearbox: string;
+    color: string;
+    fuel: string;
+    photo: string;
+    store: string;
+  };
+  adUrl?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+}
+
+// Chat & Omnichannel
+export interface ChatAttachment {
+  id: string;
+  name: string;
+  url: string;
+  type: 'image' | 'video' | 'document' | 'audio' | 'car_card';
+  size?: string;
 }
 
 export interface ChatMessage {
   id: string;
-  sender: 'client' | 'agent' | 'bot';
+  sender: 'client' | 'agent' | 'bot' | 'system';
   senderName: string;
   text: string;
   timestamp: string;
   isAiGenerated?: boolean;
+  audioUrl?: string;
+  audioDuration?: string;
+  audioTranscription?: string;
+  attachments?: ChatAttachment[];
 }
 
-export interface ChatConversation {
+export interface ConversationEvent {
   id: string;
-  clientName: string;
-  clientCompany: string;
-  clientPhone: string;
-  clientAvatar?: string;
-  channel: 'WhatsApp' | 'WebChat' | 'Telemetria SOS' | 'Email';
-  status: 'Aberto' | 'Em Atendimento' | 'Resolvido';
-  assignedTo: string;
+  type:
+    | 'lead_received'
+    | 'distributed'
+    | 'agent_joined'
+    | 'message_sent'
+    | 'message_received'
+    | 'transferred'
+    | 'tag_added'
+    | 'qualified'
+    | 'appointment_created'
+    | 'crm_card_created'
+    | 'sale_registered'
+    | 'closed';
+  title: string;
+  description: string;
+  timestamp: string;
+  authorName: string;
+}
+
+export interface Conversation {
+  id: string;
+  contactId: string;
+  contactName: string;
+  contactPhone: string;
+  contactAvatar?: string;
+  channel: CommunicationChannel;
+  status: 'Novo' | 'Em Atendimento' | 'Aguardando Cliente' | 'Concluído';
+  unreadCount: number;
   lastMessage: string;
   lastMessageTime: string;
-  unreadCount: number;
-  vehiclePlate?: string;
-  telemetryAlert?: string;
+  assignedTo: string;
+  assignedUserRole: string;
+  team: UserTeam;
+  tags: string[];
+  isNewLead: boolean;
+  leadScore: number; // 0 to 100
+  temperature: 'Quente' | 'Morno' | 'Frio';
+  unitId: string;
+  tracking: LeadTrackingInfo;
   messages: ChatMessage[];
+  events: ConversationEvent[];
 }
 
-export type CustomerStatus = 'Ativo' | 'Trial' | 'Em Risco' | 'Churned' | 'Lead';
+// CRM & Pipelines
+export type PipelineType =
+  | 'pre-atendimento'
+  | 'vendas'
+  | 'documentacao'
+  | 'recuperacao'
+  | 'pos-venda';
 
+export interface PipelineStageConfig {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface PipelineConfig {
+  id: PipelineType;
+  name: string;
+  description: string;
+  stages: PipelineStageConfig[];
+  teamResponsible: UserTeam;
+}
+
+export interface CrmCard {
+  id: string;
+  pipelineId: PipelineType;
+  stageId: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  contactAvatar?: string;
+  vehicleName: string;
+  vehiclePrice: number;
+  vehiclePhoto?: string;
+  origin: string;
+  assignedTo: string;
+  timeInStage: string;
+  temperature: 'Quente' | 'Morno' | 'Frio';
+  gridScore: number;
+  lastInteraction: string;
+  nextTask?: string;
+  nextTaskDate?: string;
+  tradeInVehicle?: string; // Veículo de troca
+  financingStatus?: string; // Ex: 'Aprovado BV 60x', 'Em Análise'
+  lossReason?: string;
+  documentsChecklist?: { id: string; name: string; completed: boolean }[];
+  isOverdue?: boolean; // Item atrasado no SLA
+  unitId: string;
+}
+
+// Contacts 360
+export interface Contact {
+  id: string;
+  name: string;
+  phone: string;
+  whatsapp: string;
+  instagram?: string;
+  email: string;
+  cpf?: string;
+  city: string;
+  state: string;
+  tags: string[];
+  origin: string;
+  assignedTo: string; // Carteirização permanente
+  lastContact: string;
+  createdAt: string;
+  status: 'Ativo' | 'Arquivado' | 'Bloqueado';
+  totalPurchases: number;
+  vehiclesConsulted: string[];
+  notes: string;
+  tradeInHistory?: string;
+}
+
+// Tasks & Appointments
+export type CrmTaskType =
+  | 'Ligação'
+  | 'WhatsApp'
+  | 'Retorno'
+  | 'Proposta'
+  | 'Visita'
+  | 'Documentação'
+  | 'Pós-venda';
+
+export interface CrmTask {
+  id: string;
+  title: string;
+  contactName: string;
+  contactPhone: string;
+  contactId?: string;
+  opportunityId?: string;
+  assignedTo: string;
+  dueDate: string;
+  dueTime: string;
+  priority: 'Baixa' | 'Média' | 'Alta' | 'Urgente';
+  type: CrmTaskType;
+  status: 'Hoje' | 'Atrasada' | 'Próxima' | 'Concluída';
+  notes?: string;
+}
+
+export type AppointmentType =
+  | 'Visita à Loja'
+  | 'Test Drive'
+  | 'Avaliação de Usado'
+  | 'Ligação'
+  | 'Videochamada'
+  | 'Entrega de Veículo';
+
+export interface Appointment {
+  id: string;
+  contactName: string;
+  contactPhone: string;
+  sellerName: string;
+  vehicleName: string;
+  date: string;
+  time: string;
+  storeUnit: string;
+  type: AppointmentType;
+  status: 'Agendado' | 'Confirmado (24h)' | 'Lembrete (2h)' | 'Realizado' | 'Cancelado' | 'No-Show';
+  notes?: string;
+}
+
+// Scheduled Messages & Sequences & Campaigns
+export interface ScheduledMessage {
+  id: string;
+  contactName: string;
+  contactPhone: string;
+  channel: CommunicationChannel;
+  assignedTo: string;
+  messageText: string;
+  scheduledFor: string;
+  createdAt: string;
+  status: 'Agendada' | 'Enviada' | 'Entregue' | 'Lida' | 'Cancelada' | 'Erro';
+}
+
+export interface FollowUpSequence {
+  id: string;
+  name: string;
+  description: string;
+  category: 'Recuperação' | 'Pós-Venda' | 'Boas-Vindas' | 'Nutrição';
+  status: 'Ativo' | 'Pausado' | 'Arquivado';
+  totalContacts: number;
+  totalSent: number;
+  delivered: number;
+  opened: number;
+  replied: number;
+  conversions: number;
+  steps: {
+    stepNumber: number;
+    delayText: string;
+    actionType: string;
+    content: string;
+  }[];
+}
+
+export interface BroadcastCampaign {
+  id: string;
+  title: string;
+  channel: CommunicationChannel;
+  targetSegment: string;
+  scheduledDate: string;
+  status: 'Rascunho' | 'Agendada' | 'Em Execução' | 'Concluída' | 'Pausada';
+  sentCount: number;
+  deliveredCount: number;
+  readCount: number;
+  responsesCount: number;
+  opportunitiesCount: number;
+  salesCount: number;
+  revenueGenerated: number;
+  cpl: number;
+  roas: number;
+}
+
+export interface AutomationRule {
+  id: string;
+  name: string;
+  trigger: string;
+  condition: string;
+  action: string;
+  channel: CommunicationChannel | 'Todos';
+  enabled: boolean;
+  executionsCount: number;
+  lastExecuted: string;
+  category: 'Comercial' | 'SLA & Alerta' | 'Atendimento' | 'Pós-Venda';
+}
+
+// Grid AI
+export interface GridScoreDetail {
+  overall: number; // 0 to 100
+  responseSpeedScore: number;
+  priceInterestScore: number;
+  financingQueryScore: number;
+  tradeInScore: number;
+  engagementScore: number;
+  classification: '🔥 Quente (Alta Probabilidade)' | '🌡️ Morno (Média Probabilidade)' | '❄️ Frio (Baixa Probabilidade)';
+}
+
+export interface ConversationQualityAnalysis {
+  overallScore: number; // 0 to 100
+  speedScore: number;
+  approachScore: number;
+  qualificationScore: number;
+  objectionHandlingScore: number;
+  closingAttemptScore: number;
+  positivePoints: string[];
+  improvementPoints: string[];
+  suggestedAction: string;
+}
+
+export interface SmartAlert {
+  id: string;
+  severity: 'critical' | 'warning' | 'opportunity' | 'info';
+  title: string;
+  description: string;
+  count: number;
+  actionLabel: string;
+  targetTab: ActiveTab;
+}
+
+// Integrations Marketplace
+export interface IntegrationApp {
+  id: string;
+  name: string;
+  category: 'Mensageria' | 'Portais Automotivos' | 'Mídia Paga' | 'Financeiras' | 'IA & Voice';
+  description: string;
+  iconName: string;
+  status: 'Ativo' | 'Inativo';
+  badge?: string;
+  connectedAccount?: string;
+  lastSync?: string;
+}
+
+// Reports & BI
+export interface CommercialFunnelMetric {
+  stage: string;
+  count: number;
+  conversionRate: number; // % do estágio anterior
+  dropRate: number;
+}
+
+export interface SellerPerformanceRank {
+  id: string;
+  name: string;
+  avatar: string;
+  team: string;
+  leadsReceived: number;
+  contactsMade: number;
+  avgResponseTimeMin: number;
+  qualifiedCount: number;
+  appointmentsCount: number;
+  visitsCount: number;
+  proposalsCount: number;
+  salesCount: number;
+  revenue: number;
+  conversionRate: number;
+  gridQualityScore: number;
+}
+
+export interface ChannelRoiMetric {
+  origin: string;
+  leads: number;
+  appointments: number;
+  visits: number;
+  sales: number;
+  conversionRate: number;
+  revenue: number;
+  cost: number;
+  cpl: number;
+  cpa: number;
+  roas: number;
+}
+
+// Settings & Audit
+export interface AuditLogItem {
+  id: string;
+  timestamp: string;
+  userName: string;
+  userRole: string;
+  action: string;
+  targetRecord: string;
+  ipAddress: string;
+}
+
+// Notifications
+export interface ActivityNotification {
+  id: string;
+  title: string;
+  description: string;
+  timestamp: string;
+  type: 'lead' | 'sale' | 'alert' | 'appointment' | 'system' | 'payment' | 'churn';
+  read: boolean;
+  linkTo?: string;
+}
+
+// Legacy compatibility types to ensure 0 build breaks
+export type CustomerStatus = 'Ativo' | 'Trial' | 'Em Risco' | 'Churned' | 'Lead';
 export interface Customer {
   id: string;
   name: string;
@@ -102,9 +566,9 @@ export interface Customer {
   company: string;
   avatar?: string;
   plan: PlanTier;
-  mrr: number; // in BRL (R$)
+  mrr: number;
   status: CustomerStatus;
-  healthScore: number; // 0 to 100
+  healthScore: number;
   renewalDate?: string;
   startDate?: string;
   city?: string;
@@ -122,7 +586,6 @@ export interface Customer {
 }
 
 export type PipelineStage = 'Lead' | 'Qualificação' | 'Demonstração' | 'Proposta' | 'Fechado';
-
 export interface Deal {
   id: string;
   title: string;
@@ -138,7 +601,6 @@ export interface Deal {
 
 export type TaskStatus = 'Backlog' | 'Em Progresso' | 'Em Revisão' | 'Concluído';
 export type TaskPriority = 'Baixa' | 'Média' | 'Alta' | 'Urgente';
-
 export interface ProjectTask {
   id: string;
   title: string;
@@ -158,7 +620,6 @@ export interface ProjectTask {
 
 export type InvoiceStatus = 'Pago' | 'Pendente' | 'Atrasado';
 export type PaymentMethod = 'PIX' | 'Cartão de Crédito' | 'Boleto';
-
 export interface Invoice {
   id: string;
   invoiceNumber: string;
@@ -183,52 +644,7 @@ export interface MetricSummary {
   churnRateChange: number;
   ltv: number;
   cac: number;
-  nrr: number; // Net Revenue Retention %
-}
-
-export type UserRole =
-  | 'Administrador'
-  | 'Gestor de Frotas'
-  | 'Engenheiro de Telemetria'
-  | 'Customer Success'
-  | 'Analista de Operações'
-  | 'Gestor de Vendas'
-  | 'Desenvolvedor'
-  | 'Analista';
-
-export interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  status: 'Ativo' | 'Pendente';
-  avatar: string;
-  lastLogin: string;
-}
-
-export interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  company: string;
-  avatar?: string;
-  plan: PlanTier;
-  phone?: string;
-  twoFactorEnabled?: boolean;
-  lastLogin: string;
-  createdAt: string;
-  status: 'Ativo' | 'Inativo';
-}
-
-export interface ActivityNotification {
-  id: string;
-  title: string;
-  description: string;
-  timestamp: string;
-  type: 'payment' | 'lead' | 'alert' | 'system' | 'churn';
-  read: boolean;
-  linkTo?: string;
+  nrr: number;
 }
 
 export interface WebhookEndpoint {
@@ -238,4 +654,40 @@ export interface WebhookEndpoint {
   status: 'Ativo' | 'Inativo';
   createdAt: string;
   lastTriggered?: string;
+}
+
+export type LeadStatus = 'Novo' | 'Em Contato' | 'Qualificado' | 'Proposta Enviada' | 'Ganho' | 'Perdido';
+export type LeadSource = 'Site / Landing Page' | 'WhatsApp Direto' | 'Indicação de Frotista' | 'Tráfego Pago' | 'Feira Automotiva' | 'Outbound';
+export interface LeadItem {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  fleetSize: number;
+  estimatedValue: number;
+  source: LeadSource;
+  status: LeadStatus;
+  notes?: string;
+  assignedTo: string;
+  createdAt: string;
+  lastContact: string;
+  tags?: string[];
+}
+
+export type EstoqueStatus = 'Disponível' | 'Instalado' | 'Em Teste' | 'Em Manutenção' | 'Reservado';
+export type DeviceType = 'Rastreador OBD-II 4G' | 'Sensor CAN-Bus Pro' | 'Módulo GPS Satelital' | 'Câmera Veicular ADAS' | 'Sensor de Combustível Ultrassônico';
+export interface EstoqueItem {
+  id: string;
+  serialNumber: string;
+  model: DeviceType;
+  supplier: string;
+  status: EstoqueStatus;
+  batteryHealth: number;
+  firmwareVersion: string;
+  installedInVehicle?: string;
+  installedInCompany?: string;
+  lastPing?: string;
+  receivedDate: string;
+  locationStock: string;
 }

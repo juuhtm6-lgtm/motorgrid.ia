@@ -203,6 +203,8 @@ export const SalesLandingPage: React.FC<SalesLandingPageProps> = ({
         name: regName.trim(),
         email: regEmail.trim(),
         role: regRole,
+        team: 'Comercial',
+        unitId: 'unit-1',
         company: regCompany.trim(),
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
         plan: selectedPlanForAuth,

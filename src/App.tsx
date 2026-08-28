@@ -159,8 +159,11 @@ export default function App() {
       name: newUser.name,
       email: newUser.email,
       role: newUser.role,
+      team: newUser.team || 'Comercial',
+      unitId: newUser.unitId || 'unit-1',
+      phone: newUser.phone || '',
       status: 'Ativo',
-      avatar: newUser.avatar,
+      avatar: newUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       lastLogin: 'Agora',
     };
     setTeamMembers((prev) => [...prev, teamMember]);
@@ -184,8 +187,11 @@ export default function App() {
       name: newUser.name,
       email: newUser.email,
       role: newUser.role,
+      team: newUser.team || 'Comercial',
+      unitId: newUser.unitId || 'unit-1',
+      phone: newUser.phone || '',
       status: 'Ativo',
-      avatar: newUser.avatar,
+      avatar: newUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       lastLogin: 'Nunca',
     };
     setTeamMembers((prev) => [...prev, teamMember]);
