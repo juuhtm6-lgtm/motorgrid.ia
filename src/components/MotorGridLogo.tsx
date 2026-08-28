@@ -2,7 +2,7 @@ import React from 'react';
 
 interface MotorGridLogoProps {
   className?: string;
-  variant?: 'full' | 'icon-only' | 'horizontal' | 'badge';
+  variant?: 'full' | 'icon-only' | 'horizontal' | 'badge' | 'os';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showSubtitle?: boolean;
 }
@@ -137,8 +137,29 @@ export function MotorGridLogo({
       <div className={`inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#1C1C1E] border border-[#8B5CF6]/30 shadow-lg shadow-[#8B5CF6]/10 ${className}`}>
         <MotorGridIcon className="w-5 h-5" />
         <div className="flex items-center">
-          <span className="font-extrabold tracking-tight text-white text-xs">MOTOR</span>
-          <span className="font-extrabold tracking-tight text-[#8B5CF6] text-xs">GRID</span>
+          <span className="font-extrabold tracking-tight text-white text-xs">Motor</span>
+          <span className="font-extrabold tracking-tight text-[#8B5CF6] text-xs">Grid</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === 'os') {
+    return (
+      <div className={`inline-flex items-center gap-3 ${className}`}>
+        <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#0F0D1A] border border-[#8B5CF6]/35 shadow-md shadow-[#8B5CF6]/20">
+          <MotorGridIcon className={iconSizeMap[size]} />
+        </div>
+        <div className="flex flex-col justify-center">
+          <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center gap-1.5 font-['Plus_Jakarta_Sans',sans-serif]">
+            <span>MotorGrid</span>
+            <span className="text-white">OS</span>
+          </div>
+          {showSubtitle && (
+            <span className="font-bold uppercase text-zinc-400 text-[10px] tracking-[0.16em] mt-0.5 font-['Plus_Jakarta_Sans',sans-serif]">
+              AUTOMOTIVE COMMAND
+            </span>
+          )}
         </div>
       </div>
     );
@@ -146,17 +167,17 @@ export function MotorGridLogo({
 
   return (
     <div className={`inline-flex items-center gap-3 ${className}`}>
-      <div className="relative shrink-0 flex items-center justify-center p-1 rounded-xl bg-[#1C1C1E]/80 border border-[#8B5CF6]/20 shadow-md shadow-[#8B5CF6]/15">
+      <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#0F0D1A] border border-[#8B5CF6]/35 shadow-md shadow-[#8B5CF6]/20">
         <MotorGridIcon className={iconSizeMap[size]} />
       </div>
-      <div className="flex flex-col">
-        <div className={`font-black uppercase leading-none ${titleSizeMap[size]} flex items-center`}>
-          <span className="text-white tracking-wider">MOTOR</span>
-          <span className="text-[#8B5CF6] tracking-wider ml-0.5">GRID</span>
+      <div className="flex flex-col justify-center">
+        <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center gap-1.5 font-['Plus_Jakarta_Sans',sans-serif]">
+          <span>MotorGrid</span>
+          <span className="text-white">OS</span>
         </div>
         {showSubtitle && (
-          <span className={`font-semibold uppercase text-zinc-400 mt-1 font-mono ${subSizeMap[size]}`}>
-            Automotive Technology
+          <span className="font-bold uppercase text-zinc-400 text-[10px] tracking-[0.16em] mt-0.5 font-['Plus_Jakarta_Sans',sans-serif]">
+            AUTOMOTIVE COMMAND
           </span>
         )}
       </div>

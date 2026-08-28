@@ -9,6 +9,7 @@ import {
   initialWebhooks,
   initialNotifications,
   initialAuthUsers,
+  initialLeads,
 } from './data/mockData';
 import {
   Customer,
@@ -22,13 +23,22 @@ import {
   TaskStatus,
   PlanTier,
   AuthUser,
+  LeadItem,
+  LeadStatus,
+  ActiveTab,
 } from './types';
-import { Sidebar, ActiveTab } from './components/Sidebar';
+import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { CommandPalette } from './components/CommandPalette';
 import { NotificationDrawer } from './components/NotificationDrawer';
 import { CustomerDetailDrawer } from './components/CustomerDetailDrawer';
 import { DashboardView } from './components/views/DashboardView';
+import { AtendimentoView } from './components/views/AtendimentoView';
+import { LeadsView } from './components/views/LeadsView';
+import { PipelineView } from './components/views/PipelineView';
+import { EstoqueView } from './components/views/EstoqueView';
+import { AutomacaoView } from './components/views/AutomacaoView';
+import { PerformanceView } from './components/views/PerformanceView';
 import { CustomersView } from './components/views/CustomersView';
 import { ProjectsView } from './components/views/ProjectsView';
 import { BillingView } from './components/views/BillingView';
@@ -37,6 +47,7 @@ import { ReportsView } from './components/views/ReportsView';
 import { SettingsView } from './components/views/SettingsView';
 import { NewCustomerModal } from './components/modals/NewCustomerModal';
 import { NewTaskModal } from './components/modals/NewTaskModal';
+import { CreateLeadModal } from './components/modals/CreateLeadModal';
 import { CreateUserModal } from './components/modals/CreateUserModal';
 import { LogoutConfirmModal } from './components/modals/LogoutConfirmModal';
 import { AuthPortal } from './components/auth/AuthPortal';
@@ -64,9 +75,10 @@ export default function App() {
     return initialAuthUsers[0] || null;
   });
 
-  // Modal States for Auth
+  // Modal States
   const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isCreateLeadModalOpen, setIsCreateLeadModalOpen] = useState(false);
 
   // Sync users to localStorage
   useEffect(() => {
@@ -103,6 +115,7 @@ export default function App() {
   const [metrics, setMetrics] = useState(initialMetrics);
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [deals, setDeals] = useState<Deal[]>(initialDeals);
+  const [leads, setLeads] = useState<LeadItem[]>(initialLeads);
   const [tasks, setTasks] = useState<ProjectTask[]>(initialTasks);
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
@@ -166,7 +179,6 @@ export default function App() {
   const handleCreateUser = (newUser: AuthUser) => {
     setAuthUsers((prev) => [...prev, newUser]);
 
-    // Also add to team members
     const teamMember: TeamMember = {
       id: newUser.id,
       name: newUser.name,
@@ -218,6 +230,74 @@ export default function App() {
     setNotifications((prev) => [newNotif, ...prev]);
   };
 
+  // Leads Handlers
+  const handleAddLead = (newLeadData: Omit<LeadItem, 'id' | 'createdAt' | 'lastContact'>) => {
+    const created: LeadItem = {
+      ...newLeadData,
+      id: `lead-${Date.now()}`,
+      createdAt: 'Agora mesmo',
+      lastContact: 'Criado agora',
+    };
+    setLeads((prev) => [created, ...prev]);
+
+    // Add notification
+    const newNotif: ActivityNotification = {
+      id: `notif-${Date.now()}`,
+      title: 'Novo Lead Registrado',
+      description: `${created.name} (${created.company}) com ${created.fleetSize} veículos cadastrado.`,
+      timestamp: 'Agora',
+      type: 'lead',
+      read: false,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  };
+
+  const handleUpdateLeadStatus = (id: string, status: LeadStatus) => {
+    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+  };
+
+  const handleConvertLeadToCustomer = (lead: LeadItem) => {
+    const newCust: Customer = {
+      id: `cust-${Date.now()}`,
+      name: lead.name,
+      company: lead.company,
+      email: lead.email,
+      phone: lead.phone,
+      plan: lead.fleetSize > 40 ? 'Enterprise' : 'Pro',
+      status: 'Ativo',
+      mrr: lead.estimatedValue,
+      vehiclesCount: lead.fleetSize,
+      healthScore: 95,
+      joinedDate: 'Hoje',
+      lastContact: 'Agora',
+      segment: 'Transporte & Frotas',
+      contractRenewal: '2027-02-28',
+      assignedTo: lead.assignedTo,
+      notes: `Convertido a partir de Lead (${lead.source}). ${lead.notes || ''}`,
+    };
+
+    setCustomers((prev) => [newCust, ...prev]);
+    handleUpdateLeadStatus(lead.id, 'Ganho');
+
+    // Update metrics
+    setMetrics((prev) => ({
+      ...prev,
+      mrr: prev.mrr + newCust.mrr,
+      arr: (prev.mrr + newCust.mrr) * 12,
+      activeCustomers: prev.activeCustomers + 1,
+    }));
+
+    const newNotif: ActivityNotification = {
+      id: `notif-${Date.now()}`,
+      title: 'Lead Convertido em Cliente!',
+      description: `${lead.company} assinou contrato de R$ ${lead.estimatedValue.toLocaleString('pt-BR')}/mês!`,
+      timestamp: 'Agora',
+      type: 'lead',
+      read: false,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  };
+
   // Data Handlers
   const handleAddCustomer = (newCust: Omit<Customer, 'id' | 'healthScore'>) => {
     const created: Customer = {
@@ -235,7 +315,6 @@ export default function App() {
       activeCustomers: prev.activeCustomers + 1,
     }));
 
-    // Add activity notification
     const newNotif: ActivityNotification = {
       id: `notif-${Date.now()}`,
       title: 'Novo Cliente Cadastrado',
@@ -379,6 +458,13 @@ export default function App() {
         }}
       />
 
+      {/* New Lead Modal */}
+      <CreateLeadModal
+        isOpen={isCreateLeadModalOpen}
+        onClose={() => setIsCreateLeadModalOpen(false)}
+        onCreateLead={handleAddLead}
+      />
+
       {/* New Customer Modal */}
       <NewCustomerModal
         isOpen={isNewCustomerModalOpen}
@@ -423,6 +509,7 @@ export default function App() {
         onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
         availableUsers={authUsers}
         onSwitchUser={handleSwitchUser}
+        onOpenNewLead={() => setIsCreateLeadModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -455,6 +542,39 @@ export default function App() {
               onOpenAiCopilot={() => setActiveTab('ai-copilot')}
               onNavigateTab={setActiveTab}
             />
+          )}
+
+          {activeTab === 'atendimento' && (
+            <AtendimentoView />
+          )}
+
+          {activeTab === 'leads' && (
+            <LeadsView
+              leads={leads}
+              onOpenNewLead={() => setIsCreateLeadModalOpen(true)}
+              onConvertToCustomer={handleConvertLeadToCustomer}
+              onUpdateLeadStatus={handleUpdateLeadStatus}
+            />
+          )}
+
+          {activeTab === 'pipeline' && (
+            <PipelineView
+              deals={deals}
+              onUpdateDealStage={handleUpdateDealStage}
+              onOpenNewDeal={() => setIsCreateLeadModalOpen(true)}
+            />
+          )}
+
+          {activeTab === 'estoque' && (
+            <EstoqueView />
+          )}
+
+          {activeTab === 'automacao' && (
+            <AutomacaoView />
+          )}
+
+          {activeTab === 'performance' && (
+            <PerformanceView metrics={metrics} />
           )}
 
           {activeTab === 'customers' && (
@@ -513,7 +633,7 @@ export default function App() {
             <ReportsView metrics={metrics} />
           )}
 
-          {activeTab === 'settings' && (
+          {(activeTab === 'administracao' || activeTab === 'settings') && (
             <SettingsView
               teamMembers={teamMembers}
               webhooks={webhooks}
@@ -530,3 +650,4 @@ export default function App() {
     </div>
   );
 }
+

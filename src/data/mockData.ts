@@ -1,4 +1,4 @@
-import { Customer, Deal, ProjectTask, Invoice, MetricSummary, TeamMember, ActivityNotification, WebhookEndpoint, AuthUser } from '../types';
+import { Customer, Deal, ProjectTask, Invoice, MetricSummary, TeamMember, ActivityNotification, WebhookEndpoint, AuthUser, LeadItem } from '../types';
 
 export const initialAuthUsers: AuthUser[] = [
   {
@@ -545,3 +545,82 @@ export const planDistributionData = [
   { name: 'Pro Telematics', value: 28, count: 148, color: '#6D28D9' },
   { name: 'Starter Connected', value: 14, count: 200, color: '#C4B5FD' },
 ];
+
+export const initialLeads: LeadItem[] = [
+  {
+    id: 'lead-1',
+    name: 'Roberto Valente',
+    company: 'ExpressLog Transportes Pesados',
+    email: 'roberto@expresslog.com.br',
+    phone: '+55 (11) 98455-1234',
+    fleetSize: 45,
+    estimatedValue: 6750,
+    status: 'Qualificado',
+    source: 'Site / Landing Page',
+    assignedTo: 'Rodrigo Mendes',
+    createdAt: 'Hoje às 09:30',
+    lastContact: 'Há 20 minutos',
+    notes: 'Interesse imediato em rastreadores OBD-II com telemetria de consumo diesel.',
+  },
+  {
+    id: 'lead-2',
+    name: 'Helena Duarte',
+    company: 'Distribuidora Minas-Rio',
+    email: 'helena.duarte@minasrio.com.br',
+    phone: '+55 (31) 99120-7766',
+    fleetSize: 18,
+    estimatedValue: 2700,
+    status: 'Novo',
+    source: 'WhatsApp Direto',
+    assignedTo: 'Camila Rocha',
+    createdAt: 'Hoje às 10:15',
+    lastContact: 'Não contatado',
+    notes: 'Quer monitorar rota e velocidade das vans de entrega refrigerada.',
+  },
+  {
+    id: 'lead-3',
+    name: 'Marcos Silveira',
+    company: 'AgroSul Colheitas',
+    email: 'marcos@agrosul.agr.br',
+    phone: '+55 (51) 98744-3322',
+    fleetSize: 80,
+    estimatedValue: 12000,
+    status: 'Proposta Enviada',
+    source: 'Indicação de Frotista',
+    assignedTo: 'Rodrigo Mendes',
+    createdAt: 'Ontem',
+    lastContact: 'Ontem às 16:40',
+    notes: 'Proposta enviada com pacote Enterprise + telemetria CAN-Bus de tratores.',
+  },
+  {
+    id: 'lead-4',
+    name: 'Juliana Barros',
+    company: 'VipCar Locadora de Veículos',
+    email: 'juliana@vipcar.com.br',
+    phone: '+55 (41) 99888-5544',
+    fleetSize: 120,
+    estimatedValue: 16800,
+    status: 'Em Contato',
+    source: 'Tráfego Pago',
+    assignedTo: 'Camila Rocha',
+    createdAt: 'Há 2 dias',
+    lastContact: 'Hoje às 08:45',
+    notes: 'Precisa de corte de ignição preventivo e alertas de geofence para 120 sedans.',
+  },
+  {
+    id: 'lead-5',
+    name: 'Carlos Fontana',
+    company: 'Fontana Cargas & Fretamento',
+    email: 'carlos@fontanacargas.com',
+    phone: '+55 (19) 98233-1100',
+    fleetSize: 32,
+    estimatedValue: 4800,
+    status: 'Novo',
+    source: 'Site / Landing Page',
+    assignedTo: 'Ana Luísa',
+    createdAt: 'Hoje às 11:00',
+    lastContact: 'Não contatado',
+    notes: 'Preencheu formulário solicitando demonstração do painel de telemetria.',
+  },
+];
+

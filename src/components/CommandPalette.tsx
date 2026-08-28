@@ -14,9 +14,13 @@ import {
   UserPlus,
   LogOut,
   Globe,
+  MessageSquare,
+  GitPullRequest,
+  Car,
+  Cloud,
+  TrendingUp,
 } from 'lucide-react';
-import { ActiveTab } from './Sidebar';
-import { Customer, ProjectTask } from '../types';
+import { ActiveTab, Customer, ProjectTask } from '../types';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -80,7 +84,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   );
 
   const quickNav = [
-    { label: 'Ir para Visão Geral', tab: 'dashboard' as ActiveTab, icon: Zap },
+    { label: 'Ir para Dashboard', tab: 'dashboard' as ActiveTab, icon: Zap },
+    { label: 'Ir para Atendimento (WhatsApp / Suporte)', tab: 'atendimento' as ActiveTab, icon: MessageSquare },
+    { label: 'Ir para Leads', tab: 'leads' as ActiveTab, icon: UserPlus },
+    { label: 'Ir para Pipeline & Funil', tab: 'pipeline' as ActiveTab, icon: GitPullRequest },
+    { label: 'Ir para Estoque de Rastreadores', tab: 'estoque' as ActiveTab, icon: Car },
+    { label: 'Ir para Automação', tab: 'automacao' as ActiveTab, icon: Cloud },
+    { label: 'Ir para Performance', tab: 'performance' as ActiveTab, icon: TrendingUp },
+    { label: 'Ir para Administração', tab: 'administracao' as ActiveTab, icon: Settings },
     { label: 'Ir para Clientes & CRM', tab: 'customers' as ActiveTab, icon: Users },
     { label: 'Ir para Operações & Sprints', tab: 'projects' as ActiveTab, icon: KanbanSquare },
     { label: 'Ir para Planos & Faturamento', tab: 'billing' as ActiveTab, icon: CreditCard },

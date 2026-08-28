@@ -13,8 +13,7 @@ import {
   User,
   ChevronDown,
 } from 'lucide-react';
-import { ActiveTab } from './Sidebar';
-import { AuthUser } from '../types';
+import { ActiveTab, AuthUser } from '../types';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -27,6 +26,8 @@ interface NavbarProps {
   currentUser: AuthUser | null;
   onOpenCreateUser: () => void;
   onOpenLogoutModal: () => void;
+  availableUsers?: AuthUser[];
+  onSwitchUser?: (user: AuthUser) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -47,7 +48,22 @@ export const Navbar: React.FC<NavbarProps> = ({
   const getTabTitle = () => {
     switch (activeTab) {
       case 'dashboard':
-        return { title: 'Painel Executivo de Telemetria & Receita', subtitle: 'MRR, saúde de frotas ativas e telemetria de veículos conectados' };
+        return { title: 'Dashboard Geral & Telemetria', subtitle: 'Métricas executivas, frotas conectadas e saúde operacional' };
+      case 'atendimento':
+        return { title: 'Central de Atendimento & Suporte Técnico', subtitle: 'Atendimento via WhatsApp Oficial, fila de chamados e SAC técnico' };
+      case 'leads':
+        return { title: 'Gestão de Leads & Oportunidades', subtitle: 'Captação de novos frotistas, qualificação e conversão em clientes' };
+      case 'pipeline':
+        return { title: 'Pipeline & Funil de Vendas Automotivo', subtitle: 'Contratos em negociação, demonstrações e propostas comerciais' };
+      case 'estoque':
+        return { title: 'Estoque de Rastreadores & Sensores IoT', subtitle: 'Equipamentos OBD-II 4G, módulos CAN-Bus, GPS e ADAS disponíveis' };
+      case 'automacao':
+        return { title: 'Automação & Gatilhos de Telemetria', subtitle: 'Regras de segurança 24/7, geofencing, anti-furto e disparos automáticos' };
+      case 'performance':
+        return { title: 'Performance & Eficiência Operacional', subtitle: 'Economia de combustível, ranking comercial, NRR e retenção líquida' };
+      case 'administracao':
+      case 'settings':
+        return { title: 'Painel de Administração do Sistema', subtitle: 'Membros da equipe, planos, credenciais de API e segurança do workspace' };
       case 'customers':
         return { title: 'Gestão de Frotas, Concessionárias & Clientes', subtitle: 'Base de contas ativas, contratos de telemetria e estágios de pipeline' };
       case 'projects':
@@ -55,19 +71,18 @@ export const Navbar: React.FC<NavbarProps> = ({
       case 'billing':
         return { title: 'Planos & Faturamento MotorGrid', subtitle: 'Gestão de assinaturas de frotas, cobranças PIX/Cartão e faturas fiscais' };
       case 'ai-copilot':
-        return { title: 'Copilot IA Gemini 3.7 - MotorGrid Intelligence', subtitle: 'Diagnósticos automotivos preditivos, mitigação de churn e estratégias B2B' };
+        return { title: 'Copilot IA Gemini - MotorGrid Intelligence', subtitle: 'Diagnósticos automotivos preditivos, mitigação de churn e estratégias B2B' };
       case 'reports':
-        return { title: 'Relatórios & Análise de Safra / Coortes', subtitle: 'Retenção NRR, métricas LTV/CAC e telemetria avançada de dispositivos' };
-      case 'settings':
-        return { title: 'Configurações do Workspace & Design System', subtitle: 'Equipe de engenharia, credenciais de API, webhooks e tokens de integração' };
+        return { title: 'Relatórios & Análise de Safra', subtitle: 'Retenção NRR, métricas LTV/CAC e telemetria avançada de dispositivos' };
       case 'sales':
-        return { title: 'Página de Vendas & Planos Comerciais', subtitle: 'Landing page pública com simulador de ROI, planos e login/checkout integrado' };
+        return { title: 'Página de Vendas & Planos Comerciais', subtitle: 'Landing page pública com simulador de ROI, planos e checkout integrado' };
       default:
-        return { title: 'MotorGrid', subtitle: 'Automotive Technology' };
+        return { title: 'MotorGrid OS', subtitle: 'Automotive Command' };
     }
   };
 
   const { title, subtitle } = getTabTitle();
+
 
   return (
     <header id="main-navbar" className="h-16 px-4 sm:px-6 border-b border-[#8B5CF6]/15 bg-[#1C1C1E]/90 backdrop-blur-md flex items-center justify-between sticky top-0 z-20">

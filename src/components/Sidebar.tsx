@@ -1,50 +1,36 @@
 import React, { useState } from 'react';
 import {
-  LayoutDashboard,
-  Users,
-  KanbanSquare,
-  CreditCard,
-  Sparkles,
-  BarChart3,
+  LayoutGrid,
+  MessageSquare,
+  UserPlus,
+  GitPullRequest,
+  Car,
+  Cloud,
+  TrendingUp,
   Settings,
+  Plus,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
-  Bell,
-  Cpu,
   LogOut,
-  UserPlus,
-  UserCheck,
   ChevronUp,
-  MoreVertical,
-  Globe,
 } from 'lucide-react';
-import { MotorGridLogo, MotorGridIcon } from './MotorGridLogo';
-import { AuthUser } from '../types';
-
-export type ActiveTab =
-  | 'dashboard'
-  | 'customers'
-  | 'projects'
-  | 'billing'
-  | 'ai-copilot'
-  | 'reports'
-  | 'settings'
-  | 'sales';
+import { MotorGridIcon } from './MotorGridLogo';
+import { AuthUser, ActiveTab } from '../types';
 
 interface SidebarProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
-  customersRiskCount: number;
-  unreadNotifications: number;
-  onOpenNotifications: () => void;
+  customersRiskCount?: number;
+  unreadNotifications?: number;
+  onOpenNotifications?: () => void;
   currentUser: AuthUser | null;
   onOpenCreateUser: () => void;
   onOpenLogoutModal: () => void;
   availableUsers: AuthUser[];
   onSwitchUser: (user: AuthUser) => void;
+  onOpenNewLead?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -52,125 +38,121 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setActiveTab,
   collapsed,
   setCollapsed,
-  customersRiskCount,
-  unreadNotifications,
-  onOpenNotifications,
   currentUser,
   onOpenCreateUser,
   onOpenLogoutModal,
   availableUsers,
   onSwitchUser,
+  onOpenNewLead,
 }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const menuItems = [
+  // Exact menu items from user screenshot
+  const mainMenuItems = [
     {
       id: 'dashboard' as ActiveTab,
-      label: 'Visão Geral & Métricas',
-      icon: LayoutDashboard,
-      badge: null,
+      label: 'Dashboard',
+      icon: LayoutGrid,
     },
     {
-      id: 'customers' as ActiveTab,
-      label: 'Clientes & Frotas',
-      icon: Users,
-      badge: customersRiskCount > 0 ? `${customersRiskCount} alerta` : null,
-      badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+      id: 'atendimento' as ActiveTab,
+      label: 'Atendimento',
+      icon: MessageSquare,
     },
     {
-      id: 'projects' as ActiveTab,
-      label: 'Operações & Sprints',
-      icon: KanbanSquare,
-      badge: null,
+      id: 'leads' as ActiveTab,
+      label: 'Leads',
+      icon: UserPlus,
     },
     {
-      id: 'billing' as ActiveTab,
-      label: 'Planos & Faturamento',
-      icon: CreditCard,
-      badge: null,
+      id: 'pipeline' as ActiveTab,
+      label: 'Pipeline',
+      icon: GitPullRequest,
     },
     {
-      id: 'ai-copilot' as ActiveTab,
-      label: 'Copilot IA Gemini',
-      icon: Sparkles,
-      badge: 'PRO',
-      badgeColor: 'bg-[#8B5CF6]/20 text-[#C4B5FD] border-[#8B5CF6]/40',
-      highlight: true,
+      id: 'estoque' as ActiveTab,
+      label: 'Estoque',
+      icon: Car,
     },
     {
-      id: 'sales' as ActiveTab,
-      label: 'Página de Vendas & Planos',
-      icon: Globe,
-      badge: 'Pública',
-      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      id: 'automacao' as ActiveTab,
+      label: 'Automação',
+      icon: Cloud,
     },
     {
-      id: 'reports' as ActiveTab,
-      label: 'Relatórios & Telemetria',
-      icon: BarChart3,
-      badge: null,
-    },
-    {
-      id: 'settings' as ActiveTab,
-      label: 'Configurações & API',
-      icon: Settings,
-      badge: null,
+      id: 'performance' as ActiveTab,
+      label: 'Performance',
+      icon: TrendingUp,
     },
   ];
 
   return (
     <aside
       id="main-sidebar"
-      className={`relative flex flex-col border-r border-[#8B5CF6]/20 bg-[#1C1C1E] transition-all duration-300 z-30 ${
+      className={`relative flex flex-col border-r border-[#8B5CF6]/15 bg-[#121214] transition-all duration-300 z-30 select-none ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
-      {/* Brand Header */}
-      <div className="flex items-center justify-between h-18 px-3.5 border-b border-[#8B5CF6]/15 bg-[#0A0A0B]/60">
-        <div className="flex items-center gap-2 overflow-hidden">
-          {collapsed ? (
-            <div className="p-1 rounded-xl bg-[#1C1C1E] border border-[#8B5CF6]/30 shadow-md shadow-[#8B5CF6]/20 flex items-center justify-center">
-              <MotorGridIcon className="w-8 h-8" />
+      {/* Brand Header - Exact font and layout from user screenshot */}
+      <div className="flex items-center justify-between h-20 px-4 border-b border-zinc-800/60 bg-[#121214]">
+        <div className="flex items-center gap-3 overflow-hidden">
+          {/* Neon Icon Container */}
+          <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#0F0D1A] border border-[#8B5CF6]/35 shadow-md shadow-[#8B5CF6]/20">
+            <MotorGridIcon className="w-8 h-8" />
+          </div>
+
+          {!collapsed && (
+            <div className="flex flex-col justify-center min-w-0">
+              <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center gap-1 font-['Plus_Jakarta_Sans',sans-serif]">
+                <span>MotorGrid</span>
+                <span className="text-white">OS</span>
+              </div>
+              <span className="font-bold uppercase text-zinc-400 text-[10px] tracking-[0.15em] mt-0.5 font-['Plus_Jakarta_Sans',sans-serif]">
+                AUTOMOTIVE COMMAND
+              </span>
             </div>
-          ) : (
-            <MotorGridLogo size="md" showSubtitle={true} />
           )}
         </div>
 
         <button
           id="toggle-sidebar-btn"
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors border border-transparent hover:border-zinc-700 cursor-pointer"
+          className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors cursor-pointer shrink-0"
           title={collapsed ? 'Expandir menu' : 'Recolher menu'}
         >
-          {collapsed ? <ChevronRight className="w-4 h-4 text-[#A78BFA]" /> : <ChevronLeft className="w-4 h-4 text-zinc-400" />}
+          {collapsed ? (
+            <ChevronRight className="w-4 h-4 text-[#C4B5FD]" />
+          ) : (
+            <ChevronLeft className="w-4 h-4 text-zinc-400" />
+          )}
         </button>
       </div>
 
-      {/* Workspace Status pill when expanded */}
-      {!collapsed && (
-        <div className="px-3 pt-3">
-          <div className="p-2.5 rounded-xl bg-[#0A0A0B] border border-[#8B5CF6]/20 flex items-center justify-between shadow-inner">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#8B5CF6] shadow-[0_0_8px_#8B5CF6] animate-pulse" />
-              <div className="text-xs text-zinc-300 font-medium flex items-center gap-1.5">
-                <span>MotorGrid Hub</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#8B5CF6]/15 text-[#C4B5FD] font-mono border border-[#8B5CF6]/30">v3.2</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 text-[11px] text-zinc-400 font-mono">
-              <Cpu className="w-3 h-3 text-[#A78BFA]" />
-              <span>LIVE</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Top Action Button: + New Lead (Matching exact lilac pill from screenshot) */}
+      <div className="px-3 pt-4 pb-2">
+        <button
+          id="sidebar-new-lead-btn"
+          onClick={onOpenNewLead}
+          className={`w-full bg-[#C4B5FD] hover:bg-[#DDD6FE] active:scale-[0.98] text-[#2E1065] font-bold text-sm rounded-xl py-2.5 px-4 shadow-lg shadow-[#8B5CF6]/20 transition-all flex items-center justify-center gap-2 cursor-pointer font-['Plus_Jakarta_Sans',sans-serif] ${
+            collapsed ? 'px-0 py-2.5' : ''
+          }`}
+          title="Criar Novo Lead"
+        >
+          <Plus className="w-5 h-5 stroke-[2.5] shrink-0" />
+          {!collapsed && <span className="tracking-tight">New Lead</span>}
+        </button>
+      </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
-        {menuItems.map((item) => {
+      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+        {mainMenuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive =
+            activeTab === item.id ||
+            (item.id === 'dashboard' && activeTab === 'sales') ||
+            (item.id === 'leads' && activeTab === 'customers') ||
+            (item.id === 'pipeline' && activeTab === 'projects') ||
+            (item.id === 'performance' && activeTab === 'reports');
 
           return (
             <button
@@ -178,77 +160,52 @@ export const Sidebar: React.FC<SidebarProps> = ({
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               title={collapsed ? item.label : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
+              className={`w-full relative flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] text-white shadow-lg shadow-[#8B5CF6]/25 font-semibold'
-                  : item.highlight
-                  ? 'text-[#C4B5FD] hover:bg-[#8B5CF6]/10 hover:text-white border border-[#8B5CF6]/30'
-                  : 'text-zinc-400 hover:bg-zinc-800/80 hover:text-zinc-200'
+                  ? 'bg-[#25193A] text-white font-semibold shadow-inner'
+                  : 'text-zinc-300 hover:bg-zinc-800/60 hover:text-white'
               } ${collapsed ? 'justify-center px-2' : ''}`}
             >
               <Icon
-                className={`w-5 h-5 shrink-0 transition-transform ${
-                  isActive ? 'scale-110 text-white' : item.highlight ? 'text-[#A78BFA]' : 'text-zinc-400'
+                className={`w-5 h-5 shrink-0 transition-colors ${
+                  isActive ? 'text-white' : 'text-zinc-300'
                 }`}
               />
 
               {!collapsed && (
-                <div className="flex-1 flex items-center justify-between text-left">
-                  <span className="truncate">{item.label}</span>
-                  {item.badge && (
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full border font-semibold tracking-wide ${
-                        item.badgeColor || 'bg-zinc-800 text-zinc-300 border-zinc-700'
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
+                <span className="truncate text-[15px] font-['Plus_Jakarta_Sans',sans-serif]">
+                  {item.label}
+                </span>
+              )}
+
+              {/* Right Purple Active Indicator Bar (as in screenshot) */}
+              {isActive && (
+                <span className="absolute right-0 top-0 bottom-0 w-1.5 bg-[#C4B5FD] rounded-l-md" />
               )}
             </button>
           );
         })}
       </nav>
 
-      {/* Quick Action Footer */}
-      <div className="p-3 border-t border-[#8B5CF6]/15 bg-[#0A0A0B]/80 relative">
-        {!collapsed ? (
-          <div className="p-3 rounded-xl bg-[#1C1C1E] border border-[#8B5CF6]/20 space-y-2.5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#8B5CF6]" />
-                <span className="text-xs font-semibold text-zinc-200">SLA Telemetria 99.98%</span>
-              </div>
-              <button
-                id="sidebar-notifications-btn"
-                onClick={onOpenNotifications}
-                className="relative p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-                title="Ver notificações"
-              >
-                <Bell className="w-4 h-4 text-[#A78BFA]" />
-                {unreadNotifications > 0 && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#8B5CF6] rounded-full ring-2 ring-[#0A0A0B] shadow-[0_0_6px_#8B5CF6]" />
-                )}
-              </button>
-            </div>
-            <div className="text-[11px] text-zinc-400 leading-relaxed">
-              Clusters IoT & Conexões CAN-Bus com latência ultra-baixa de 18ms.
-            </div>
-          </div>
-        ) : (
-          <button
-            id="sidebar-notifications-collapsed-btn"
-            onClick={onOpenNotifications}
-            className="w-full flex justify-center p-2.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors relative cursor-pointer"
-            title="Notificações"
-          >
-            <Bell className="w-5 h-5 text-[#A78BFA]" />
-            {unreadNotifications > 0 && (
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-[#8B5CF6] rounded-full shadow-[0_0_6px_#8B5CF6]" />
-            )}
-          </button>
-        )}
+      {/* Bottom Administration Button (Exact Card from screenshot) */}
+      <div className="p-3 border-t border-zinc-800/80 bg-[#121214]">
+        <button
+          id="nav-item-administracao"
+          onClick={() => setActiveTab('administracao')}
+          title={collapsed ? 'Administração' : undefined}
+          className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl bg-[#1C1C1E] hover:bg-[#232328] border border-zinc-800/80 transition-all cursor-pointer ${
+            activeTab === 'administracao' || activeTab === 'settings' || activeTab === 'billing'
+              ? 'border-[#8B5CF6]/60 bg-[#25193A] text-white'
+              : 'text-zinc-200 hover:text-white'
+          } ${collapsed ? 'justify-center px-2' : ''}`}
+        >
+          <Settings className="w-5 h-5 text-zinc-300 shrink-0" />
+          {!collapsed && (
+            <span className="font-semibold text-sm tracking-tight text-white font-['Plus_Jakarta_Sans',sans-serif]">
+              Administração
+            </span>
+          )}
+        </button>
 
         {/* User Profile Popover / Dropdown when open */}
         {userMenuOpen && (
@@ -259,9 +216,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
             <div
               id="sidebar-user-popover"
-              className={`absolute bottom-16 ${
+              className={`absolute bottom-20 ${
                 collapsed ? 'left-20 w-64' : 'left-3 right-3'
-              } rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/30 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1`}
+              } rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/30 shadow-2xl p-2.5 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-1.5`}
             >
               <div className="p-2.5 rounded-xl bg-[#0A0A0B] border border-zinc-800 mb-1">
                 <div className="text-xs font-bold text-white truncate">
@@ -287,7 +244,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-zinc-200 hover:text-white hover:bg-[#8B5CF6]/20 rounded-xl transition-colors text-left cursor-pointer"
               >
-                <UserPlus className="w-4 h-4 text-[#A78BFA]" />
+                <UserPlus className="w-4 h-4 text-[#C4B5FD]" />
                 <span>Criar Novo Usuário</span>
               </button>
 
@@ -334,8 +291,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </>
         )}
 
-        {/* User profile capsule with click-to-open menu & fast logout */}
-        <div className="mt-3 flex items-center justify-between gap-2 pt-3 border-t border-zinc-800/80">
+        {/* User Mini Capsule */}
+        <div className="mt-2.5 flex items-center justify-between gap-2 pt-2 border-t border-zinc-800/60">
           <button
             id="sidebar-user-profile-btn"
             onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -348,27 +305,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <img
                 src={currentUser.avatar}
                 alt={currentUser.name}
-                className="w-8 h-8 rounded-full ring-2 ring-[#8B5CF6]/50 object-cover shrink-0"
+                className="w-7 h-7 rounded-full ring-2 ring-[#8B5CF6]/50 object-cover shrink-0"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full ring-2 ring-[#8B5CF6]/50 overflow-hidden shrink-0 bg-gradient-to-tr from-[#6D28D9] to-[#8B5CF6] flex items-center justify-center font-bold text-white text-xs">
-                {currentUser?.name
-                  ? currentUser.name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .slice(0, 2)
-                      .join('')
-                      .toUpperCase()
-                  : 'MG'}
+              <div className="w-7 h-7 rounded-full ring-2 ring-[#8B5CF6]/50 overflow-hidden shrink-0 bg-gradient-to-tr from-[#6D28D9] to-[#8B5CF6] flex items-center justify-center font-bold text-white text-[10px]">
+                MG
               </div>
             )}
 
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-zinc-200 truncate flex items-center gap-1">
-                  <span>{currentUser?.name || 'Ana Luísa'}</span>
+                <div className="text-xs font-bold text-zinc-200 truncate">
+                  {currentUser?.name || 'Ana Luísa'}
                 </div>
-                <div className="text-[10px] text-[#A78BFA] truncate font-medium">
+                <div className="text-[10px] text-[#A78BFA] truncate">
                   {currentUser?.role || 'Head de Operações'}
                 </div>
               </div>
@@ -379,12 +329,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
           </button>
 
-          {/* Dedicated direct Logout button in footer */}
           {!collapsed && (
             <button
               id="sidebar-quick-logout-btn"
               onClick={onOpenLogoutModal}
-              className="p-2 rounded-xl text-zinc-400 hover:text-rose-400 hover:bg-rose-500/15 transition-all border border-transparent hover:border-rose-500/30 cursor-pointer shrink-0"
+              className="p-1.5 rounded-xl text-zinc-400 hover:text-rose-400 hover:bg-rose-500/15 transition-all cursor-pointer shrink-0"
               title="Sair da Conta (Logout)"
             >
               <LogOut className="w-4 h-4" />
@@ -395,4 +344,5 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </aside>
   );
 };
+
 

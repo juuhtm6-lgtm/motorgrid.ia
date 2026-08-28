@@ -1,4 +1,97 @@
+export type ActiveTab =
+  | 'dashboard'
+  | 'atendimento'
+  | 'leads'
+  | 'pipeline'
+  | 'estoque'
+  | 'automacao'
+  | 'performance'
+  | 'administracao'
+  | 'sales'
+  | 'customers'
+  | 'projects'
+  | 'billing'
+  | 'ai-copilot'
+  | 'reports'
+  | 'settings';
+
 export type PlanTier = 'Starter' | 'Pro' | 'Enterprise' | 'Custom';
+
+export type LeadStatus = 'Novo' | 'Em Contato' | 'Qualificado' | 'Proposta Enviada' | 'Ganho' | 'Perdido';
+export type LeadSource = 'Site / Landing Page' | 'WhatsApp Direto' | 'Indicação de Frotista' | 'Tráfego Pago' | 'Feira Automotiva' | 'Outbound';
+
+export interface LeadItem {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  fleetSize: number; // quantidade estimada de veículos
+  estimatedValue: number; // em R$
+  source: LeadSource;
+  status: LeadStatus;
+  notes?: string;
+  assignedTo: string;
+  createdAt: string;
+  lastContact: string;
+  tags?: string[];
+}
+
+export type EstoqueStatus = 'Disponível' | 'Instalado' | 'Em Teste' | 'Em Manutenção' | 'Reservado';
+export type DeviceType = 'Rastreador OBD-II 4G' | 'Sensor CAN-Bus Pro' | 'Módulo GPS Satelital' | 'Câmera Veicular ADAS' | 'Sensor de Combustível Ultrassônico';
+
+export interface EstoqueItem {
+  id: string;
+  serialNumber: string; // IMEI ou Serial
+  model: DeviceType;
+  supplier: string;
+  status: EstoqueStatus;
+  batteryHealth: number; // 0 a 100%
+  firmwareVersion: string;
+  installedInVehicle?: string; // Placa ou identificador
+  installedInCompany?: string;
+  lastPing?: string;
+  receivedDate: string;
+  locationStock: string;
+}
+
+export interface AutomacaoRule {
+  id: string;
+  name: string;
+  trigger: string;
+  action: string;
+  channel: 'WhatsApp' | 'Email' | 'Webhook' | 'SMS' | 'Push / Notificação';
+  enabled: boolean;
+  executionsCount: number;
+  lastExecuted: string;
+  category: 'Telemetria' | 'Comercial' | 'Financeiro' | 'Segurança';
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'client' | 'agent' | 'bot';
+  senderName: string;
+  text: string;
+  timestamp: string;
+  isAiGenerated?: boolean;
+}
+
+export interface ChatConversation {
+  id: string;
+  clientName: string;
+  clientCompany: string;
+  clientPhone: string;
+  clientAvatar?: string;
+  channel: 'WhatsApp' | 'WebChat' | 'Telemetria SOS' | 'Email';
+  status: 'Aberto' | 'Em Atendimento' | 'Resolvido';
+  assignedTo: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+  vehiclePlate?: string;
+  telemetryAlert?: string;
+  messages: ChatMessage[];
+}
 
 export type CustomerStatus = 'Ativo' | 'Trial' | 'Em Risco' | 'Churned' | 'Lead';
 
@@ -12,14 +105,20 @@ export interface Customer {
   mrr: number; // in BRL (R$)
   status: CustomerStatus;
   healthScore: number; // 0 to 100
-  renewalDate: string;
-  startDate: string;
-  city: string;
-  segment: string;
-  tags: string[];
+  renewalDate?: string;
+  startDate?: string;
+  city?: string;
+  segment?: string;
+  tags?: string[];
   contactPhone?: string;
+  phone?: string;
+  vehiclesCount?: number;
+  joinedDate?: string;
+  lastContact?: string;
+  contractRenewal?: string;
+  assignedTo?: string;
   notes?: string;
-  lastActive: string;
+  lastActive?: string;
 }
 
 export type PipelineStage = 'Lead' | 'Qualificação' | 'Demonstração' | 'Proposta' | 'Fechado';
