@@ -151,12 +151,12 @@ export function MotorGridLogo({
           <MotorGridIcon className={iconSizeMap[size]} />
         </div>
         <div className="flex flex-col justify-center">
-          <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center gap-1.5 font-['Plus_Jakarta_Sans',sans-serif]">
+          <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center gap-1.5 font-['Inter',sans-serif]">
             <span>MotorGrid</span>
-            <span className="text-white">OS</span>
+            <span className="text-[#8B5CF6]">OS</span>
           </div>
           {showSubtitle && (
-            <span className="font-bold uppercase text-zinc-400 text-[10px] tracking-[0.16em] mt-0.5 font-['Plus_Jakarta_Sans',sans-serif]">
+            <span className="font-semibold uppercase text-[#A1A1AA] text-[10px] tracking-[0.16em] mt-0.5 font-['Inter',sans-serif]">
               AUTOMOTIVE COMMAND
             </span>
           )}
@@ -167,16 +167,16 @@ export function MotorGridLogo({
 
   return (
     <div className={`inline-flex items-center gap-3 ${className}`}>
-      <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#0F0D1A] border border-[#8B5CF6]/35 shadow-md shadow-[#8B5CF6]/20">
+      <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#101012] border border-[rgba(139,92,246,0.35)] shadow-sm shadow-[#8B5CF6]/15">
         <MotorGridIcon className={iconSizeMap[size]} />
       </div>
       <div className="flex flex-col justify-center">
-        <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center gap-1.5 font-['Plus_Jakarta_Sans',sans-serif]">
+        <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center gap-1.5 font-['Inter',sans-serif]">
           <span>MotorGrid</span>
-          <span className="text-white">OS</span>
+          <span className="text-[#8B5CF6]">OS</span>
         </div>
         {showSubtitle && (
-          <span className="font-bold uppercase text-zinc-400 text-[10px] tracking-[0.16em] mt-0.5 font-['Plus_Jakarta_Sans',sans-serif]">
+          <span className="font-semibold uppercase text-[#A1A1AA] text-[10px] tracking-[0.16em] mt-0.5 font-['Inter',sans-serif]">
             AUTOMOTIVE COMMAND
           </span>
         )}

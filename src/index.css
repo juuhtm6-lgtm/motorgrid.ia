@@ -2,49 +2,39 @@
 
 @layer base {
   :root {
-    --mg-neutral: #0A0A0B;
-    --mg-tertiary: #1C1C1E;
-    --mg-card: #141416;
-    --mg-primary: #8B5CF6;
-    --mg-secondary: #6D28D9;
-    --mg-accent: #A78BFA;
-    --mg-lavender: #DDD6FE;
-    --mg-border: rgba(139, 92, 246, 0.18);
+    --color-primary: #8B5CF6;
+    --color-secondary: #6D28D9;
+    --background: #0A0A0B;
+    --background-secondary: #101012;
+    --surface: #1C1C1E;
+    --surface-secondary: #202023;
+    --surface-hover: #27272A;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-highlight: rgba(139, 92, 246, 0.35);
+    --border-subtle: rgba(255, 255, 255, 0.05);
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   body {
     background-color: #0A0A0B;
-    color: #F5F3FF;
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #FFFFFF;
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Default Headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family);
+    color: #FFFFFF;
   }
 }
 
-/* MotorGrid Dot Matrix Background Pattern */
-.bg-motorgrid-pattern {
-  background-color: #0A0A0B;
-  background-image: radial-gradient(rgba(139, 92, 246, 0.12) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-.bg-motorgrid-card {
-  background-color: #1C1C1E;
-  border: 1px solid rgba(139, 92, 246, 0.15);
-}
-
-.bg-motorgrid-surface {
-  background-color: #141416;
-}
-
-/* MotorGrid Glow effects */
-.glow-primary {
-  box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.4);
-}
-
-.glow-subtle {
-  box-shadow: 0 0 15px -3px rgba(139, 92, 246, 0.18);
-}
-
-/* Custom scrollbars */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -62,3 +52,11 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #8B5CF6;
 }
+
+/* Input Focus Glow from Design Manual: 0 0 0 2px rgba(139,92,246,0.10) */
+.focus-ring-primary:focus {
+  outline: none;
+  border-color: #8B5CF6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.10);
+}
+

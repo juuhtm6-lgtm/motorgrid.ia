@@ -1,6 +1,6 @@
 {
   "name": "MotorGrid - Automotive Technology",
-  "description": "Plataforma avançada de telemetria automotiva, gestão de frotas, CRM inteligente, faturamento e copilot IA.",
+  "description": "Plataforma avançada de telemetria automotiva, gestão de frotas, estoque de rastreadores, CRM inteligente, relatórios Meta Ads e copilot IA.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

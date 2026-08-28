@@ -3,10 +3,19 @@ export type ActiveTab =
   | 'atendimento'
   | 'crm'
   | 'estoque'
+  | 'automacao'
   | 'automacoes'
   | 'grid-ai'
   | 'integracoes'
   | 'relatorios'
+  | 'meta-ads'
+  | 'campanhas'
+  | 'anuncios'
+  | 'relatorio-leads'
+  | 'conversoes'
+  | 'vendedores'
+  | 'funil-comercial'
+  | 'visao-geral'
   | 'ajustes'
   | 'leads'
   | 'pipeline'
@@ -142,9 +151,25 @@ export interface LeadTag {
 }
 
 // Automotive Stock
-export type VehicleStatus = 'Disponível' | 'Reservado' | 'Vendido' | 'Preparação' | 'Inativo';
-export type TransmissionType = 'Automático' | 'Manual' | 'CVT' | 'Dupla Embreagem';
-export type FuelType = 'Flex' | 'Gasolina' | 'Diesel' | 'Híbrido' | 'Elétrico';
+export type VehicleStatus =
+  | 'AVAILABLE'
+  | 'RESERVED'
+  | 'SOLD'
+  | 'IN_PREPARATION'
+  | 'Disponível'
+  | 'Reservado'
+  | 'Vendido'
+  | 'Preparação'
+  | 'Inativo';
+export type TransmissionType =
+  | 'Automático'
+  | 'Manual'
+  | 'CVT'
+  | 'Dupla Embreagem'
+  | 'Automatic'
+  | 'PDK'
+  | 'Dual-Clutch';
+export type FuelType = 'Flex' | 'Gasolina' | 'Diesel' | 'Híbrido' | 'Elétrico' | 'Gasoline' | 'Hybrid' | 'Electric';
 
 export interface Vehicle {
   id: string;
@@ -158,7 +183,8 @@ export interface Vehicle {
   fuel: FuelType;
   color: string;
   licensePlate: string;
-  chassis: string;
+  chassis: string; // VIN
+  vin?: string;
   price: number; // Preço de venda
   costPrice: number; // Preço de custo
   options: string[];
@@ -166,6 +192,7 @@ export interface Vehicle {
   videoUrl?: string;
   status: VehicleStatus;
   storeUnit: string;
+  location?: string;
   viewsCount: number;
   leadsCount: number;
   createdAt: string;
@@ -691,3 +718,217 @@ export interface EstoqueItem {
   receivedDate: string;
   locationStock: string;
 }
+
+// ==========================================
+// META MARKETING API & RELATÓRIOS TYPES
+// ==========================================
+
+export type MetaPeriodFilter =
+  | 'Hoje'
+  | 'Ontem'
+  | '7 dias'
+  | '30 dias'
+  | 'Este mês'
+  | 'Mês anterior'
+  | 'Personalizado';
+
+export type MetaPlatform = 'ALL' | 'FACEBOOK' | 'INSTAGRAM';
+export type MetaCampaignStatus = 'ACTIVE' | 'PAUSED' | 'ARCHIVED';
+export type MetaRoleView = 'ADMINISTRADOR' | 'GESTOR' | 'MARKETING' | 'VENDEDOR' | 'PROPRIETARIO';
+
+export interface MetaAccountConfig {
+  id: string;
+  tenantId: string;
+  businessManagerId: string;
+  businessManagerName: string;
+  adAccountId: string;
+  adAccountName: string;
+  pageId: string;
+  pageName: string;
+  instagramId: string;
+  instagramHandle: string;
+  pixelId: string;
+  appId: string;
+  accessTokenMasked: string;
+  connectedAt: string;
+  lastSyncAt: string;
+  status: 'CONNECTED' | 'DISCONNECTED' | 'TOKEN_EXPIRED' | 'SYNCING';
+  webhookActive: boolean;
+  currency: string;
+  timezone: string;
+}
+
+export interface MetaCampaign {
+  id: string;
+  name: string;
+  status: MetaCampaignStatus;
+  objective: string;
+  vehicleOffer: string;
+  vehicleId?: string;
+  vehicleThumbnail: string;
+  startDate: string;
+  budget: number;
+  budgetType: 'DAILY' | 'LIFETIME';
+  spend: number;
+  impressions: number;
+  reach: number;
+  frequency: number;
+  clicks: number;
+  linkClicks: number;
+  ctr: number;
+  cpc: number;
+  cpm: number;
+  leads: number;
+  cpl: number;
+  // CRM Linked Commercial Metrics
+  crmAtendimentos: number;
+  crmQualificados: number;
+  crmAgendamentos: number;
+  crmVisitas: number;
+  crmPropostas: number;
+  crmVendas: number;
+  crmReceita: number;
+  crmLucro: number;
+  costPerSale: number;
+  cpaAgendamento: number;
+  costPerVisita: number;
+  conversionLeadToSale: number;
+  roas: number;
+  roi: number;
+  avgResponseTimeMin: number;
+  adsetsCount: number;
+  adsCount: number;
+  platform: 'FACEBOOK' | 'INSTAGRAM' | 'ALL';
+}
+
+export interface MetaAd {
+  id: string;
+  name: string;
+  campaignId: string;
+  campaignName: string;
+  adsetId: string;
+  adsetName: string;
+  vehicleAnnounced: string;
+  vehicleId?: string;
+  creativeType: 'IMAGE' | 'VIDEO' | 'CAROUSEL';
+  creativeThumbnail: string;
+  headline: string;
+  bodyText: string;
+  status: MetaCampaignStatus;
+  spend: number;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  cpc: number;
+  leads: number;
+  cpl: number;
+  crmAgendamentos: number;
+  crmVisitas: number;
+  crmVendas: number;
+  crmReceita: number;
+  costPerSale: number;
+  roas: number;
+  badges?: ('BEST_CREATIVE' | 'TOP_LEADS' | 'LOWEST_CPL' | 'TOP_SALES')[];
+}
+
+export interface MetaLeadTracking {
+  id: string;
+  metaLeadId: string;
+  campaignId: string;
+  campaignName: string;
+  adsetId: string;
+  adsetName: string;
+  adId: string;
+  adName: string;
+  formId: string;
+  formName: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  vehicleInterest: string;
+  vehiclePrice: number;
+  origin: string;
+  createdAt: string;
+  crmStatus:
+    | 'NOVO'
+    | 'EM_ATENDIMENTO'
+    | 'EM_ANDAMENTO'
+    | 'PENDENTE'
+    | 'QUALIFICADO'
+    | 'AGENDADO'
+    | 'VISITOU'
+    | 'PROPOSTA'
+    | 'VENDA'
+    | 'PERDIDO';
+  assignedSeller: string;
+  sellerAvatar?: string;
+  responseTimeMin?: number;
+  saleValue?: number;
+  saleDate?: string;
+  notes?: string;
+  inactivityLabel?: string;
+  firstResponseLabel?: string;
+  totalTimeLabel?: string;
+  statusBadge?: string;
+  channelType?: 'whatsapp' | 'instagram' | 'facebook' | 'web';
+  channelNumber?: string;
+  hasMetaBadge?: boolean;
+  team?: string;
+}
+
+export interface MetaPerformanceByVehicle {
+  vehicleId: string;
+  brand: string;
+  model: string;
+  year: number;
+  price: number;
+  thumbnail: string;
+  campaignsCount: number;
+  spend: number;
+  leads: number;
+  cpl: number;
+  agendamentos: number;
+  visitas: number;
+  vendas: number;
+  costPerSale: number;
+  revenue: number;
+  profitMarginEstimated: number;
+  roas: number;
+}
+
+export interface MetaDailyDataPoint {
+  date: string;
+  spend: number;
+  impressions: number;
+  clicks: number;
+  leads: number;
+  cpl: number;
+  agendamentos: number;
+  visitas: number;
+  vendas: number;
+  revenue: number;
+  previousPeriodSpend?: number;
+  previousPeriodLeads?: number;
+  previousPeriodVendas?: number;
+}
+
+export interface MetaPerformanceInsight {
+  id: string;
+  type: 'positive' | 'warning' | 'info' | 'opportunity';
+  title: string;
+  message: string;
+  metricBadge: string;
+  impactScore?: number;
+  actionRecommendation?: string;
+}
+
+export interface MetaSyncLog {
+  id: string;
+  timestamp: string;
+  event: string;
+  recordsSynced: number;
+  status: 'SUCCESS' | 'WARNING' | 'ERROR';
+  durationMs: number;
+  details: string;
+}
+

@@ -97,6 +97,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     { label: 'Ir para Planos & Faturamento', tab: 'billing' as ActiveTab, icon: CreditCard },
     { label: 'Abrir Copilot IA Gemini', tab: 'ai-copilot' as ActiveTab, icon: Sparkles },
     { label: 'Ver Página de Vendas & Planos', tab: 'sales' as ActiveTab, icon: Globe },
+    { label: 'Ir para Relatórios > Meta Ads (Facebook & Instagram)', tab: 'meta-ads' as ActiveTab, icon: Globe },
+    { label: 'Ir para Relatórios > Campanhas', tab: 'campanhas' as ActiveTab, icon: BarChart3 },
+    { label: 'Ir para Relatórios > Funil Comercial Meta + CRM', tab: 'funil-comercial' as ActiveTab, icon: TrendingUp },
     { label: 'Ir para Relatórios & Métricas', tab: 'reports' as ActiveTab, icon: BarChart3 },
     { label: 'Ir para Configurações', tab: 'settings' as ActiveTab, icon: Settings },
   ].filter((n) => n.label.toLowerCase().includes(query.toLowerCase()));

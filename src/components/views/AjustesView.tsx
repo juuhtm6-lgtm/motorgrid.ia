@@ -12,12 +12,15 @@ import {
   Lock,
   Layers,
   MapPin,
+  Store,
+  Sparkles,
 } from 'lucide-react';
 import { initialAuthUsers, initialTenants } from '../../data/mockData';
 import { AuthUser, TenantUnit } from '../../types';
+import { MarketplaceView } from './MarketplaceView';
 
 export const AjustesView: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'empresa' | 'unidades' | 'usuarios' | 'sla' | 'auditoria'>('empresa');
+  const [activeTab, setActiveTab] = useState<'marketplace' | 'empresa' | 'unidades' | 'usuarios' | 'sla' | 'auditoria'>('marketplace');
   const [users, setUsers] = useState<AuthUser[]>(initialAuthUsers);
   const [tenantName, setTenantName] = useState('MotorGrid Motors Premium');
   const [cnpj, setCnpj] = useState('12.345.678/0001-90');
@@ -28,58 +31,70 @@ export const AjustesView: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header & Sub-Tabs */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
-        <div>
-          <h2 className="text-xl font-bold text-white">Configurações &amp; Multiempresa</h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Gestão de unidades, controle de acesso RBAC, horários de plantão e auditoria
-          </p>
-        </div>
-
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#1C1C1E] border border-zinc-800 text-xs overflow-x-auto">
-          <button
-            onClick={() => setActiveTab('empresa')}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'empresa' ? 'bg-[#8B5CF6] text-white' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Empresa
-          </button>
-          <button
-            onClick={() => setActiveTab('unidades')}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'unidades' ? 'bg-[#8B5CF6] text-white' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Unidades / Lojas
-          </button>
-          <button
-            onClick={() => setActiveTab('usuarios')}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'usuarios' ? 'bg-[#8B5CF6] text-white' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Usuários &amp; Equipes
-          </button>
-          <button
-            onClick={() => setActiveTab('sla')}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'sla' ? 'bg-[#8B5CF6] text-white' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            SLA &amp; Horários
-          </button>
-          <button
-            onClick={() => setActiveTab('auditoria')}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === 'auditoria' ? 'bg-[#8B5CF6] text-white' : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            Logs &amp; Auditoria
-          </button>
-        </div>
+      {/* Sub-Tabs Selector */}
+      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#141416] border border-zinc-800 text-xs overflow-x-auto w-fit">
+        <button
+          onClick={() => setActiveTab('marketplace')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'marketplace'
+              ? 'bg-[#C4B5FD] text-[#2E1065] shadow-lg shadow-[#8B5CF6]/20 font-["Plus_Jakarta_Sans",sans-serif]'
+              : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <Store className="w-3.5 h-3.5" />
+          <span>App Marketplace</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('empresa')}
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'empresa' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <Building className="w-3.5 h-3.5" />
+          <span>Empresa</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('unidades')}
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'unidades' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          <span>Unidades / Lojas</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('usuarios')}
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'usuarios' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <Users className="w-3.5 h-3.5" />
+          <span>Usuários &amp; Equipes</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('sla')}
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'sla' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <Clock className="w-3.5 h-3.5" />
+          <span>SLA &amp; Horários</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('auditoria')}
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'auditoria' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>Logs &amp; Auditoria</span>
+        </button>
       </div>
+
+      {/* ========================================================================= */}
+      {/* 0. APP MARKETPLACE (DEFAULT VIEW) */}
+      {/* ========================================================================= */}
+      {activeTab === 'marketplace' && <MarketplaceView />}
 
       {/* ========================================================================= */}
       {/* 1. EMPRESA */}

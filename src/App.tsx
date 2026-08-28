@@ -44,6 +44,8 @@ import { ProjectsView } from './components/views/ProjectsView';
 import { BillingView } from './components/views/BillingView';
 import { AiCopilotView } from './components/views/AiCopilotView';
 import { ReportsView } from './components/views/ReportsView';
+import { RelatoriosView } from './components/views/RelatoriosView';
+import { MetaAdsView } from './components/views/MetaAdsView';
 import { SettingsView } from './components/views/SettingsView';
 import { NewCustomerModal } from './components/modals/NewCustomerModal';
 import { NewTaskModal } from './components/modals/NewTaskModal';
@@ -637,6 +639,38 @@ export default function App() {
 
           {activeTab === 'reports' && (
             <ReportsView metrics={metrics} />
+          )}
+
+          {activeTab === 'meta-ads' && (
+            <MetaAdsView initialSubTab="visao-geral" />
+          )}
+
+          {activeTab === 'relatorios' && (
+            <MetaAdsView initialSubTab="visao-geral" />
+          )}
+
+          {activeTab === 'campanhas' && (
+            <MetaAdsView initialSubTab="campanhas" />
+          )}
+
+          {activeTab === 'anuncios' && (
+            <MetaAdsView initialSubTab="anuncios" />
+          )}
+
+          {activeTab === 'relatorio-leads' && (
+            <MetaAdsView initialSubTab="relatorio-leads" />
+          )}
+
+          {activeTab === 'conversoes' && (
+            <MetaAdsView initialSubTab="funil-comercial" />
+          )}
+
+          {activeTab === 'vendedores' && (
+            <MetaAdsView initialSubTab="rankings" />
+          )}
+
+          {activeTab === 'funil-comercial' && (
+            <MetaAdsView initialSubTab="funil-comercial" />
           )}
 
           {(activeTab === 'administracao' || activeTab === 'settings') && (
