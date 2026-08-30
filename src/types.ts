@@ -137,10 +137,15 @@ export interface TeamMember {
 export type CommunicationChannel =
   | 'WhatsApp'
   | 'Instagram'
+  | 'Facebook'
   | 'Messenger'
+  | 'TikTok'
   | 'Webmotors'
-  | 'iCarros'
   | 'OLX'
+  | 'Mobiauto'
+  | 'Chave na Mão'
+  | 'iCarros'
+  | 'Mercado Livre'
   | 'WebChat'
   | 'Telefone';
 
