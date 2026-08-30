@@ -48,32 +48,32 @@ export const Navbar: React.FC<NavbarProps> = ({
   const getTabTitle = () => {
     switch (activeTab) {
       case 'dashboard':
-        return { title: 'Dashboard Geral & Telemetria', subtitle: 'Métricas executivas, frotas conectadas e saúde operacional' };
+        return { title: 'Dashboard Geral', subtitle: 'Painel executivo, funil de vendas e performance comercial' };
       case 'atendimento':
-        return { title: 'Central de Atendimento & Suporte Técnico', subtitle: 'Atendimento via WhatsApp Oficial, fila de chamados e SAC técnico' };
+        return { title: 'Central de Atendimento & WhatsApp', subtitle: 'Atendimento via WhatsApp Oficial, fila de contatos e SAC' };
       case 'leads':
-        return { title: 'Gestão de Leads & Oportunidades', subtitle: 'Captação de novos frotistas, qualificação e conversão em clientes' };
+        return { title: 'Gestão de Leads & Oportunidades', subtitle: 'Captação de leads, qualificação e conversão em vendas' };
       case 'pipeline':
-        return { title: 'Pipeline & Funil de Vendas Automotivo', subtitle: 'Contratos em negociação, demonstrações e propostas comerciais' };
+        return { title: 'Pipeline & Funil de Vendas Automotivo', subtitle: 'Negociações em andamento, visitas e propostas comerciais' };
       case 'estoque':
-        return { title: 'Estoque de Rastreadores & Sensores IoT', subtitle: 'Equipamentos OBD-II 4G, módulos CAN-Bus, GPS e ADAS disponíveis' };
+        return { title: 'Estoque de Veículos', subtitle: 'Catálogo de seminovos e 0km com histórico e status' };
       case 'automacao':
-        return { title: 'Automação & Gatilhos de Telemetria', subtitle: 'Regras de segurança 24/7, geofencing, anti-furto e disparos automáticos' };
+        return { title: 'Automação & Gatilhos Comerciais', subtitle: 'Regras de atendimento 24/7, distribuição de leads e disparos automáticos' };
       case 'performance':
-        return { title: 'Performance & Eficiência Operacional', subtitle: 'Economia de combustível, ranking comercial, NRR e retenção líquida' };
+        return { title: 'Performance & Eficiência Comercial', subtitle: 'Desempenho da equipe, conversão por vendedor e metas' };
       case 'administracao':
       case 'settings':
         return { title: 'Painel de Administração do Sistema', subtitle: 'Membros da equipe, planos, credenciais de API e segurança do workspace' };
       case 'customers':
-        return { title: 'Gestão de Frotas, Concessionárias & Clientes', subtitle: 'Base de contas ativas, contratos de telemetria e estágios de pipeline' };
+        return { title: 'Gestão de Clientes & Compradores', subtitle: 'Base de clientes, contratos e histórico de negociações' };
       case 'projects':
-        return { title: 'Operações & Sprints IoT', subtitle: 'Acompanhamento de implantações, homologação de sensores e sprints' };
+        return { title: 'Operações & Tarefas', subtitle: 'Acompanhamento de processos de entrega e vistorias' };
       case 'billing':
-        return { title: 'Planos & Faturamento MotorGrid', subtitle: 'Gestão de assinaturas de frotas, cobranças PIX/Cartão e faturas fiscais' };
+        return { title: 'Planos & Faturamento MotorGrid', subtitle: 'Gestão de assinaturas, cobranças PIX/Cartão e faturas fiscais' };
       case 'ai-copilot':
-        return { title: 'Copilot IA Gemini - MotorGrid Intelligence', subtitle: 'Diagnósticos automotivos preditivos, mitigação de churn e estratégias B2B' };
+        return { title: 'Copilot IA Gemini - MotorGrid Intelligence', subtitle: 'Diagnósticos automotivos preditivos e estratégias comerciais' };
       case 'reports':
-        return { title: 'Relatórios & Análise de Safra', subtitle: 'Retenção NRR, métricas LTV/CAC e telemetria avançada de dispositivos' };
+        return { title: 'Relatórios & Análise de Vendas', subtitle: 'Desempenho de canais, conversão e métricas financeiras' };
       case 'meta-ads':
       case 'relatorios':
         return { title: 'Relatórios > Meta Ads (Facebook & Instagram)', subtitle: 'Painel integrado à Meta Marketing API com cruzamento direto no CRM automotivo' };
@@ -91,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       case 'sales':
         return { title: 'Página de Vendas & Planos Comerciais', subtitle: 'Landing page pública com simulador de ROI, planos e checkout integrado' };
       default:
-        return { title: 'MotorGrid OS', subtitle: 'Automotive Command' };
+        return { title: 'MotorGrid', subtitle: 'Automotive Command' };
     }
   };
 

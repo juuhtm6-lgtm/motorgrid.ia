@@ -1,364 +1,558 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { initialExecutiveRecords } from '../../data/executiveRecordsData';
 import {
-  TrendingUp,
-  MessageSquare,
-  Users,
-  Car,
-  Calendar,
-  Clock,
-  Zap,
-  Sparkles,
-  Flame,
-  CheckCircle2,
-  Phone,
-  ShieldCheck,
-  ChevronRight,
-  Plus,
-  ArrowUpRight,
-} from 'lucide-react';
+  DashboardFilters,
+  ExecutiveLeadRecord,
+  ExecutiveAlert,
+} from '../../types/dashboard';
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
-import { initialVehicles, initialOmniConversations, initialAppointments } from '../../data/mockData';
+  filterExecutiveRecords,
+  computeExecutiveKpis,
+  computeOperationalStatusCounts,
+  computeCommercialFunnel,
+  computeTimeSeries,
+  computeOriginMetrics,
+  computeTeamPerformance,
+  computeLossReasons,
+  computeVehiclePerformance,
+  computeAttendancePerformance,
+  computeStoreGoalAndProjection,
+  computePresentialVsOnline,
+  computeManagerAlerts,
+  generateAiInsights,
+} from '../../services/executiveDashboardEngine';
+
+import { ExecutiveHeader } from '../dashboard/ExecutiveHeader';
+import { GlobalFiltersBar } from '../dashboard/GlobalFiltersBar';
+import { ExecutiveKpisRow } from '../dashboard/ExecutiveKpisRow';
+import { CommercialOperationRow } from '../dashboard/CommercialOperationRow';
+import { MonthlyTargetAndProjection } from '../dashboard/MonthlyTargetAndProjection';
+import { CommercialFunnel } from '../dashboard/CommercialFunnel';
+import { TimeSeriesCharts } from '../dashboard/TimeSeriesCharts';
+import { ServicePerformanceSection } from '../dashboard/ServicePerformanceSection';
+import { LeadsByOriginSection } from '../dashboard/LeadsByOriginSection';
+import { TopSellersRanking } from '../dashboard/TopSellersRanking';
+import { TeamPerformanceTable } from '../dashboard/TeamPerformanceTable';
+import { ConversionAndLossSection } from '../dashboard/ConversionAndLossSection';
+import { PresentialVsOnlineSection } from '../dashboard/PresentialVsOnlineSection';
+import { LeadsDistributionSection } from '../dashboard/LeadsDistributionSection';
+import { VehiclePerformanceSection } from '../dashboard/VehiclePerformanceSection';
+import { RecentLeadsSection } from '../dashboard/RecentLeadsSection';
+import { ManagerAlertsSection } from '../dashboard/ManagerAlertsSection';
+import { AiInsightsSection } from '../dashboard/AiInsightsSection';
+import { DrillDownModal } from '../dashboard/DrillDownModal';
+import { ExportModal } from '../dashboard/ExportModal';
 
 interface DashboardViewProps {
-  metrics: any;
-  customers: any[];
-  invoices: any[];
-  deals: any[];
-  onOpenCustomerDetail: (customer: any) => void;
-  onOpenAiCopilot: () => void;
-  onNavigateTab: (tab: any) => void;
+  metrics?: any;
+  customers?: any[];
+  invoices?: any[];
+  deals?: any[];
+  onOpenCustomerDetail?: (customer: any) => void;
+  onOpenAiCopilot?: () => void;
+  onNavigateTab?: (tab: any) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
+  onOpenCustomerDetail,
   onNavigateTab,
 }) => {
-  const [appointments, setAppointments] = useState(initialAppointments);
-  const [isGeneratingAiBrief, setIsGeneratingAiBrief] = useState(false);
-  const [aiBriefing, setAiBriefing] = useState<string | null>(null);
+  // Estado de Dados do Sistema
+  const [allRecords, setAllRecords] = useState<ExecutiveLeadRecord[]>(
+    initialExecutiveRecords
+  );
 
-  const salesTrend = [
-    { month: 'Out', sales: 12, revenue: 4200000 },
-    { month: 'Nov', sales: 15, revenue: 5300000 },
-    { month: 'Dez', sales: 21, revenue: 7800000 },
-    { month: 'Jan', sales: 16, revenue: 5900000 },
-    { month: 'Fev', sales: 18, revenue: 6660000 },
-  ];
+  // Estado de Filtros Globais
+  const [filters, setFilters] = useState<DashboardFilters>({
+    period: 'mes_atual',
+    store: 'all',
+    team: 'all',
+    seller: 'all',
+    origin: 'all',
+    channelType: 'all',
+  });
 
-  const handleGenerateBrief = async () => {
-    setIsGeneratingAiBrief(true);
-    try {
-      const res = await fetch('/api/gemini/insights', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic: 'Briefing Matinal Showroom MotorGrid',
-          stockCount: initialVehicles.length,
-          leadsCount: 184,
-          appointmentsToday: appointments.length,
-        }),
-      });
-      const data = await res.json();
-      setAiBriefing(data.text || 'Briefing gerado com sucesso.');
-    } catch {
-      setAiBriefing(
-        '### ⚡ Diagnóstico Comercial MotorGrid (Grid AI):\n- **Aquecimento de Showroom:** 3 Test Drives confirmados para hoje (BMW M3 Competition e Porsche Macan GTS têm alta probabilidade de fechamento).\n- **SLA Operacional:** Tempo médio de resposta mantido em 1.8 min no WhatsApp. Nenhuma conversa atrasada acima de 5 min.'
+  // Estado de Granularidade dos Gráficos Temporais
+  const [timeGranularity, setTimeGranularity] = useState<'diario' | 'semanal' | 'mensal'>(
+    'diario'
+  );
+
+  // Estados dos Modais
+  const [drillDownState, setDrillDownState] = useState<{
+    isOpen: boolean;
+    title: string;
+    subtitle: string;
+    records: ExecutiveLeadRecord[];
+  }>({
+    isOpen: false,
+    title: '',
+    subtitle: '',
+    records: [],
+  });
+
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // 1. Filtragem dos Dados em Tempo Real (atual e período anterior para comparativo)
+  const { current: filteredRecords, previous: previousRecords } = useMemo(() => {
+    return filterExecutiveRecords(allRecords, filters);
+  }, [allRecords, filters]);
+
+  // 2. Cálculos dos Indicadores Executivos
+  const kpis = useMemo(() => {
+    return computeExecutiveKpis(filteredRecords, previousRecords);
+  }, [filteredRecords, previousRecords]);
+
+  const commercialOperation = useMemo(() => {
+    return computeOperationalStatusCounts(filteredRecords);
+  }, [filteredRecords]);
+
+  const monthlyGoal = useMemo(() => {
+    return computeStoreGoalAndProjection(filteredRecords);
+  }, [filteredRecords]);
+
+  const funnelResult = useMemo(() => {
+    return computeCommercialFunnel(filteredRecords);
+  }, [filteredRecords]);
+
+  const timeSeriesData = useMemo(() => {
+    return computeTimeSeries(filteredRecords, timeGranularity);
+  }, [filteredRecords, timeGranularity]);
+
+  const attendancePerformance = useMemo(() => {
+    return computeAttendancePerformance(filteredRecords);
+  }, [filteredRecords]);
+
+  const originMetrics = useMemo(() => {
+    return computeOriginMetrics(filteredRecords);
+  }, [filteredRecords]);
+
+  const sellerMetrics = useMemo(() => {
+    return computeTeamPerformance(filteredRecords);
+  }, [filteredRecords]);
+
+  const lossReasons = useMemo(() => {
+    return computeLossReasons(filteredRecords);
+  }, [filteredRecords]);
+
+  const presentialVsOnline = useMemo(() => {
+    return computePresentialVsOnline(filteredRecords);
+  }, [filteredRecords]);
+
+  const vehicleMetrics = useMemo(() => {
+    return computeVehiclePerformance(filteredRecords);
+  }, [filteredRecords]);
+
+  const alerts = useMemo(() => {
+    return computeManagerAlerts(filteredRecords);
+  }, [filteredRecords]);
+
+  const aiInsights = useMemo(() => {
+    return generateAiInsights(
+      kpis,
+      originMetrics,
+      sellerMetrics,
+      funnelResult,
+      lossReasons,
+      attendancePerformance
+    );
+  }, [
+    kpis,
+    originMetrics,
+    sellerMetrics,
+    funnelResult,
+    lossReasons,
+    attendancePerformance,
+  ]);
+
+  // Handlers de Drill-Down
+  const handleDrillDownKpi = (kpiKey: string) => {
+    let title = 'Detalhamento de Leads';
+    let subtitle = 'Registros correspondentes';
+    let records = filteredRecords;
+
+    if (kpiKey === 'leads') {
+      title = 'Todos os Leads Recebidos';
+      subtitle = 'Volume total de contatos no período filtrado';
+      records = filteredRecords;
+    } else if (kpiKey === 'sales') {
+      title = 'Vendas Fechadas (Ganhos)';
+      subtitle = 'Veículos comercializados no período';
+      records = filteredRecords.filter((r) => r.status === 'ganho');
+    } else if (kpiKey === 'revenue') {
+      title = 'Faturamento Gerado';
+      subtitle = 'Leads que geraram receita de venda';
+      records = filteredRecords.filter((r) => r.status === 'ganho');
+    } else if (kpiKey === 'conversion') {
+      title = 'Leads Convertidos em Venda';
+      subtitle = 'Relação de sucesso comercial';
+      records = filteredRecords.filter((r) => r.status === 'ganho');
+    } else if (kpiKey === 'pipeline') {
+      title = 'Oportunidades em Negociação';
+      subtitle = 'Pipeline ativo com valor potencial';
+      records = filteredRecords.filter(
+        (r) => r.status !== 'ganho' && r.status !== 'perdido'
       );
-    } finally {
-      setIsGeneratingAiBrief(false);
+    } else if (kpiKey === 'sla') {
+      title = 'Performance de Primeiro Atendimento';
+      subtitle = 'Todos os contatos avaliados pelo SLA de resposta';
+      records = filteredRecords;
+    }
+
+    setDrillDownState({ isOpen: true, title, subtitle, records });
+  };
+
+  const handleDrillDownOperationStatus = (statusKey: string) => {
+    let records = filteredRecords;
+    if (statusKey === 'open') {
+      records = filteredRecords.filter(
+        (r) => r.status !== 'ganho' && r.status !== 'perdido'
+      );
+    } else if (statusKey === 'qualified') {
+      records = filteredRecords.filter(
+        (r) => r.isQualified || r.status === 'qualificado'
+      );
+    } else if (statusKey === 'scheduled') {
+      records = filteredRecords.filter(
+        (r) => r.isScheduled || r.status === 'agendado'
+      );
+    } else if (statusKey === 'visited') {
+      records = filteredRecords.filter(
+        (r) => r.isVisited || r.status === 'visitou'
+      );
+    } else if (statusKey === 'proposals') {
+      records = filteredRecords.filter(
+        (r) => r.isProposal || r.status === 'proposta'
+      );
+    } else if (statusKey === 'lost') {
+      records = filteredRecords.filter((r) => r.status === 'perdido');
+    }
+
+    const titles: Record<string, string> = {
+      open: 'Leads em Aberto / Em Andamento',
+      qualified: 'Leads Qualificados pelo SDR',
+      scheduled: 'Test Drives & Visitas Agendadas',
+      visited: 'Visitas Realizadas no Showroom',
+      proposals: 'Propostas Comerciais em Análise',
+      lost: 'Leads Perdidos / Arquivados',
+    };
+
+    setDrillDownState({
+      isOpen: true,
+      title: titles[statusKey] || 'Leads por Operação',
+      subtitle: `Exibindo ${records.length} registros`,
+      records,
+    });
+  };
+
+  const handleDrillDownFunnel = (stageKey: string) => {
+    let records = filteredRecords;
+    if (stageKey === 'leads') {
+      records = filteredRecords;
+    } else if (stageKey === 'atendidos') {
+      records = filteredRecords.filter((r) => r.isAttended);
+    } else if (stageKey === 'qualificados') {
+      records = filteredRecords.filter((r) => r.isQualified);
+    } else if (stageKey === 'agendados') {
+      records = filteredRecords.filter((r) => r.isScheduled);
+    } else if (stageKey === 'visitaram') {
+      records = filteredRecords.filter((r) => r.isVisited);
+    } else if (stageKey === 'proposta') {
+      records = filteredRecords.filter((r) => r.isProposal);
+    } else if (stageKey === 'vendidos') {
+      records = filteredRecords.filter((r) => r.status === 'ganho');
+    }
+
+    const labels: Record<string, string> = {
+      leads: '1. Todos os Leads',
+      atendidos: '2. Leads Atendidos',
+      qualificados: '3. Leads Qualificados',
+      agendados: '4. Leads com Agendamento',
+      visitaram: '5. Leads que Visitaram a Loja',
+      proposta: '6. Leads com Proposta Enviada',
+      vendidos: '7. Veículos Vendidos',
+    };
+
+    setDrillDownState({
+      isOpen: true,
+      title: `Etapa do Funil: ${labels[stageKey] || stageKey}`,
+      subtitle: `${records.length} contatos nesta etapa`,
+      records,
+    });
+  };
+
+  const handleDrillDownOrigin = (origin: string) => {
+    const records = filteredRecords.filter(
+      (r) => r.origin.toLowerCase() === origin.toLowerCase()
+    );
+    setDrillDownState({
+      isOpen: true,
+      title: `Origem: ${origin}`,
+      subtitle: `Todos os ${records.length} leads recebidos através do canal ${origin}`,
+      records,
+    });
+  };
+
+  const handleDrillDownSeller = (sellerName: string) => {
+    const records = filteredRecords.filter((r) => r.assignedTo === sellerName);
+    setDrillDownState({
+      isOpen: true,
+      title: `Vendedor: ${sellerName}`,
+      subtitle: `Carteira de ${records.length} leads atribuídos a ${sellerName}`,
+      records,
+    });
+  };
+
+  const handleDrillDownLossReason = (reason: string) => {
+    const records = filteredRecords.filter(
+      (r) => r.status === 'perdido' && r.lossReason === reason
+    );
+    setDrillDownState({
+      isOpen: true,
+      title: `Motivo de Perda: ${reason}`,
+      subtitle: `${records.length} oportunidades perdidas pelo motivo "${reason}"`,
+      records,
+    });
+  };
+
+  const handleDrillDownChannel = (channel: 'online' | 'presencial') => {
+    const records = filteredRecords.filter((r) => r.channelType === channel);
+    setDrillDownState({
+      isOpen: true,
+      title: `Canal: ${channel === 'online' ? 'Atendimento Digital (Online)' : 'Showroom Presencial'}`,
+      subtitle: `${records.length} contatos originados neste canal`,
+      records,
+    });
+  };
+
+  const handleDrillDownVehicle = (vehicleName: string) => {
+    const records = filteredRecords.filter((r) => r.vehicleName === vehicleName);
+    setDrillDownState({
+      isOpen: true,
+      title: `Veículo: ${vehicleName}`,
+      subtitle: `${records.length} interessados cadastrados neste modelo`,
+      records,
+    });
+  };
+
+  const handleAlertClick = (alert: ExecutiveAlert) => {
+    let records = filteredRecords;
+    if (alert.filterKey === 'unattended') {
+      records = filteredRecords.filter((r) => !r.isAttended);
+    } else if (alert.filterKey === 'idle') {
+      records = filteredRecords.filter(
+        (r) =>
+          r.status !== 'ganho' &&
+          r.status !== 'perdido' &&
+          r.lastInteractionMinutesAgo > 120
+      );
+    } else if (alert.filterKey === 'unconfirmed') {
+      records = filteredRecords.filter(
+        (r) => r.isScheduled && !r.appointmentConfirmed
+      );
+    } else if (alert.filterKey === 'proposals') {
+      records = filteredRecords.filter(
+        (r) =>
+          r.isProposal &&
+          r.status === 'proposta' &&
+          r.lastInteractionMinutesAgo > 90
+      );
+    } else if (alert.filterKey === 'stuck') {
+      records = filteredRecords.filter(
+        (r) =>
+          r.status !== 'ganho' &&
+          r.status !== 'perdido' &&
+          r.daysInFunnel >= 3
+      );
+    }
+
+    setDrillDownState({
+      isOpen: true,
+      title: alert.title,
+      subtitle: alert.description,
+      records,
+    });
+  };
+
+  const handleSelectLeadRecord = (lead: ExecutiveLeadRecord) => {
+    setDrillDownState({
+      isOpen: true,
+      title: `Lead: ${lead.contactName}`,
+      subtitle: `${lead.vehicleName} • Vendedor: ${lead.assignedTo}`,
+      records: [lead],
+    });
+  };
+
+  const handleCreateNewLead = () => {
+    if (onNavigateTab) {
+      onNavigateTab('atendimento');
     }
   };
 
+  const handlePrintPdf = () => {
+    window.print();
+  };
+
   return (
-    <div className="space-y-6 pb-12">
-      {/* Top Banner with AI Briefing Trigger */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-[#1C1C1E] via-[#2A1B4E] to-[#1C1C1E] border border-[#8B5CF6]/30 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-[#8B5CF6]/20 border border-[#8B5CF6]/40 text-[#C4B5FD] shrink-0">
-            <Sparkles className="w-6 h-6 text-[#A78BFA] animate-pulse" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-white tracking-tight">
-                Painel Geral &amp; Comando de Showroom MotorGrid
-              </h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#8B5CF6]/20 text-[#DDD6FE] border border-[#8B5CF6]/30">
-                Grid AI Online
-              </span>
-            </div>
-            <p className="text-xs text-zinc-300 mt-0.5">
-              18 veículos vendidos no mês (<strong className="text-emerald-400 font-mono">R$ 6.660.000</strong>). SLA médio de 1º contato:{' '}
-              <strong className="text-[#C4B5FD]">1.8 minutos</strong>.
-            </p>
-          </div>
-        </div>
+    <div id="executive-automotive-dashboard" className="space-y-6 pb-16">
+      {/* 1. Header Executivo */}
+      <ExecutiveHeader
+        filters={filters}
+        onOpenNewLead={handleCreateNewLead}
+        onOpenExport={() => setIsExportModalOpen(true)}
+        onPrint={handlePrintPdf}
+      />
 
-        <div className="flex items-center gap-2.5 shrink-0 w-full md:w-auto">
-          <button
-            onClick={handleGenerateBrief}
-            disabled={isGeneratingAiBrief}
-            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] text-xs font-bold shadow-lg shadow-[#8B5CF6]/30 transition-all cursor-pointer font-['Plus_Jakarta_Sans',sans-serif] disabled:opacity-50"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            {isGeneratingAiBrief ? 'Gerando Análise...' : 'Gerar Briefing Matinal'}
-          </button>
-          <button
-            onClick={() => onNavigateTab('atendimento')}
-            className="px-3.5 py-2 rounded-xl bg-[#0A0A0B] hover:bg-zinc-800 text-zinc-200 text-xs font-medium border border-zinc-700 hover:border-[#8B5CF6]/40 transition-colors cursor-pointer"
-          >
-            Abrir WhatsApp
-          </button>
-        </div>
-      </div>
+      {/* 2. Barra de Filtros Globais */}
+      <GlobalFiltersBar
+        filters={filters}
+        onFilterChange={setFilters}
+        onResetFilters={() => {
+          setFilters({
+            period: 'mes_atual',
+            store: 'all',
+            team: 'all',
+            seller: 'all',
+            origin: 'all',
+            channelType: 'all',
+            status: 'all',
+          });
+        }}
+      />
 
-      {/* AI Briefing Box */}
-      {aiBriefing && (
-        <div className="p-4 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/40 shadow-xl space-y-2 animate-in fade-in zoom-in-95 duration-200">
-          <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-            <span className="text-xs font-bold text-[#C4B5FD] flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#8B5CF6]" /> Diagnóstico Gerado com Grid AI
-            </span>
-            <button onClick={() => setAiBriefing(null)} className="text-xs text-zinc-400 hover:text-white cursor-pointer">
-              Fechar
-            </button>
-          </div>
-          <div className="text-xs text-zinc-300 whitespace-pre-line leading-relaxed">{aiBriefing}</div>
-        </div>
-      )}
+      {/* 3. Cards de Resumo Executivo (KPIs Principais) */}
+      <ExecutiveKpisRow kpis={kpis} onDrillDown={handleDrillDownKpi} />
 
-      {/* 6 Executive Automotive KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
-        <div className="p-4 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/15 hover:border-[#8B5CF6]/35 transition-all shadow-sm">
-          <div className="flex items-center justify-between text-zinc-400 mb-2">
-            <span className="text-xs font-medium">Vendas do Mês</span>
-            <span className="p-1 rounded-lg bg-emerald-500/15 text-emerald-400">
-              <Car className="w-3.5 h-3.5" />
-            </span>
-          </div>
-          <div className="text-xl font-bold text-white tracking-tight font-mono">18 unidades</div>
-          <div className="text-xs font-medium text-emerald-400 mt-2">R$ 6.660.000</div>
-        </div>
+      {/* 4. Cards de Operação Comercial */}
+      <CommercialOperationRow
+        counts={commercialOperation}
+        onDrillDown={handleDrillDownOperationStatus}
+      />
 
-        <div className="p-4 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/15 hover:border-[#8B5CF6]/35 transition-all shadow-sm">
-          <div className="flex items-center justify-between text-zinc-400 mb-2">
-            <span className="text-xs font-medium">Ticket Médio</span>
-            <span className="p-1 rounded-lg bg-[#8B5CF6]/15 text-[#A78BFA]">
-              <TrendingUp className="w-3.5 h-3.5" />
-            </span>
-          </div>
-          <div className="text-xl font-bold text-white tracking-tight font-mono">R$ 370.000</div>
-          <div className="text-xs text-emerald-400 mt-2">+14.2% vs mês anterior</div>
-        </div>
+      {/* 5. Meta do Mês e Projeção */}
+      <MonthlyTargetAndProjection
+        data={monthlyGoal}
+      />
 
-        <div className="p-4 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/15 hover:border-[#8B5CF6]/35 transition-all shadow-sm">
-          <div className="flex items-center justify-between text-zinc-400 mb-2">
-            <span className="text-xs font-medium">Leads no Funil</span>
-            <span className="p-1 rounded-lg bg-[#8B5CF6]/15 text-[#C4B5FD]">
-              <Users className="w-3.5 h-3.5" />
-            </span>
-          </div>
-          <div className="text-xl font-bold text-white tracking-tight font-mono">184 leads</div>
-          <div className="text-xs text-[#C4B5FD] mt-2">39 em negociação</div>
-        </div>
+      {/* 6. Funil Comercial Completo */}
+      <CommercialFunnel
+        stages={funnelResult.stages}
+        overallLeadToSaleConversion={funnelResult.overallLeadToSaleConversion}
+        onDrillDown={handleDrillDownFunnel}
+      />
 
-        <div className="p-4 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/15 hover:border-[#8B5CF6]/35 transition-all shadow-sm">
-          <div className="flex items-center justify-between text-zinc-400 mb-2">
-            <span className="text-xs font-medium">SLA 1ª Resposta</span>
-            <span className="p-1 rounded-lg bg-emerald-500/15 text-emerald-400">
-              <Clock className="w-3.5 h-3.5" />
-            </span>
-          </div>
-          <div className="text-xl font-bold text-emerald-400 tracking-tight font-mono">1.8 min</div>
-          <div className="text-xs text-zinc-400 mt-2">● Meta &lt; 3.0 min</div>
-        </div>
+      {/* 7 & 8. Gráficos de Evolução Temporal (Leads + Vendas) */}
+      <TimeSeriesCharts
+        data={timeSeriesData}
+        granularity={timeGranularity}
+        onGranularityChange={setTimeGranularity}
+      />
 
-        <div className="p-4 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/15 hover:border-[#8B5CF6]/35 transition-all shadow-sm">
-          <div className="flex items-center justify-between text-zinc-400 mb-2">
-            <span className="text-xs font-medium">Estoque Ativo</span>
-            <span className="p-1 rounded-lg bg-[#8B5CF6]/15 text-[#A78BFA]">
-              <Car className="w-3.5 h-3.5" />
-            </span>
-          </div>
-          <div className="text-xl font-bold text-white tracking-tight font-mono">
-            {initialVehicles.length} veículos
-          </div>
-          <div className="text-xs text-zinc-400 mt-2">R$ 5.925.000 em pátio</div>
-        </div>
+      {/* 17. Performance de Atendimento & SLA */}
+      <ServicePerformanceSection
+        data={attendancePerformance}
+        onDrillDownUnattended={() =>
+          handleDrillDownKpi('sla')
+        }
+      />
 
-        <div className="p-4 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/15 hover:border-[#8B5CF6]/35 transition-all shadow-sm">
-          <div className="flex items-center justify-between text-zinc-400 mb-2">
-            <span className="text-xs font-medium">Taxa de Conversão</span>
-            <span className="p-1 rounded-lg bg-[#8B5CF6]/15 text-[#C4B5FD]">
-              <Zap className="w-3.5 h-3.5" />
-            </span>
-          </div>
-          <div className="text-xl font-bold text-[#DDD6FE] tracking-tight font-mono">9.8%</div>
-          <div className="text-xs text-emerald-400 mt-2">+2.1% no trimestre</div>
-        </div>
-      </div>
+      {/* 9. Leads e Vendas por Origem */}
+      <LeadsByOriginSection
+        origins={originMetrics}
+        onDrillDownOrigin={handleDrillDownOrigin}
+      />
 
-      {/* Main Charts & Actions Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Sales Trend Chart (7 cols) */}
-        <div className="lg:col-span-7 p-5 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/15 shadow-md space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-white">Evolução de Vendas &amp; Faturamento (R$)</h3>
-              <p className="text-xs text-zinc-400">Total de veículos entregues e receita gerada por mês</p>
-            </div>
-            <span className="px-2.5 py-1 rounded-full bg-[#8B5CF6]/20 text-[#DDD6FE] text-xs font-bold font-mono">
-              Fev 2026: R$ 6.6M
-            </span>
-          </div>
+      {/* 11. Top Vendedores do Período */}
+      <TopSellersRanking
+        sellers={sellerMetrics}
+        onSelectSeller={handleDrillDownSeller}
+      />
 
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={salesTrend}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272A" vertical={false} />
-                <XAxis dataKey="month" stroke="#71717A" fontSize={12} tickLine={false} />
-                <YAxis
-                  stroke="#71717A"
-                  fontSize={12}
-                  tickLine={false}
-                  tickFormatter={(val) => `R$${val / 1000000}M`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1C1C1E',
-                    borderColor: '#8B5CF6',
-                    borderRadius: '0.75rem',
-                    color: '#fff',
-                    fontSize: '12px',
-                  }}
-                  formatter={(val: any) => [`R$ ${Number(val).toLocaleString('pt-BR')}`, 'Faturamento']}
-                />
-                <Area type="monotone" dataKey="revenue" stroke="#8B5CF6" strokeWidth={3} fill="url(#colorRevenue)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+      {/* 10. Performance Individual da Equipe (Tabela com ordenação) */}
+      <TeamPerformanceTable
+        sellers={sellerMetrics}
+        onSelectSeller={handleDrillDownSeller}
+      />
 
-        {/* Visitas & Agendamentos do Dia (5 cols) */}
-        <div className="lg:col-span-5 p-5 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6]/15 shadow-md flex flex-col justify-between space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-[#A78BFA]" />
-                <span>Test Drives &amp; Visitas de Hoje</span>
-              </h3>
-              <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-                {appointments.length} confirmados
-              </span>
-            </div>
+      {/* 12, 13 & 14. Conversão por Vendedor + Ganhos vs Perdidos + Motivos de Perda */}
+      <ConversionAndLossSection
+        wonCount={kpis.totalSales}
+        lostCount={commercialOperation.lost}
+        openCount={commercialOperation.open}
+        lossReasons={lossReasons}
+        sellers={sellerMetrics}
+        onDrillDownLossReason={handleDrillDownLossReason}
+      />
 
-            <div className="space-y-2.5">
-              {appointments.map((apt) => (
-                <div
-                  key={apt.id}
-                  className="p-3 rounded-xl bg-[#0A0A0B] border border-zinc-800 hover:border-[#8B5CF6]/40 transition-colors flex items-center justify-between text-xs"
-                >
-                  <div>
-                    <div className="font-bold text-white flex items-center gap-2">
-                      <span>{apt.contactName}</span>
-                      <span className="px-1.5 py-0.2 rounded text-[10px] bg-purple-500/20 text-[#DDD6FE]">
-                        {apt.type}
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-[#A78BFA] font-medium mt-0.5">
-                      {apt.vehicleModel || 'Interesse Geral'}
-                    </div>
-                    <div className="text-[10px] text-zinc-500 font-mono">Com: {apt.assignedTo}</div>
-                  </div>
+      {/* 16. Comparativo Presencial vs Online */}
+      <PresentialVsOnlineSection
+        data={presentialVsOnline}
+        onSelectChannel={handleDrillDownChannel}
+      />
 
-                  <div className="text-right">
-                    <span className="font-mono font-bold text-emerald-400 block">{apt.time}</span>
-                    <span className="text-[10px] text-zinc-400">{apt.date}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* 15. Distribuição de Leads por Vendedor */}
+      <LeadsDistributionSection
+        sellers={sellerMetrics}
+        onSelectSeller={handleDrillDownSeller}
+      />
 
-          <button
-            onClick={() => onNavigateTab('pipeline')}
-            className="w-full py-2 rounded-xl bg-[#0A0A0B] hover:bg-zinc-800 text-zinc-300 text-xs font-semibold border border-zinc-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <span>Ver Quadro Kanban de Agendamentos</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
+      {/* 23 & 24. Veículos com Mais Oportunidades + Atenção no Estoque */}
+      <VehiclePerformanceSection
+        topVehicles={vehicleMetrics.topVehicles}
+        attentionVehicles={vehicleMetrics.attentionVehicles}
+        onSelectVehicle={handleDrillDownVehicle}
+      />
 
-      {/* Atendimentos Recentes no WhatsApp & Ações Rápidas */}
-      <div className="p-5 rounded-2xl bg-[#1C1C1E] border border-zinc-800 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-emerald-400" />
-              <span>Últimos Atendimentos Recebidos (WhatsApp &amp; Portais)</span>
-            </h3>
-            <p className="text-xs text-zinc-400">Tempo real de mensagens e classificação de interesse</p>
-          </div>
+      {/* 18. Leads Recentes da Operação */}
+      <RecentLeadsSection
+        leads={filteredRecords}
+        onSelectLead={handleSelectLeadRecord}
+        onViewAllLeads={() => handleDrillDownKpi('leads')}
+      />
 
-          <button
-            onClick={() => onNavigateTab('atendimento')}
-            className="text-xs text-[#C4B5FD] hover:text-white font-bold flex items-center gap-1 cursor-pointer"
-          >
-            Ver Inbox Completo
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+      {/* 19. Atenção Necessária • Alertas da Operação */}
+      <ManagerAlertsSection alerts={alerts} onAlertClick={handleAlertClick} />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {initialOmniConversations.slice(0, 3).map((conv) => (
-            <div
-              key={conv.id}
-              onClick={() => onNavigateTab('atendimento')}
-              className="p-4 rounded-xl bg-[#0A0A0B] border border-zinc-800 hover:border-[#8B5CF6]/50 transition-all cursor-pointer space-y-2 group"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <img
-                    src={conv.contactAvatar}
-                    alt={conv.contactName}
-                    className="w-7 h-7 rounded-full object-cover ring-1 ring-[#8B5CF6]/40"
-                  />
-                  <span className="font-bold text-white text-xs group-hover:text-[#C4B5FD] transition-colors truncate">
-                    {conv.contactName}
-                  </span>
-                </div>
-                <span className="text-[10px] text-zinc-500 font-mono">{conv.lastMessageTime}</span>
-              </div>
+      {/* 20. Grid AI • Insights Executivos */}
+      <AiInsightsSection insights={aiInsights} />
 
-              <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">{conv.lastMessage}</p>
+      {/* Modais Globais do Dashboard */}
+      <DrillDownModal
+        isOpen={drillDownState.isOpen}
+        title={drillDownState.title}
+        subtitle={drillDownState.subtitle}
+        records={drillDownState.records}
+        onClose={() =>
+          setDrillDownState({
+            isOpen: false,
+            title: '',
+            subtitle: '',
+            records: [],
+          })
+        }
+        onOpenLeadDetail={(lead) => {
+          if (onOpenCustomerDetail) {
+            onOpenCustomerDetail({
+              id: lead.id,
+              name: lead.contactName,
+              phone: lead.contactPhone,
+              email: lead.contactEmail,
+              status: lead.status,
+              assignedTo: lead.assignedTo,
+              vehicleName: lead.vehicleName,
+              value: lead.vehiclePrice,
+            });
+          }
+        }}
+      />
 
-              <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80 text-[10px]">
-                <span className="text-[#A78BFA] font-medium truncate">
-                  {conv.tracking.vehicleOfInterest
-                    ? `${conv.tracking.vehicleOfInterest.brand} ${conv.tracking.vehicleOfInterest.model}`
-                    : 'Interesse Geral'}
-                </span>
-                <span className="px-1.5 py-0.5 rounded bg-purple-500/20 text-[#DDD6FE] font-mono">
-                  {conv.channel}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        filters={filters}
+        kpis={kpis}
+        records={filteredRecords}
+        onPrint={handlePrintPdf}
+      />
     </div>
   );
 };

@@ -108,10 +108,10 @@ export function MotorGridLogo({
   showSubtitle = true,
 }: MotorGridLogoProps) {
   const iconSizeMap = {
-    sm: 'w-7 h-7',
-    md: 'w-9 h-9',
-    lg: 'w-12 h-12',
-    xl: 'w-16 h-16',
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-14 h-14',
+    xl: 'w-20 h-20',
   };
 
   const titleSizeMap = {
@@ -135,10 +135,10 @@ export function MotorGridLogo({
   if (variant === 'badge') {
     return (
       <div className={`inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#1C1C1E] border border-[#8B5CF6]/30 shadow-lg shadow-[#8B5CF6]/10 ${className}`}>
-        <MotorGridIcon className="w-5 h-5" />
+        <MotorGridIcon className="w-6 h-6" />
         <div className="flex items-center">
-          <span className="font-extrabold tracking-tight text-white text-xs">Motor</span>
-          <span className="font-extrabold tracking-tight text-[#8B5CF6] text-xs">Grid</span>
+          <span className="font-extrabold tracking-tight text-white text-sm">Motor</span>
+          <span className="font-extrabold tracking-tight text-[#8B5CF6] text-sm">Grid</span>
         </div>
       </div>
     );
@@ -147,13 +147,12 @@ export function MotorGridLogo({
   if (variant === 'os') {
     return (
       <div className={`inline-flex items-center gap-3 ${className}`}>
-        <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#0F0D1A] border border-[#8B5CF6]/35 shadow-md shadow-[#8B5CF6]/20">
+        <div className="relative shrink-0 flex items-center justify-center p-2.5 rounded-xl bg-[#0F0D1A] border border-[#8B5CF6]/35 shadow-md shadow-[#8B5CF6]/20">
           <MotorGridIcon className={iconSizeMap[size]} />
         </div>
         <div className="flex flex-col justify-center">
-          <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center gap-1.5 font-['Inter',sans-serif]">
+          <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center font-['Inter',sans-serif]">
             <span>MotorGrid</span>
-            <span className="text-[#8B5CF6]">OS</span>
           </div>
           {showSubtitle && (
             <span className="font-semibold uppercase text-[#A1A1AA] text-[10px] tracking-[0.16em] mt-0.5 font-['Inter',sans-serif]">
@@ -167,13 +166,12 @@ export function MotorGridLogo({
 
   return (
     <div className={`inline-flex items-center gap-3 ${className}`}>
-      <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#101012] border border-[rgba(139,92,246,0.35)] shadow-sm shadow-[#8B5CF6]/15">
+      <div className="relative shrink-0 flex items-center justify-center p-2.5 rounded-xl bg-[#101012] border border-[rgba(139,92,246,0.35)] shadow-md shadow-[#8B5CF6]/20">
         <MotorGridIcon className={iconSizeMap[size]} />
       </div>
       <div className="flex flex-col justify-center">
-        <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center gap-1.5 font-['Inter',sans-serif]">
+        <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center font-['Inter',sans-serif]">
           <span>MotorGrid</span>
-          <span className="text-[#8B5CF6]">OS</span>
         </div>
         {showSubtitle && (
           <span className="font-semibold uppercase text-[#A1A1AA] text-[10px] tracking-[0.16em] mt-0.5 font-['Inter',sans-serif]">

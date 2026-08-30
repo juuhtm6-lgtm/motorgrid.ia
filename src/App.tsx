@@ -70,7 +70,10 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
     try {
       const saved = localStorage.getItem('motorgrid_current_user');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.id) return parsed;
+      }
     } catch (e) {
       console.error('Error reading current user:', e);
     }
@@ -124,6 +127,14 @@ export default function App() {
   const [webhooks, setWebhooks] = useState<WebhookEndpoint[]>(initialWebhooks);
   const [notifications, setNotifications] = useState<ActivityNotification[]>(initialNotifications);
   const [activePlan, setActivePlan] = useState<PlanTier>('Pro');
+  const [activeChatConversationId, setActiveChatConversationId] = useState<string | null>(null);
+  const [activeChatPhone, setActiveChatPhone] = useState<string | null>(null);
+
+  const handleOpenChatFromLead = (lead: LeadItem) => {
+    setActiveChatConversationId(lead.id);
+    setActiveChatPhone(lead.phone);
+    setActiveTab('atendimento');
+  };
 
   // Command Palette Keyboard Shortcut (Cmd+K / Ctrl+K)
   useEffect(() => {
@@ -553,13 +564,17 @@ export default function App() {
           )}
 
           {activeTab === 'atendimento' && (
-            <AtendimentoView />
+            <AtendimentoView
+              initialConversationId={activeChatConversationId}
+              initialLeadPhone={activeChatPhone}
+            />
           )}
 
           {activeTab === 'leads' && (
             <LeadsView
               leads={leads}
               onOpenNewLead={() => setIsCreateLeadModalOpen(true)}
+              onOpenChat={handleOpenChatFromLead}
               onConvertToCustomer={handleConvertLeadToCustomer}
               onUpdateLeadStatus={handleUpdateLeadStatus}
             />
@@ -641,36 +656,169 @@ export default function App() {
             <ReportsView metrics={metrics} />
           )}
 
-          {activeTab === 'meta-ads' && (
-            <MetaAdsView initialSubTab="visao-geral" />
+          {activeTab === 'relatorios' && (
+            <RelatoriosView />
           )}
 
-          {activeTab === 'relatorios' && (
-            <MetaAdsView initialSubTab="visao-geral" />
+          {activeTab === 'meta-ads' && (
+            <MetaAdsView
+              key="meta-ads"
+              initialSubTab="dashboard-ads"
+              onNavigateToChat={(l) =>
+                handleOpenChatFromLead({
+                  id: l.id,
+                  name: l.name,
+                  phone: l.phone,
+                  company: '',
+                  email: '',
+                  estimatedValue: 0,
+                  fleetSize: 0,
+                  status: 'Novo',
+                  source: 'Tráfego Pago',
+                  createdAt: '',
+                  lastContact: '',
+                  assignedTo: '',
+                })
+              }
+            />
           )}
 
           {activeTab === 'campanhas' && (
-            <MetaAdsView initialSubTab="campanhas" />
+            <MetaAdsView
+              key="campanhas"
+              initialSubTab="campanhas"
+              onNavigateToChat={(l) =>
+                handleOpenChatFromLead({
+                  id: l.id,
+                  name: l.name,
+                  phone: l.phone,
+                  company: '',
+                  email: '',
+                  estimatedValue: 0,
+                  fleetSize: 0,
+                  status: 'Novo',
+                  source: 'Tráfego Pago',
+                  createdAt: '',
+                  lastContact: '',
+                  assignedTo: '',
+                })
+              }
+            />
           )}
 
           {activeTab === 'anuncios' && (
-            <MetaAdsView initialSubTab="anuncios" />
+            <MetaAdsView
+              key="anuncios"
+              initialSubTab="anuncios"
+              onNavigateToChat={(l) =>
+                handleOpenChatFromLead({
+                  id: l.id,
+                  name: l.name,
+                  phone: l.phone,
+                  company: '',
+                  email: '',
+                  estimatedValue: 0,
+                  fleetSize: 0,
+                  status: 'Novo',
+                  source: 'Tráfego Pago',
+                  createdAt: '',
+                  lastContact: '',
+                  assignedTo: '',
+                })
+              }
+            />
           )}
 
           {activeTab === 'relatorio-leads' && (
-            <MetaAdsView initialSubTab="relatorio-leads" />
+            <MetaAdsView
+              key="relatorio-leads"
+              initialSubTab="relatorio-leads"
+              onNavigateToChat={(l) =>
+                handleOpenChatFromLead({
+                  id: l.id,
+                  name: l.name,
+                  phone: l.phone,
+                  company: '',
+                  email: '',
+                  estimatedValue: 0,
+                  fleetSize: 0,
+                  status: 'Novo',
+                  source: 'Tráfego Pago',
+                  createdAt: '',
+                  lastContact: '',
+                  assignedTo: '',
+                })
+              }
+            />
           )}
 
           {activeTab === 'conversoes' && (
-            <MetaAdsView initialSubTab="funil-comercial" />
+            <MetaAdsView
+              key="conversoes"
+              initialSubTab="funil-comercial"
+              onNavigateToChat={(l) =>
+                handleOpenChatFromLead({
+                  id: l.id,
+                  name: l.name,
+                  phone: l.phone,
+                  company: '',
+                  email: '',
+                  estimatedValue: 0,
+                  fleetSize: 0,
+                  status: 'Novo',
+                  source: 'Tráfego Pago',
+                  createdAt: '',
+                  lastContact: '',
+                  assignedTo: '',
+                })
+              }
+            />
           )}
 
           {activeTab === 'vendedores' && (
-            <MetaAdsView initialSubTab="rankings" />
+            <MetaAdsView
+              key="vendedores"
+              initialSubTab="rankings"
+              onNavigateToChat={(l) =>
+                handleOpenChatFromLead({
+                  id: l.id,
+                  name: l.name,
+                  phone: l.phone,
+                  company: '',
+                  email: '',
+                  estimatedValue: 0,
+                  fleetSize: 0,
+                  status: 'Novo',
+                  source: 'Tráfego Pago',
+                  createdAt: '',
+                  lastContact: '',
+                  assignedTo: '',
+                })
+              }
+            />
           )}
 
           {activeTab === 'funil-comercial' && (
-            <MetaAdsView initialSubTab="funil-comercial" />
+            <MetaAdsView
+              key="funil-comercial"
+              initialSubTab="funil-comercial"
+              onNavigateToChat={(l) =>
+                handleOpenChatFromLead({
+                  id: l.id,
+                  name: l.name,
+                  phone: l.phone,
+                  company: '',
+                  email: '',
+                  estimatedValue: 0,
+                  fleetSize: 0,
+                  status: 'Novo',
+                  source: 'Tráfego Pago',
+                  createdAt: '',
+                  lastContact: '',
+                  assignedTo: '',
+                })
+              }
+            />
           )}
 
           {(activeTab === 'administracao' || activeTab === 'settings') && (

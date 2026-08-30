@@ -58,7 +58,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [relatoriosExpanded, setRelatoriosExpanded] = useState(true);
 
   // Main menu items with RELATÓRIOS > Meta Ads
-  const mainMenuItems = [
+  const mainMenuItems: Array<{
+    id: ActiveTab;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    isDropdown?: boolean;
+    subItems?: Array<{ id: ActiveTab; label: string; badge?: string }>;
+  }> = [
     {
       id: 'dashboard' as ActiveTab,
       label: 'Dashboard',
@@ -101,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       isDropdown: true,
       subItems: [
         { id: 'relatorios' as ActiveTab, label: 'Visão Geral' },
-        { id: 'meta-ads' as ActiveTab, label: 'Meta Ads', badge: 'NOVO' },
+        { id: 'meta-ads' as ActiveTab, label: 'Meta Ads' },
         { id: 'campanhas' as ActiveTab, label: 'Campanhas' },
         { id: 'anuncios' as ActiveTab, label: 'Anúncios' },
         { id: 'relatorio-leads' as ActiveTab, label: 'Leads' },
@@ -128,15 +134,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex items-center justify-between h-20 px-4 border-b border-[rgba(255,255,255,0.06)] bg-[#0A0A0B]">
         <div className="flex items-center gap-3 overflow-hidden">
           {/* MotorGrid Icon Container */}
-          <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#101012] border border-[rgba(139,92,246,0.35)] shadow-sm shadow-[#8B5CF6]/15">
-            <MotorGridIcon className="w-8 h-8" />
+          <div className="relative shrink-0 flex items-center justify-center p-2.5 rounded-xl bg-[#101012] border border-[rgba(139,92,246,0.35)] shadow-md shadow-[#8B5CF6]/20">
+            <MotorGridIcon className="w-9 h-9" />
           </div>
 
           {!collapsed && (
             <div className="flex flex-col justify-center min-w-0">
-              <div className="font-bold text-white tracking-tight text-[18px] leading-tight flex items-center gap-1">
+              <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center">
                 <span>MotorGrid</span>
-                <span className="text-[#8B5CF6]">OS</span>
               </div>
               <span className="font-semibold uppercase text-[#A1A1AA] text-[10px] tracking-[0.15em] mt-0.5">
                 AUTOMOTIVE COMMAND

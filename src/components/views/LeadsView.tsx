@@ -16,19 +16,22 @@ import {
   Clock,
   ArrowRight,
   TrendingUp,
+  MessageSquare,
 } from 'lucide-react';
 import { LeadItem, LeadStatus, LeadSource, Customer } from '../../types';
 
 interface LeadsViewProps {
   leads: LeadItem[];
   onOpenNewLead: () => void;
-  onConvertToCustomer: (lead: LeadItem) => void;
+  onOpenChat: (lead: LeadItem) => void;
+  onConvertToCustomer?: (lead: LeadItem) => void;
   onUpdateLeadStatus: (id: string, status: LeadStatus) => void;
 }
 
 export const LeadsView: React.FC<LeadsViewProps> = ({
   leads,
   onOpenNewLead,
+  onOpenChat,
   onConvertToCustomer,
   onUpdateLeadStatus,
 }) => {
@@ -252,12 +255,13 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
                     <td className="py-4 px-4 text-right">
                       <button
-                        onClick={() => onConvertToCustomer(lead)}
-                        className="px-3 py-1.5 rounded-xl bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 text-xs font-bold transition-all flex items-center gap-1.5 ml-auto cursor-pointer"
-                        title="Converter em Cliente Ativo"
+                        onClick={() => onOpenChat(lead)}
+                        className="px-3.5 py-1.5 rounded-xl bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 text-xs font-bold transition-all flex items-center gap-1.5 ml-auto cursor-pointer shadow-sm hover:shadow-md hover:shadow-[#8B5CF6]/25 group"
+                        title={`Abrir conversa de ${lead.name} no Atendimento`}
                       >
-                        <span>Converter</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                        <MessageSquare className="w-3.5 h-3.5 text-[#A78BFA] group-hover:text-white transition-colors" />
+                        <span>Conversa</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </button>
                     </td>
                   </tr>

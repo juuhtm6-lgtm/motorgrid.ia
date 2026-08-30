@@ -218,9 +218,46 @@ const CHANNELS_CATALOG: ChannelConfigItem[] = [
   },
 ];
 
-export const AtendimentoView: React.FC = () => {
+interface AtendimentoViewProps {
+  initialConversationId?: string | null;
+  initialLeadPhone?: string | null;
+}
+
+export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
+  initialConversationId,
+  initialLeadPhone,
+}) => {
   const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
-  const [selectedConvId, setSelectedConvId] = useState<string>('conv-1');
+  const [selectedConvId, setSelectedConvId] = useState<string>(() => {
+    if (initialConversationId) {
+      const match = initialConversations.find(
+        (c) =>
+          c.id === initialConversationId ||
+          c.contactPhone === initialConversationId ||
+          (initialLeadPhone && c.contactPhone === initialLeadPhone)
+      );
+      if (match) return match.id;
+    }
+    return 'conv-1';
+  });
+
+  // Atualiza conversa selecionada se a prop mudar
+  useEffect(() => {
+    if (initialConversationId || initialLeadPhone) {
+      const match = conversations.find(
+        (c) =>
+          (initialConversationId && c.id === initialConversationId) ||
+          (initialConversationId && c.contactPhone === initialConversationId) ||
+          (initialLeadPhone && c.contactPhone === initialLeadPhone) ||
+          (initialConversationId && c.contactName.toLowerCase().includes(initialConversationId.toLowerCase()))
+      );
+      if (match) {
+        setSelectedConvId(match.id);
+        setSelectedChannel('todos');
+        setInboxTab('todos');
+      }
+    }
+  }, [initialConversationId, initialLeadPhone, conversations]);
   const [inboxTab, setInboxTab] = useState<'todos' | 'novos' | 'meus'>('todos');
   const [selectedChannel, setSelectedChannel] = useState<string>('todos');
   const [unreadOnly, setUnreadOnly] = useState(false);
@@ -555,7 +592,7 @@ export const AtendimentoView: React.FC = () => {
           const [year, month, day] = apt.date.split('-');
           const formattedDateBr = `${day}/${month}/${year}`;
           
-          const confirmMsg = `📅 *COMPROMISSO CONFIRMADO — MOTORGRID OS* 🏁
+          const confirmMsg = `📅 *COMPROMISSO CONFIRMADO — MOTORGRID* 🏁
 
 Olá, *${apt.contactName}*!
 Seu agendamento foi registrado com sucesso em nossa agenda VIP:
@@ -1538,7 +1575,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   <button
                     type="button"
                     onClick={() => {
-                      const proposal = `🏁 *MOTORGRID OS — SIMULAÇÃO EXCLUSIVA DE FINANCIAMENTO* 🏁
+                      const proposal = `🏁 *MOTORGRID — SIMULAÇÃO EXCLUSIVA DE FINANCIAMENTO* 🏁
 
 Olá, *${selectedConv.contactName}*!
 Preparamos sua simulação com condição VIP para a *${selectedConv.tracking.vehicleOfInterest?.brand} ${selectedConv.tracking.vehicleOfInterest?.model}*:

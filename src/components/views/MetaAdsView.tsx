@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Sparkles,
   TrendingUp,
@@ -66,6 +66,7 @@ import {
   initialMetaDailyTrends,
   initialMetaInsights,
 } from '../../data/mockMetaAdsData';
+import { initialAuthUsers } from '../../data/mockData';
 import { CampaignDetailModal } from '../metaAds/CampaignDetailModal';
 import { MetaConnectModal } from '../metaAds/MetaConnectModal';
 import { ExecutiveDashboardView } from '../metaAds/ExecutiveDashboardView';
@@ -84,20 +85,46 @@ interface MetaAdsViewProps {
     | 'vendedores'
     | 'veiculos'
     | 'rankings'
-    | 'integracao';
+    | 'integracao'
+    | 'visao-dono';
+  onNavigateToChat?: (lead: { id: string; name: string; phone: string }) => void;
 }
 
 export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
   initialSubTab = 'visao-geral',
+  onNavigateToChat,
 }) => {
   // Navigation tabs
-  const [activeTabMode, setActiveTabMode] = useState<'dashboard-ads' | 'relatorio-atendimentos' | 'funil-comercial' | 'visao-dono'>(
-    initialSubTab === 'relatorio-leads' || initialSubTab === 'relatorio-atendimentos'
-      ? 'relatorio-atendimentos'
-      : initialSubTab === 'funil-comercial'
-      ? 'funil-comercial'
-      : 'dashboard-ads'
-  );
+  const [activeTabMode, setActiveTabMode] = useState<
+    'dashboard-ads' | 'campanhas' | 'anuncios' | 'relatorio-leads' | 'funil-comercial' | 'rankings' | 'visao-dono'
+  >(() => {
+    if (initialSubTab === 'relatorio-leads' || initialSubTab === 'relatorio-atendimentos') return 'relatorio-leads';
+    if (initialSubTab === 'campanhas') return 'campanhas';
+    if (initialSubTab === 'anuncios') return 'anuncios';
+    if (initialSubTab === 'conversoes' || initialSubTab === 'funil-comercial') return 'funil-comercial';
+    if (initialSubTab === 'vendedores' || initialSubTab === 'rankings') return 'rankings';
+    if (initialSubTab === 'visao-dono') return 'visao-dono';
+    return 'dashboard-ads';
+  });
+
+  // Sync tab mode when initialSubTab changes from sidebar
+  useEffect(() => {
+    if (initialSubTab === 'relatorio-leads' || initialSubTab === 'relatorio-atendimentos') {
+      setActiveTabMode('relatorio-leads');
+    } else if (initialSubTab === 'campanhas') {
+      setActiveTabMode('campanhas');
+    } else if (initialSubTab === 'anuncios') {
+      setActiveTabMode('anuncios');
+    } else if (initialSubTab === 'conversoes' || initialSubTab === 'funil-comercial') {
+      setActiveTabMode('funil-comercial');
+    } else if (initialSubTab === 'vendedores' || initialSubTab === 'rankings') {
+      setActiveTabMode('rankings');
+    } else if (initialSubTab === 'visao-dono') {
+      setActiveTabMode('visao-dono');
+    } else {
+      setActiveTabMode('dashboard-ads');
+    }
+  }, [initialSubTab]);
 
   // Period filter states
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '14d' | '30d'>('7d');
@@ -113,8 +140,9 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
 
   // Lead Report Filters & Search
   const [leadSearchQuery, setLeadSearchQuery] = useState('');
-  const [leadStatusFilter, setLeadStatusFilter] = useState<'ALL' | 'PENDENTE' | 'EM_ANDAMENTO'>('ALL');
+  const [leadStatusFilter, setLeadStatusFilter] = useState<'ALL' | 'PENDENTE' | 'EM_ANDAMENTO' | 'QUALIFICADO' | 'VENDA'>('ALL');
   const [leadSellerFilter, setLeadSellerFilter] = useState<string>('ALL');
+  const [leadOriginFilter, setLeadOriginFilter] = useState<string>('ALL');
 
   // Modals
   const [selectedCampaignForModal, setSelectedCampaignForModal] = useState<MetaCampaign | null>(null);
@@ -141,20 +169,20 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
 
   // Export CSV
   const handleExportCsv = () => {
-    const headers = 'Protocolo,Contato,Usuario/Equipe,Origem,Inicio,Inatividade,Primeira Resposta,Tempo Total,Status\n';
+    const headers = 'Protocolo,Contato,Telefone,Usuario/Equipe,Origem,Veiculo,Inicio,Inatividade,SLA Resposta,Status\n';
     const rows = leads
       .map(
         (l) =>
-          `"${l.metaLeadId}","${l.customerName} - ${l.customerPhone}","${l.assignedSeller} - ${l.team || 'Vendas'}","${l.origin}","${
-            l.createdAt
-          }","${l.inactivityLabel || '-'}","${l.firstResponseLabel || '-'}","${l.totalTimeLabel || '-'}","${l.statusBadge || l.crmStatus}"`
+          `"${l.metaLeadId}","${l.customerName}","${l.customerPhone}","${l.assignedSeller} - ${l.team || 'Vendas'}","${l.origin}","${
+            l.vehicleInterest || 'Geral'
+          }","${l.createdAt}","${l.inactivityLabel || '-'}","${l.firstResponseLabel || '-'}","${l.statusBadge || l.crmStatus}"`
       )
       .join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `relatorio-atendimentos-motorgrid-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `relatorio-leads-motorgrid-${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -163,8 +191,19 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
   // Filtered Leads
   const filteredLeads = useMemo(() => {
     return leads.filter((l) => {
-      if (leadStatusFilter !== 'ALL' && l.crmStatus !== leadStatusFilter) return false;
+      if (leadStatusFilter !== 'ALL') {
+        if (leadStatusFilter === 'PENDENTE' && l.crmStatus !== 'PENDENTE' && l.crmStatus !== 'NOVO') return false;
+        if (leadStatusFilter === 'EM_ANDAMENTO' && l.crmStatus !== 'EM_ANDAMENTO' && l.crmStatus !== 'EM_ATENDIMENTO') return false;
+        if (leadStatusFilter === 'QUALIFICADO' && l.crmStatus !== 'QUALIFICADO' && l.crmStatus !== 'AGENDADO') return false;
+        if (leadStatusFilter === 'VENDA' && l.crmStatus !== 'VENDA') return false;
+      }
       if (leadSellerFilter !== 'ALL' && l.assignedSeller !== leadSellerFilter) return false;
+      if (leadOriginFilter !== 'ALL') {
+        if (leadOriginFilter === 'meta' && !l.hasMetaBadge && !l.origin.toLowerCase().includes('meta') && !l.origin.toLowerCase().includes('instagram')) return false;
+        if (leadOriginFilter === 'whatsapp' && !l.origin.toLowerCase().includes('whatsapp')) return false;
+        if (leadOriginFilter === 'webmotors' && !l.origin.toLowerCase().includes('webmotors')) return false;
+        if (leadOriginFilter === 'google' && !l.origin.toLowerCase().includes('google')) return false;
+      }
       if (leadSearchQuery) {
         const q = leadSearchQuery.toLowerCase();
         const matchName = l.customerName.toLowerCase().includes(q);
@@ -172,11 +211,12 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
         const matchProtocol = l.metaLeadId.toLowerCase().includes(q);
         const matchSeller = l.assignedSeller.toLowerCase().includes(q);
         const matchOrigin = l.origin.toLowerCase().includes(q);
-        if (!matchName && !matchPhone && !matchProtocol && !matchSeller && !matchOrigin) return false;
+        const matchVehicle = (l.vehicleInterest || '').toLowerCase().includes(q);
+        if (!matchName && !matchPhone && !matchProtocol && !matchSeller && !matchOrigin && !matchVehicle) return false;
       }
       return true;
     });
-  }, [leads, leadStatusFilter, leadSellerFilter, leadSearchQuery]);
+  }, [leads, leadStatusFilter, leadSellerFilter, leadOriginFilter, leadSearchQuery]);
 
   // Totals for WhatsApp section
   const totalSpend = useMemo(() => campaigns.reduce((acc, c) => acc + c.spend, 0), [campaigns]);
@@ -194,17 +234,14 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
           {/* Brand & Title - MotorGrid Logo & Typography */}
           <div className="flex items-center gap-3">
             {/* Neon MotorGrid Icon */}
-            <div className="relative shrink-0 flex items-center justify-center p-1.5 rounded-xl bg-[#1C1C1E] border border-[rgba(255,255,255,0.08)] shadow-sm">
-              <MotorGridIcon className="w-6 h-6" />
+            <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#1C1C1E] border border-[rgba(255,255,255,0.08)] shadow-sm">
+              <MotorGridIcon className="w-7 h-7" />
             </div>
 
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-white text-sm tracking-tight">
                   MotorGrid
-                </span>
-                <span className="font-bold text-[#8B5CF6] text-sm tracking-tight">
-                  OS
                 </span>
               </div>
               <p className="text-[10px] font-semibold tracking-[0.14em] text-[#71717A] uppercase">
@@ -214,10 +251,10 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
           </div>
 
           {/* Subtabs Switcher */}
-          <div className="flex items-center gap-1.5 bg-[#1C1C1E] p-1 rounded-xl border border-[rgba(255,255,255,0.08)]">
+          <div className="flex items-center gap-1 bg-[#1C1C1E] p-1 rounded-xl border border-[rgba(255,255,255,0.08)] overflow-x-auto max-w-full">
             <button
               onClick={() => setActiveTabMode('dashboard-ads')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 activeTabMode === 'dashboard-ads'
                   ? 'bg-[#27272A] text-white shadow-xs'
                   : 'text-[#A1A1AA] hover:text-white'
@@ -226,31 +263,61 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
               Dashboard de Ads
             </button>
             <button
-              onClick={() => setActiveTabMode('relatorio-atendimentos')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeTabMode === 'relatorio-atendimentos'
+              onClick={() => setActiveTabMode('campanhas')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                activeTabMode === 'campanhas'
                   ? 'bg-[#27272A] text-white shadow-xs'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              Relatório de Atendimentos
+              Campanhas
+            </button>
+            <button
+              onClick={() => setActiveTabMode('anuncios')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                activeTabMode === 'anuncios'
+                  ? 'bg-[#27272A] text-white shadow-xs'
+                  : 'text-[#A1A1AA] hover:text-white'
+              }`}
+            >
+              Anúncios
+            </button>
+            <button
+              onClick={() => setActiveTabMode('relatorio-leads')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeTabMode === 'relatorio-leads'
+                  ? 'bg-[#27272A] text-white shadow-xs'
+                  : 'text-[#A1A1AA] hover:text-white'
+              }`}
+            >
+              Relatório de Leads
               <span className="bg-[rgba(139,92,246,0.2)] text-[#8B5CF6] text-[10px] font-bold px-1.5 py-0.2 rounded-full border border-[rgba(139,92,246,0.3)]">
                 4.336
               </span>
             </button>
             <button
               onClick={() => setActiveTabMode('funil-comercial')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 activeTabMode === 'funil-comercial'
                   ? 'bg-[#27272A] text-white shadow-xs'
                   : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
-              Funil Comercial + CRM
+              Funil Comercial
+            </button>
+            <button
+              onClick={() => setActiveTabMode('rankings')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                activeTabMode === 'rankings'
+                  ? 'bg-[#27272A] text-white shadow-xs'
+                  : 'text-[#A1A1AA] hover:text-white'
+              }`}
+            >
+              Vendedores
             </button>
             <button
               onClick={() => setActiveTabMode('visao-dono')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 activeTabMode === 'visao-dono'
                   ? 'bg-[#27272A] text-white shadow-xs'
                   : 'text-[#A1A1AA] hover:text-white'
@@ -902,18 +969,288 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
         )}
 
         {/* ========================================================================= */}
-        {/* MODE B: RELATÓRIO DE ATENDIMENTOS */}
+        {/* MODE: CAMPANHAS */}
         {/* ========================================================================= */}
-        {activeTabMode === 'relatorio-atendimentos' && (
-          <div className="space-y-5">
-            {/* Header: Title & Action Buttons */}
+        {activeTabMode === 'campanhas' && (
+          <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-white tracking-tight">
-                  Relatório de atendimentos
+                  Campanhas Meta Ads
                 </h1>
                 <p className="text-xs text-[#A1A1AA] font-normal mt-0.5">
-                  4336 atendimentos encontrados
+                  11 campanhas ativas e pausadas com rastreamento direto no CRM automotivo
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCsv}
+                  className="bg-[#1C1C1E] hover:bg-[#27272A] border border-[rgba(255,255,255,0.08)] text-[#A1A1AA] hover:text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Upload className="w-4 h-4 text-[#8B5CF6] rotate-180" />
+                  <span>Exportar CSV</span>
+                </button>
+                <button
+                  onClick={handleSync}
+                  className="p-2 bg-[#1C1C1E] hover:bg-[#27272A] border border-[rgba(255,255,255,0.08)] rounded-xl text-[#A1A1AA] hover:text-white transition-colors cursor-pointer"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-[#8B5CF6]' : ''}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Campaign Summary Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-[#1C1C1E] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)]">
+                <span className="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider block mb-1">
+                  INVESTIMENTO TOTAL
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm font-semibold text-[#71717A]">R$</span>
+                  <span className="text-2xl font-extrabold text-white">529,85</span>
+                </div>
+                <span className="text-[11px] text-emerald-400 font-semibold block mt-2">● 11 campanhas rastreadas</span>
+              </div>
+              <div className="bg-[#1C1C1E] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)]">
+                <span className="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider block mb-1">
+                  LEADS / CONVERSAS
+                </span>
+                <span className="text-2xl font-extrabold text-white">92</span>
+                <span className="text-[11px] text-[#8B5CF6] font-semibold block mt-2">CPL Médio R$ 5,76</span>
+              </div>
+              <div className="bg-[#1C1C1E] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)]">
+                <span className="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider block mb-1">
+                  TAXA DE CLIQUES (CTR)
+                </span>
+                <span className="text-2xl font-extrabold text-white">4,55%</span>
+                <span className="text-[11px] text-emerald-400 font-semibold block mt-2">Acima do benchmark (2.8%)</span>
+              </div>
+              <div className="bg-[#1C1C1E] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)]">
+                <span className="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider block mb-1">
+                  VENDAS CONCRETIZADAS
+                </span>
+                <span className="text-2xl font-extrabold text-emerald-400">11 carros</span>
+                <span className="text-[11px] text-emerald-400/80 font-semibold block mt-2">R$ 700.700 faturados</span>
+              </div>
+            </div>
+
+            {/* Performance por Campanha Table */}
+            <div className="bg-[#101012] rounded-[14px] border border-[rgba(255,255,255,0.08)] overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between bg-[#1C1C1E]">
+                <span className="font-bold text-white text-sm">Todas as Campanhas</span>
+                <span className="text-xs text-[#71717A] font-medium">Clique em uma linha para ver detalhes e criativos</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-[rgba(255,255,255,0.06)] text-[#A1A1AA] font-bold uppercase text-[10px] tracking-wider bg-[#1C1C1E]">
+                      <th className="py-3 px-5">CAMPANHA</th>
+                      <th className="py-3 px-4">STATUS</th>
+                      <th className="py-3 px-4 text-right">INVESTIMENTO</th>
+                      <th className="py-3 px-4 text-right">IMPR.</th>
+                      <th className="py-3 px-4 text-right">CLIQUES</th>
+                      <th className="py-3 px-4 text-right">CTR</th>
+                      <th className="py-3 px-4 text-right">CPC</th>
+                      <th className="py-3 px-4 text-right">CONVERSAS</th>
+                      <th className="py-3 px-4 text-right">CPL</th>
+                      <th className="py-3 px-5 text-right">CONNECT</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[rgba(255,255,255,0.05)] text-white">
+                    {campaigns.map((camp) => (
+                      <tr
+                        key={camp.id}
+                        onClick={() => setSelectedCampaignForModal(camp)}
+                        className="hover:bg-[#1C1C1E] transition-colors cursor-pointer group"
+                      >
+                        <td className="py-3.5 px-5 font-semibold text-white group-hover:text-[#8B5CF6]">
+                          {camp.name}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          {camp.status === 'ACTIVE' ? (
+                            <span className="inline-flex items-center gap-1 bg-[rgba(16,185,129,0.15)] text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/20">
+                              ● ATIVA
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 bg-[#27272A] text-[#A1A1AA] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[rgba(255,255,255,0.06)]">
+                              ● PAUSADA
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-medium text-[#A1A1AA]">
+                          R$ {camp.spend.toFixed(2).replace('.', ',')}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-medium text-[#A1A1AA]">
+                          {camp.impressions.toLocaleString('pt-BR')}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-medium text-[#A1A1AA]">
+                          {camp.clicks}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-medium text-[#A1A1AA]">
+                          {camp.ctr.toFixed(2).replace('.', ',')}%
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-medium text-[#A1A1AA]">
+                          {camp.cpc > 0 ? `R$ ${camp.cpc.toFixed(2).replace('.', ',')}` : '—'}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-semibold text-white">
+                          {camp.leads > 0 ? camp.leads : '—'}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-semibold text-white">
+                          {camp.cpl > 0 ? `R$ ${camp.cpl.toFixed(2).replace('.', ',')}` : '—'}
+                        </td>
+                        <td className="py-3.5 px-5 text-right font-medium text-[#8B5CF6]">
+                          {camp.clicks > 0 && camp.leads > 0
+                            ? `${((camp.leads / camp.clicks) * 100).toFixed(2).replace('.', ',')}%`
+                            : camp.clicks > 0
+                            ? '0,00%'
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* MODE: ANÚNCIOS & CRIATIVOS */}
+        {/* ========================================================================= */}
+        {activeTabMode === 'anuncios' && (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">
+                  Anúncios &amp; Criativos Meta
+                </h1>
+                <p className="text-xs text-[#A1A1AA] font-normal mt-0.5">
+                  Galeria de criativos, vídeos e carrosséis com métricas de conversão e custo por lead
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCsv}
+                  className="bg-[#1C1C1E] hover:bg-[#27272A] border border-[rgba(255,255,255,0.08)] text-[#A1A1AA] hover:text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Upload className="w-4 h-4 text-[#8B5CF6] rotate-180" />
+                  <span>Exportar</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Top Creatives Gallery */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+              {ads.map((ad, idx) => (
+                <div
+                  key={ad.id}
+                  onClick={() => setSelectedAdForModal(ad)}
+                  className="bg-[#1C1C1E] rounded-[14px] border border-[rgba(255,255,255,0.08)] overflow-hidden hover:border-[#8B5CF6] transition-all cursor-pointer group flex flex-col"
+                >
+                  <div className="h-36 relative bg-[#101012] overflow-hidden">
+                    <img
+                      src={ad.creativeThumbnail}
+                      alt={ad.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-black/80 backdrop-blur-xs text-[#8B5CF6] text-[11px] font-bold flex items-center justify-center border border-[rgba(139,92,246,0.3)]">
+                      {idx + 1}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-[#1C1C1E] flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-white text-xs truncate group-hover:text-[#8B5CF6] transition-colors">
+                        {ad.name}
+                      </h4>
+                      <p className="text-[11px] text-[#A1A1AA] font-medium mt-0.5">
+                        {ad.leads} conversas · CPL R$ {ad.cpl.toFixed(2).replace('.', ',')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Table of Ads */}
+            <div className="bg-[#101012] rounded-[14px] border border-[rgba(255,255,255,0.08)] overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between bg-[#1C1C1E]">
+                <span className="font-bold text-white text-sm">Tabela de Anúncios</span>
+                <span className="text-xs text-[#71717A] italic">clique numa linha para pré-visualizar o criativo</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-[rgba(255,255,255,0.06)] text-[#A1A1AA] font-bold uppercase text-[10px] tracking-wider bg-[#1C1C1E]">
+                      <th className="py-3 px-5">ANÚNCIO</th>
+                      <th className="py-3 px-4">CAMPANHA</th>
+                      <th className="py-3 px-4 text-right">INVESTIMENTO</th>
+                      <th className="py-3 px-4 text-right">IMPR.</th>
+                      <th className="py-3 px-4 text-right">CLIQUES</th>
+                      <th className="py-3 px-4 text-right">CTR</th>
+                      <th className="py-3 px-4 text-right">CONVERSAS</th>
+                      <th className="py-3 px-5 text-right">CPL</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[rgba(255,255,255,0.05)] text-white">
+                    {ads.map((ad) => (
+                      <tr
+                        key={ad.id}
+                        onClick={() => setSelectedAdForModal(ad)}
+                        className="hover:bg-[#1C1C1E] transition-colors cursor-pointer group"
+                      >
+                        <td className="py-3 px-5 font-semibold text-white group-hover:text-[#8B5CF6] flex items-center gap-3">
+                          <img
+                            src={ad.creativeThumbnail}
+                            alt=""
+                            className="w-8 h-8 rounded-lg object-cover ring-1 ring-[rgba(255,255,255,0.08)]"
+                          />
+                          <span>{ad.name}</span>
+                        </td>
+                        <td className="py-3 px-4 text-[#A1A1AA] truncate max-w-xs">{ad.campaignName}</td>
+                        <td className="py-3 px-4 text-right font-medium text-[#A1A1AA]">
+                          R$ {ad.spend.toFixed(2).replace('.', ',')}
+                        </td>
+                        <td className="py-3 px-4 text-right font-medium text-[#A1A1AA]">
+                          {ad.impressions.toLocaleString('pt-BR')}
+                        </td>
+                        <td className="py-3 px-4 text-right font-medium text-[#A1A1AA]">{ad.clicks}</td>
+                        <td className="py-3 px-4 text-right font-medium text-[#A1A1AA]">
+                          {ad.ctr.toFixed(2).replace('.', ',')}%
+                        </td>
+                        <td className="py-3 px-4 text-right font-bold text-white">{ad.leads}</td>
+                        <td className="py-3 px-5 text-right font-bold text-white">
+                          R$ {ad.cpl.toFixed(2).replace('.', ',')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* MODE: RELATÓRIO DE LEADS (META ADS & CRM) */}
+        {/* ========================================================================= */}
+        {activeTabMode === 'relatorio-leads' && (
+          <div className="space-y-6">
+            {/* Header: Title & Action Buttons */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+                  <span>Relatório de Leads</span>
+                  <span className="bg-[#8B5CF6]/20 text-[#C4B5FD] text-xs font-bold px-2.5 py-0.5 rounded-full border border-[#8B5CF6]/30">
+                    Meta Ads &amp; CRM
+                  </span>
+                </h1>
+                <p className="text-xs text-[#A1A1AA] font-normal mt-0.5">
+                  Rastreamento completo de leads captados, origens de tráfego pago, SLA de resposta e conversão
                 </p>
               </div>
 
@@ -925,7 +1262,7 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
                     type="text"
                     value={leadSearchQuery}
                     onChange={(e) => setLeadSearchQuery(e.target.value)}
-                    placeholder="Filtrar..."
+                    placeholder="Buscar por lead, tel, carro, protocolo..."
                     className="w-full bg-[#1C1C1E] border border-[rgba(255,255,255,0.08)] rounded-xl pl-3 pr-8 py-2 text-xs text-white placeholder:text-[#71717A] focus:outline-none focus:border-[#8B5CF6]"
                   />
                   {leadSearchQuery ? (
@@ -940,42 +1277,31 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
                   )}
                 </div>
 
-                {/* Mais Filtros Dropdown */}
-                <div className="relative group">
-                  <button className="bg-[#1C1C1E] hover:bg-[#27272A] border border-[rgba(255,255,255,0.08)] text-[#A1A1AA] hover:text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors flex items-center gap-2 cursor-pointer">
-                    <span>Mais filtros</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-[#71717A]" />
-                  </button>
-                  <div className="hidden group-hover:block absolute right-0 mt-1 w-48 bg-[#1C1C1E] border border-[rgba(255,255,255,0.08)] rounded-xl shadow-2xl p-2 z-20 space-y-1">
-                    <button
-                      onClick={() => setLeadStatusFilter('ALL')}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-white hover:bg-[#27272A]"
-                    >
-                      Todos os Status
-                    </button>
-                    <button
-                      onClick={() => setLeadStatusFilter('PENDENTE')}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-amber-400 hover:bg-[#27272A]"
-                    >
-                      Apenas Pendentes
-                    </button>
-                    <button
-                      onClick={() => setLeadStatusFilter('EM_ANDAMENTO')}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-blue-400 hover:bg-[#27272A]"
-                    >
-                      Apenas Em Andamento
-                    </button>
-                  </div>
-                </div>
-
-                {/* Concluir Atendimentos */}
-                <button
-                  onClick={() => alert('Atendimentos selecionados foram marcados como concluídos no CRM.')}
-                  className="bg-[#1C1C1E] hover:bg-[#27272A] border border-[rgba(255,255,255,0.08)] text-[#A1A1AA] hover:text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                {/* Filtro de Status */}
+                <select
+                  value={leadStatusFilter}
+                  onChange={(e) => setLeadStatusFilter(e.target.value as any)}
+                  className="bg-[#1C1C1E] border border-[rgba(255,255,255,0.08)] text-xs text-zinc-300 rounded-xl px-3 py-2 focus:outline-none focus:border-[#8B5CF6] cursor-pointer"
                 >
-                  <CheckSquare className="w-4 h-4 text-[#8B5CF6]" />
-                  <span>Concluir atendimentos</span>
-                </button>
+                  <option value="ALL">Todos os Status</option>
+                  <option value="PENDENTE">Pendentes</option>
+                  <option value="EM_ANDAMENTO">Em Atendimento</option>
+                  <option value="QUALIFICADO">Qualificados</option>
+                  <option value="VENDA">Vendas Concluídas</option>
+                </select>
+
+                {/* Filtro de Origem */}
+                <select
+                  value={leadOriginFilter}
+                  onChange={(e) => setLeadOriginFilter(e.target.value)}
+                  className="bg-[#1C1C1E] border border-[rgba(255,255,255,0.08)] text-xs text-zinc-300 rounded-xl px-3 py-2 focus:outline-none focus:border-[#8B5CF6] cursor-pointer"
+                >
+                  <option value="ALL">Todos os Canais</option>
+                  <option value="meta">Meta Ads / Instagram</option>
+                  <option value="whatsapp">WhatsApp Direto</option>
+                  <option value="webmotors">Webmotors Pro</option>
+                  <option value="google">Google Ads</option>
+                </select>
 
                 {/* Exportar */}
                 <button
@@ -983,7 +1309,7 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
                   className="bg-[#1C1C1E] hover:bg-[#27272A] border border-[rgba(255,255,255,0.08)] text-[#A1A1AA] hover:text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Upload className="w-4 h-4 text-[#8B5CF6] rotate-180" />
-                  <span>Exportar</span>
+                  <span>Exportar CSV</span>
                 </button>
 
                 {/* Refresh */}
@@ -996,19 +1322,132 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
               </div>
             </div>
 
-            {/* Atendimentos Table */}
+            {/* 5 KPI Top Cards for Leads */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+              <div className="bg-[#1C1C1E] rounded-[14px] p-4 border border-[rgba(255,255,255,0.06)]">
+                <span className="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider block">
+                  TOTAL DE LEADS
+                </span>
+                <div className="text-2xl font-black text-white mt-1">4.336</div>
+                <span className="text-[11px] text-emerald-400 font-semibold block mt-0.5">+18.4% vs período ant.</span>
+              </div>
+              <div className="bg-[#1C1C1E] rounded-[14px] p-4 border border-[rgba(255,255,255,0.06)]">
+                <span className="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider block">
+                  CPL MÉDIO META ADS
+                </span>
+                <div className="text-2xl font-black text-[#C4B5FD] mt-1">R$ 5,76</div>
+                <span className="text-[11px] text-emerald-400 font-semibold block mt-0.5">-12.0% mais eficiente</span>
+              </div>
+              <div className="bg-[#1C1C1E] rounded-[14px] p-4 border border-[rgba(255,255,255,0.06)]">
+                <span className="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider block">
+                  QUALIFICAÇÃO (SDR/IA)
+                </span>
+                <div className="text-2xl font-black text-white mt-1">63,0%</div>
+                <span className="text-[11px] text-[#A1A1AA] font-medium block mt-0.5">2.731 leads com perfil</span>
+              </div>
+              <div className="bg-[#1C1C1E] rounded-[14px] p-4 border border-[rgba(255,255,255,0.06)]">
+                <span className="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider block">
+                  TEMPO SLA 1ª RESPOSTA
+                </span>
+                <div className="text-2xl font-black text-emerald-400 mt-1">1.8 min</div>
+                <span className="text-[11px] text-emerald-400/90 font-medium block mt-0.5">● Meta &lt; 3 min atingida</span>
+              </div>
+              <div className="bg-[#1C1C1E] rounded-[14px] p-4 border border-[rgba(255,255,255,0.06)]">
+                <span className="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider block">
+                  VENDAS GERADAS
+                </span>
+                <div className="text-2xl font-black text-emerald-400 mt-1">18 carros</div>
+                <span className="text-[11px] text-emerald-400/90 font-medium block mt-0.5">R$ 6,66M faturados</span>
+              </div>
+            </div>
+
+            {/* Visual Channel Distribution & Daily Trend Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Channel Distribution */}
+              <div className="lg:col-span-5 bg-[#1C1C1E] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)] space-y-4 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-white text-sm">Distribuição de Leads por Canal</h3>
+                  <p className="text-xs text-[#71717A] mt-0.5">Participação dos canais na captação total</p>
+
+                  <div className="space-y-3 mt-4">
+                    {[
+                      { channel: 'Instagram & Facebook Ads', pct: '52%', count: '2.254 leads', color: '#8B5CF6' },
+                      { channel: 'WhatsApp Direto', pct: '24%', count: '1.040 leads', color: '#22C55E' },
+                      { channel: 'Webmotors Pro', pct: '14%', count: '607 leads', color: '#EF4444' },
+                      { channel: 'Google Search Ads', pct: '7%', count: '304 leads', color: '#3B82F6' },
+                      { channel: 'OLX & iCarros', pct: '3%', count: '131 leads', color: '#F59E0B' },
+                    ].map((item, idx) => (
+                      <div key={idx} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-semibold text-white">{item.channel}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[#A1A1AA] text-[11px]">{item.count}</span>
+                            <span className="font-bold text-white font-mono">{item.pct}</span>
+                          </div>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-[#0A0A0B] overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: item.pct, backgroundColor: item.color }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-[#0A0A0B] border border-[rgba(255,255,255,0.06)] text-[11px] text-zinc-300">
+                  ⚡ <strong>Insight de Performance:</strong> O canal <strong>Instagram Ads</strong> gerou o menor custo por lead (R$ 5,76) e 61% das conversões em visita.
+                </div>
+              </div>
+
+              {/* Daily Trend */}
+              <div className="lg:col-span-7 bg-[#1C1C1E] rounded-[14px] p-5 border border-[rgba(255,255,255,0.06)] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-white text-sm">Volume Diário de Leads vs CPL</h3>
+                    <p className="text-xs text-[#71717A] mt-0.5">Leads diários (barras) e custo unitário em R$ (linha)</p>
+                  </div>
+                  <span className="text-xs text-[#A1A1AA] font-mono">Últimos 7 dias</span>
+                </div>
+
+                <div className="h-56 w-full pt-1">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={dailyTrends} margin={{ top: 10, right: 15, left: -15, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                      <XAxis dataKey="date" stroke="#71717A" fontSize={11} tickLine={false} axisLine={{ stroke: 'rgba(255,255,255,0.08)' }} />
+                      <YAxis yAxisId="left" stroke="#71717A" fontSize={11} tickLine={false} axisLine={false} />
+                      <YAxis yAxisId="right" orientation="right" stroke="#71717A" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `R$${v}`} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#1C1C1E', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', color: '#FFF', fontSize: '12px' }}
+                      />
+                      <Bar yAxisId="left" dataKey="leads" name="Leads" fill="#8B5CF6" radius={[4, 4, 0, 0]} barSize={22} />
+                      <Line yAxisId="right" type="monotone" dataKey="cpl" name="CPL (R$)" stroke="#10B981" strokeWidth={2} dot={{ fill: '#10B981', r: 3 }} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            {/* Leads Table */}
             <div className="bg-[#101012] rounded-[14px] border border-[rgba(255,255,255,0.08)] overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between bg-[#1C1C1E]">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-white text-sm">Lista Detalhada de Leads</span>
+                  <span className="text-xs text-[#71717A]">({filteredLeads.length} exibidos de 4.336)</span>
+                </div>
+                <span className="text-xs text-[#A1A1AA]">Sincronização em tempo real</span>
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead>
                     <tr className="border-b border-[rgba(255,255,255,0.06)] bg-[#1C1C1E] text-[#A1A1AA] font-bold text-[11px]">
-                      <th className="py-3.5 px-4">Protocolo</th>
-                      <th className="py-3.5 px-4">Contato</th>
-                      <th className="py-3.5 px-4">Usuário/Equipe</th>
-                      <th className="py-3.5 px-4">Origem</th>
-                      <th className="py-3.5 px-4">Início/Conclusão</th>
-                      <th className="py-3.5 px-4">Tempo de inatividade</th>
-                      <th className="py-3.5 px-5">Tempo atendimento</th>
+                      <th className="py-3.5 px-4">Protocolo / Status</th>
+                      <th className="py-3.5 px-4">Contato / Telefone</th>
+                      <th className="py-3.5 px-4">Canal / Origem</th>
+                      <th className="py-3.5 px-4">Veículo de Interesse</th>
+                      <th className="py-3.5 px-4">Vendedor Responsável</th>
+                      <th className="py-3.5 px-4">Data / Início</th>
+                      <th className="py-3.5 px-4">Tempo SLA</th>
+                      <th className="py-3.5 px-5 text-right">Ação</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[rgba(255,255,255,0.05)] text-white">
@@ -1016,15 +1455,23 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
                       <tr key={lead.id} className="hover:bg-[#1C1C1E] transition-colors">
                         {/* Protocolo + Status Badge */}
                         <td className="py-3 px-4 align-top">
-                          <span className="font-semibold text-white block text-xs">
+                          <span className="font-mono font-bold text-white block text-xs">
                             {lead.metaLeadId}
                           </span>
-                          {lead.statusBadge === 'Em andamento' ? (
-                            <span className="inline-block mt-1 bg-[rgba(59,130,246,0.15)] text-blue-400 font-bold text-[10px] px-2 py-0.5 rounded-full border border-blue-500/20">
-                              Em andamento
+                          {lead.crmStatus === 'VENDA' ? (
+                            <span className="inline-block mt-1 bg-emerald-500/20 text-emerald-400 font-bold text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">
+                              Venda Fechada
+                            </span>
+                          ) : lead.crmStatus === 'QUALIFICADO' || lead.crmStatus === 'AGENDADO' ? (
+                            <span className="inline-block mt-1 bg-purple-500/20 text-[#DDD6FE] font-bold text-[10px] px-2 py-0.5 rounded-full border border-purple-500/30">
+                              Qualificado
+                            </span>
+                          ) : lead.statusBadge === 'Em andamento' || lead.crmStatus === 'EM_ANDAMENTO' ? (
+                            <span className="inline-block mt-1 bg-blue-500/20 text-blue-400 font-bold text-[10px] px-2 py-0.5 rounded-full border border-blue-500/30">
+                              Em Atendimento
                             </span>
                           ) : (
-                            <span className="inline-block mt-1 bg-[rgba(245,158,11,0.15)] text-amber-400 font-bold text-[10px] px-2 py-0.5 rounded-full border border-amber-500/20">
+                            <span className="inline-block mt-1 bg-amber-500/20 text-amber-400 font-bold text-[10px] px-2 py-0.5 rounded-full border border-amber-500/30">
                               Pendente
                             </span>
                           )}
@@ -1035,18 +1482,8 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
                           <span className="font-bold text-white block text-xs">
                             {lead.customerName}
                           </span>
-                          <span className="text-[#71717A] text-[11px] block mt-0.5">
+                          <span className="text-[#A1A1AA] font-mono text-[11px] block mt-0.5">
                             {lead.customerPhone}
-                          </span>
-                        </td>
-
-                        {/* Usuário / Equipe */}
-                        <td className="py-3 px-4 align-top">
-                          <span className="font-bold text-white block text-xs">
-                            {lead.assignedSeller}
-                          </span>
-                          <span className="text-[#71717A] text-[11px] block mt-0.5">
-                            {lead.team || 'Vendas'}
                           </span>
                         </td>
 
@@ -1057,6 +1494,10 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
                               {lead.channelType === 'instagram' ? (
                                 <div className="w-4 h-4 rounded-full bg-gradient-to-tr from-amber-500 to-rose-600 flex items-center justify-center text-[10px] text-white">
                                   📸
+                                </div>
+                              ) : lead.origin.toLowerCase().includes('webmotors') ? (
+                                <div className="w-4 h-4 rounded-full bg-rose-600 flex items-center justify-center text-[10px] text-white font-bold">
+                                  W
                                 </div>
                               ) : (
                                 <div className="w-4 h-4 rounded-full bg-[#22C55E] flex items-center justify-center text-[10px] text-white">
@@ -1070,39 +1511,66 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
                             {lead.hasMetaBadge && (
                               <div className="flex items-center gap-1 text-[#8B5CF6] font-bold text-[11px]">
                                 <span className="text-sm">∞</span>
-                                <span>Meta</span>
+                                <span>Meta Ads</span>
                               </div>
                             )}
                           </div>
                         </td>
 
-                        {/* Início / Conclusão */}
-                        <td className="py-3 px-4 align-top text-[11px] text-[#A1A1AA]">
-                          <div>
-                            <span className="font-semibold text-[#71717A] uppercase">INÍCIO: </span>
-                            <span>{lead.createdAt}</span>
-                          </div>
-                          <div>
-                            <span className="font-semibold text-[#71717A] uppercase">CONCLUSÃO: </span>
-                            <span>-</span>
-                          </div>
+                        {/* Veículo de Interesse */}
+                        <td className="py-3 px-4 align-top">
+                          <span className="font-semibold text-white block text-xs">
+                            {lead.vehicleInterest || 'Porsche 911 Carrera'}
+                          </span>
+                          <span className="text-emerald-400 font-mono text-[11px] block mt-0.5">
+                            {lead.vehiclePrice ? `R$ ${lead.vehiclePrice.toLocaleString('pt-BR')}` : 'R$ 740.000'}
+                          </span>
                         </td>
 
-                        {/* Tempo de Inatividade */}
-                        <td className="py-3 px-4 align-top font-bold text-[11px] text-[#A1A1AA] uppercase">
-                          {lead.inactivityLabel || 'HÁ 10 MINUTOS'}
+                        {/* Usuário / Equipe */}
+                        <td className="py-3 px-4 align-top">
+                          <span className="font-bold text-white block text-xs">
+                            {lead.assignedSeller}
+                          </span>
+                          <span className="text-[#71717A] text-[11px] block mt-0.5">
+                            {lead.team || 'Vendas Matriz'}
+                          </span>
+                        </td>
+
+                        {/* Início */}
+                        <td className="py-3 px-4 align-top text-[11px] text-[#A1A1AA]">
+                          <span>{lead.createdAt}</span>
                         </td>
 
                         {/* Tempo de Atendimento */}
-                        <td className="py-3 px-5 align-top text-[11px] text-[#A1A1AA]">
-                          <div>
-                            <span className="font-semibold text-[#71717A] uppercase">PRIMEIRA RESPOSTA: </span>
-                            <span>{lead.firstResponseLabel || '-'}</span>
-                          </div>
-                          <div>
-                            <span className="font-semibold text-[#71717A] uppercase">TEMPO TOTAL: </span>
-                            <span>{lead.totalTimeLabel || '-'}</span>
-                          </div>
+                        <td className="py-3 px-4 align-top text-[11px]">
+                          <span className="text-emerald-400 font-mono font-bold block">
+                            {lead.firstResponseLabel || '1.4 min'}
+                          </span>
+                          <span className="text-[#71717A] text-[10px]">
+                            {lead.inactivityLabel || 'Há 10 min'}
+                          </span>
+                        </td>
+
+                        {/* Ação: Conversa */}
+                        <td className="py-3 px-5 align-top text-right">
+                          <button
+                            onClick={() => {
+                              if (onNavigateToChat) {
+                                onNavigateToChat({
+                                  id: lead.id,
+                                  name: lead.customerName,
+                                  phone: lead.customerPhone,
+                                });
+                              } else {
+                                alert(`Abrindo conversa com ${lead.customerName} no módulo de Atendimento.`);
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 text-xs font-semibold transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <span>Conversa</span>
+                            <span>→</span>
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -1111,16 +1579,90 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
               </div>
 
               {/* Pagination footer */}
-              <div className="px-5 py-3 bg-[#1C1C1E] border-t border-[rgba(255,255,255,0.06)] flex items-center justify-end gap-3 text-xs text-[#A1A1AA] font-medium">
-                <span>1-50 de 4336</span>
+              <div className="px-5 py-3 bg-[#1C1C1E] border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between text-xs text-[#A1A1AA] font-medium">
+                <span>Exibindo 1-{filteredLeads.length} de 4.336 leads</span>
                 <div className="flex items-center gap-1">
-                  <button className="p-1 rounded bg-[#27272A] text-white disabled:opacity-40" disabled>
-                    ‹
+                  <button className="p-1.5 px-3 rounded-lg bg-[#27272A] text-white disabled:opacity-40" disabled>
+                    Anterior
                   </button>
-                  <button className="p-1 rounded bg-[#27272A] text-white hover:bg-[#8B5CF6] transition-colors">
-                    ›
+                  <button className="p-1.5 px-3 rounded-lg bg-[#27272A] text-white hover:bg-[#8B5CF6] transition-colors">
+                    Próxima
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* MODE: RANKINGS & VENDEDORES */}
+        {/* ========================================================================= */}
+        {activeTabMode === 'rankings' && (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">
+                  Rankings &amp; Produtividade Comercial
+                </h1>
+                <p className="text-xs text-[#A1A1AA] font-normal mt-0.5">
+                  Desempenho individual e da equipe na conversão de leads e tempo de SLA
+                </p>
+              </div>
+            </div>
+
+            {/* Ranking Table */}
+            <div className="bg-[#101012] rounded-[14px] border border-[rgba(255,255,255,0.08)] overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-[rgba(255,255,255,0.06)] flex items-center justify-between bg-[#1C1C1E]">
+                <span className="font-bold text-white text-sm">Ranking de Vendedores</span>
+                <span className="text-xs text-[#71717A]">Atualizado em tempo real</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-[rgba(255,255,255,0.06)] bg-[#1C1C1E] text-[#A1A1AA] uppercase font-semibold text-[10px]">
+                      <th className="p-3.5 px-5">Posição / Vendedor</th>
+                      <th className="p-3.5">Unidade</th>
+                      <th className="p-3.5 text-center">Vendas Fechadas</th>
+                      <th className="p-3.5">Faturamento Total</th>
+                      <th className="p-3.5">Tempo Médio SLA</th>
+                      <th className="p-3.5 text-right px-5">Nota MotorGrid AI</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[rgba(255,255,255,0.05)]">
+                    {initialAuthUsers
+                      .filter((u) => u.role !== 'Administrador')
+                      .map((u, idx) => (
+                        <tr key={u.id} className="hover:bg-[#1C1C1E] transition-colors">
+                          <td className="p-3.5 px-5 flex items-center gap-3">
+                            <span className="font-bold text-zinc-400 font-mono w-4">#{idx + 1}</span>
+                            <img
+                              src={u.avatar}
+                              alt={u.name}
+                              className="w-8 h-8 rounded-full object-cover ring-1 ring-[#8B5CF6]/40"
+                            />
+                            <div>
+                              <div className="font-bold text-white text-xs">{u.name}</div>
+                              <div className="text-[10px] text-[#A1A1AA]">{u.role}</div>
+                            </div>
+                          </td>
+                          <td className="p-3.5 text-[#A1A1AA]">Matriz Alphaville</td>
+                          <td className="p-3.5 text-center font-bold text-white font-mono">
+                            {idx === 0 ? 8 : idx === 1 ? 6 : 4} carros
+                          </td>
+                          <td className="p-3.5 font-bold text-emerald-400 font-mono">
+                            R$ {idx === 0 ? '2.980.000' : idx === 1 ? '2.140.000' : '1.540.000'}
+                          </td>
+                          <td className="p-3.5 font-mono text-zinc-300">{u.avgResponseTimeMin} min</td>
+                          <td className="p-3.5 text-right px-5">
+                            <span className="px-2 py-0.5 rounded bg-purple-500/20 text-[#DDD6FE] border border-purple-500/30 font-mono font-bold">
+                              {u.scoreAi || 94} pts
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

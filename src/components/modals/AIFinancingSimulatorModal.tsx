@@ -132,7 +132,7 @@ export const AIFinancingSimulatorModal: React.FC<AIFinancingSimulatorModalProps>
       ? `🚗 *Veículo na Troca:* ${tradeInModel}\n   • Avaliação MotorGrid: R$ ${tradeInEvaluation.toLocaleString('pt-BR')} (95.6% FIPE)\n   • Entrada em Dinheiro: R$ ${cashDownPayment.toLocaleString('pt-BR')}\n`
       : `💵 *Entrada em Dinheiro:* R$ ${cashDownPayment.toLocaleString('pt-BR')}\n`;
 
-    return `🏁 *MOTORGRID OS — SIMULAÇÃO EXCLUSIVA DE FINANCIAMENTO* 🏁
+    return `🏁 *MOTORGRID — SIMULAÇÃO EXCLUSIVA DE FINANCIAMENTO* 🏁
 
 Olá, *${leadName}*!
 Preparamos a condição personalizada com taxa especial pré-aprovada pelo nosso sistema de IA para a sua *${vehicle.brand} ${vehicle.model}*:
