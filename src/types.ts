@@ -273,6 +273,15 @@ export interface ConversationEvent {
   authorName: string;
 }
 
+export interface AttendanceSummary {
+  text: string;
+  nextAction?: string;
+  source: 'ai' | 'manual' | 'ai_edited';
+  isManuallyEdited: boolean;
+  lastUpdated: string;
+  updatedBy: string;
+}
+
 export interface Conversation {
   id: string;
   contactId: string;
@@ -295,6 +304,7 @@ export interface Conversation {
   tracking: LeadTrackingInfo;
   messages: ChatMessage[];
   events: ConversationEvent[];
+  summary?: AttendanceSummary;
 }
 
 // CRM & Pipelines

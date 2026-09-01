@@ -642,71 +642,71 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
         }}
       />
 
-      {/* Top Banner KPI Bar - MotorGrid Palette */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3.5 rounded-2xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-[#A1A1AA]">Fila de Atendimento</div>
-            <div className="text-xl font-bold text-white mt-0.5">8 aguardando</div>
-            <div className="text-[10px] text-emerald-400 mt-0.5 font-medium">● SLA médio: 1.8 min</div>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#8B5CF6]/20 text-[#8B5CF6] border border-[#8B5CF6]/30">
-            <MessageSquare className="w-5 h-5" />
-          </div>
+      {/* ========================================================================= */}
+      {/* 1. FILTRAR POR CANAL NO TOPO (BARRA SUPERIOR HORIZONTAL INTEGRADA) */}
+      {/* ========================================================================= */}
+      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-[#141416] border border-white/10 shadow-sm">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B5CF6] flex items-center gap-1.5">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#8B5CF6]" />
+            Filtrar por Canal
+          </span>
+          {selectedChannel !== 'todos' && (
+            <button
+              onClick={() => setSelectedChannel('todos')}
+              className="text-[10px] text-[#A1A1AA] hover:text-white px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer font-medium"
+            >
+              <X className="w-3 h-3" />
+              Limpar Filtro
+            </button>
+          )}
         </div>
 
-        <div className="p-3.5 rounded-2xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-[#A1A1AA]">Leads Quentes (Alta Intenção)</div>
-            <div className="text-xl font-bold text-rose-400 mt-0.5">5 oportunidades</div>
-            <div className="text-[10px] text-[#A1A1AA] mt-0.5">Grid Score &gt; 85 pts</div>
-          </div>
-          <div className="p-2.5 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/30">
-            <Flame className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="p-3.5 rounded-2xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-[#A1A1AA]">Test Drives Agendados Hoje</div>
-            <div className="text-xl font-bold text-[#8B5CF6] mt-0.5">4 visitas VIP</div>
-            <div className="text-[10px] text-[#A1A1AA] mt-0.5">Lembretes WhatsApp ativos</div>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#8B5CF6]/20 text-[#8B5CF6] border border-[#8B5CF6]/30">
-            <Calendar className="w-5 h-5" />
-          </div>
-        </div>
-
-        {/* AI Financing Simulator Shortcut in Header Banner */}
-        <div 
-          onClick={() => setIsFinancingModalOpen(true)}
-          className="p-3.5 rounded-2xl bg-gradient-to-br from-[#1C1C1E] to-[#27272A] border border-[#8B5CF6]/40 hover:border-[#8B5CF6] flex items-center justify-between cursor-pointer transition-all hover:scale-[1.01] shadow-lg group"
-        >
-          <div>
-            <div className="text-[11px] font-bold text-[#8B5CF6] flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              Simulador Financiamento IA
-            </div>
-            <div className="text-sm font-bold text-white mt-0.5 group-hover:text-[#8B5CF6] transition-colors">
-              Simular em 1 Clique
-            </div>
-            <div className="text-[10px] text-[#A1A1AA] mt-0.5">Itaú, Santander, BV &amp; PAN</div>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#8B5CF6] text-white shadow-lg shadow-[#8B5CF6]/30">
-            <Calculator className="w-5 h-5" />
-          </div>
+        {/* Scrollable Channel Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none flex-1 min-w-0">
+          {CHANNELS_CATALOG.map((ch) => {
+            const isActive = selectedChannel === ch.id;
+            const count = getChannelCount(ch.id);
+            return (
+              <button
+                key={ch.id}
+                onClick={() => setSelectedChannel(ch.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border ${
+                  isActive
+                    ? 'bg-[#8B5CF6] text-white border-[#8B5CF6] shadow-md shadow-[#8B5CF6]/30'
+                    : 'bg-[#1C1C1E] text-[#A1A1AA] hover:text-white hover:border-[#8B5CF6]/50 border-white/10'
+                }`}
+              >
+                <span
+                  className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black ${
+                    isActive ? 'bg-black/30 text-white' : `${ch.badgeBg} ${ch.badgeText}`
+                  }`}
+                >
+                  {ch.iconTag}
+                </span>
+                <span>{ch.shortLabel}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    isActive ? 'bg-black/40 text-white' : 'bg-[#27272A] text-[#A1A1AA]'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* MOTORGRID OS WHATSAPP HYBRID CHAT INTERFACE */}
+      {/* 2. ÁREA PRINCIPAL: CONVERSAS | CHAT / ATENDIMENTO | PAINEL CONTEXTUAL DIREITO */}
       {/* ========================================================================= */}
-      <div className="h-[820px] rounded-2xl border border-white/10 bg-[#101012] overflow-hidden shadow-2xl flex flex-col md:flex-row">
+      <div className="h-[840px] rounded-2xl border border-white/10 bg-[#101012] overflow-hidden shadow-2xl flex flex-col md:flex-row">
         
         {/* ========================================================================= */}
         {/* COLUNA 1: WHATSAPP LEFT CONVERSATION LIST (MOTORGRID THEME) */}
         {/* ========================================================================= */}
-        <div className="w-full md:w-[290px] lg:w-[310px] border-r border-white/10 bg-[#141416] flex flex-col shrink-0 h-full">
+        <div className="w-full md:w-[280px] lg:w-[300px] xl:w-[310px] border-r border-white/10 bg-[#141416] flex flex-col shrink-0 h-full">
           
           {/* Header do Chat Sidebar */}
           <div className="h-[64px] px-4 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 shrink-0">
@@ -747,13 +747,13 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
             </div>
           </div>
 
-          {/* Search Bar & Channel Filters */}
+          {/* Search Bar & Inbox Filter Tabs */}
           <div className="p-3 bg-[#141416] border-b border-white/5 space-y-2.5">
             <div className="relative flex items-center bg-[#1C1C1E] border border-white/10 rounded-xl px-3 py-2 focus-within:border-[#8B5CF6] transition-all">
               <Search className="w-4 h-4 text-[#A1A1AA] shrink-0 mr-2.5" />
               <input
                 type="text"
-                placeholder="Buscar cliente, carro, canal (ex: mobiauto, tiktok)..."
+                placeholder="Buscar cliente, carro, canal..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-transparent text-xs text-white placeholder-[#A1A1AA] outline-none"
@@ -767,7 +767,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
 
             {/* Status Filter Chips */}
             <div className="flex items-center justify-between gap-1">
-              <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none text-[11px]">
+              <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none text-[11px] w-full">
                 {[
                   { id: 'todos', label: `Tudo (${conversations.length})` },
                   { id: 'novos', label: `Novos (${conversations.filter((c) => c.isNewLead || c.status === 'Novo').length})` },
@@ -776,7 +776,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   <button
                     key={tab.id}
                     onClick={() => setInboxTab(tab.id as any)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                    className={`flex-1 px-2 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-center ${
                       inboxTab === tab.id
                         ? 'bg-[#8B5CF6] text-white shadow-sm'
                         : 'bg-[#1C1C1E] text-[#A1A1AA] hover:text-white hover:bg-[#27272A] border border-white/5'
@@ -785,56 +785,6 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                     {tab.label}
                   </button>
                 ))}
-              </div>
-            </div>
-
-            {/* Channels Ribbon Filter */}
-            <div className="space-y-1 pt-1 border-t border-white/5">
-              <div className="flex items-center justify-between text-[10px] text-[#A1A1AA] px-0.5">
-                <span className="font-semibold uppercase tracking-wider flex items-center gap-1 text-[#8B5CF6]">
-                  <SlidersHorizontal className="w-3 h-3" />
-                  Filtrar por Canal
-                </span>
-                {selectedChannel !== 'todos' && (
-                  <button
-                    onClick={() => setSelectedChannel('todos')}
-                    className="text-[#8B5CF6] hover:text-white font-semibold flex items-center gap-0.5 cursor-pointer"
-                  >
-                    <X className="w-3 h-3" />
-                    Limpar
-                  </button>
-                )}
-              </div>
-
-              {/* Scrollable Channels Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin text-[11px] pt-0.5">
-                {CHANNELS_CATALOG.map((ch) => {
-                  const isActive = selectedChannel === ch.id;
-                  const count = getChannelCount(ch.id);
-                  return (
-                    <button
-                      key={ch.id}
-                      onClick={() => setSelectedChannel(ch.id)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border ${
-                        isActive
-                          ? `${ch.pillActiveBg} ${ch.pillBorder}`
-                          : 'bg-[#1C1C1E] text-[#A1A1AA] hover:text-white hover:bg-[#27272A] border-white/5'
-                      }`}
-                    >
-                      <span className={`px-1 py-0.2 rounded text-[9px] font-mono font-black ${
-                        isActive ? 'bg-black/30 text-white' : `${ch.badgeBg} ${ch.badgeText}`
-                      }`}>
-                        {ch.iconTag}
-                      </span>
-                      <span>{ch.shortLabel}</span>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                        isActive ? 'bg-black/40 text-white' : 'bg-[#27272A] text-[#A1A1AA]'
-                      }`}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
               </div>
             </div>
           </div>
@@ -1391,397 +1341,222 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
         </div>
 
         {/* ========================================================================= */}
-        {/* COLUNA 3: WHATSAPP DADOS DO CONTATO & SIMULADOR FINANCIAMENTO IA (RIGHT DRAWER) */}
+        {/* COLUNA 3: PAINEL CONTEXTUAL DO ATENDIMENTO / PAINEL DE AÇÃO DO VENDEDOR */}
         {/* ========================================================================= */}
         {showContactInfo && (
-          <div className="w-full md:w-[270px] lg:w-[285px] border-l border-white/10 bg-[#141416] flex flex-col shrink-0 h-full overflow-y-auto scrollbar-thin">
+          <div className="w-full md:w-[280px] lg:w-[300px] xl:w-[320px] border-l border-white/10 bg-[#141416] flex flex-col shrink-0 h-full overflow-y-auto scrollbar-thin">
             
-            {/* Header Tabs: Ficha 360° | ⚡ Simulador IA */}
-            <div className="h-[64px] px-2.5 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 shrink-0">
+            {/* Header do Painel Lateral */}
+            <div className="h-[64px] px-3.5 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-[#8B5CF6]/20 text-[#8B5CF6]">
+                  <Zap className="w-4 h-4" />
+                </span>
+                <div>
+                  <span className="text-xs font-bold text-white block leading-tight">Painel de Ação</span>
+                  <span className="text-[10px] text-[#A1A1AA]">Contexto do Atendimento</span>
+                </div>
+              </div>
+
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setRightDrawerTab('profile')}
-                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    rightDrawerTab === 'profile'
-                      ? 'bg-[#8B5CF6] text-white shadow-md'
-                      : 'text-[#A1A1AA] hover:text-white hover:bg-white/5'
-                  }`}
+                  onClick={() => setIsFinancingModalOpen(true)}
+                  className="p-1.5 rounded-lg hover:bg-[#8B5CF6]/20 text-[#8B5CF6] transition-colors cursor-pointer"
+                  title="Abrir Simulador IA Completo"
                 >
-                  Ficha 360°
+                  <Sparkles className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setRightDrawerTab('financing')}
-                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                    rightDrawerTab === 'financing'
-                      ? 'bg-[#8B5CF6] text-white shadow-md'
-                      : 'text-[#8B5CF6] hover:text-white hover:bg-[#8B5CF6]/20'
-                  }`}
+                  onClick={() => setShowContactInfo(false)}
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-[#A1A1AA] hover:text-white transition-colors cursor-pointer"
+                  title="Ocultar Painel Lateral"
                 >
-                  <Sparkles className="w-3 h-3" />
-                  Simulador IA
+                  <X className="w-4 h-4" />
                 </button>
               </div>
-
-              <button
-                onClick={() => setShowContactInfo(false)}
-                className="p-1 rounded-lg hover:bg-white/10 text-[#A1A1AA] hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
 
-            {/* TAB CONTENT 1: SIMULADOR DE FINANCIAMENTO IA */}
-            {rightDrawerTab === 'financing' ? (
-              <div className="p-3 space-y-3">
-                
-                {/* Banner IA Financer */}
-                <div className="p-3 rounded-xl bg-gradient-to-br from-[#8B5CF6]/20 to-[#6D28D9]/10 border border-[#8B5CF6]/40 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-white flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-[#8B5CF6]" />
-                      Grid AI Financer
-                    </span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#8B5CF6] text-white font-extrabold">
-                      {selectedConv.leadScore || 92} pts
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-[#A1A1AA] leading-snug">
-                    Simulação automática com taxas pré-aprovadas MotorGrid.
-                  </p>
-                </div>
-
-                {/* Veículo & Preço */}
-                <div className="p-2.5 rounded-xl bg-[#1C1C1E] border border-white/10 space-y-1">
-                  <span className="text-[9px] font-bold text-[#A1A1AA] uppercase block">Veículo em Negociação</span>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-white truncate max-w-[140px]">
-                      {selectedConv.tracking.vehicleOfInterest?.brand} {selectedConv.tracking.vehicleOfInterest?.model}
-                    </span>
-                    <span className="text-[11px] font-extrabold text-[#8B5CF6]">
-                      R$ {carPrice.toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Veículo na Troca Toggle & Value */}
-                <div className="p-2.5 rounded-xl bg-[#1C1C1E] border border-white/10 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-bold text-white flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={miniTradeIn}
-                        onChange={(e) => setMiniTradeIn(e.target.checked)}
-                        className="rounded border-white/20 text-[#8B5CF6] focus:ring-[#8B5CF6] bg-[#27272A]"
-                      />
-                      <span>Troca: Compass 2022</span>
-                    </label>
-                    <span className="text-[9px] text-emerald-400 font-semibold">95% FIPE</span>
-                  </div>
-
-                  {miniTradeIn && (
-                    <div>
-                      <div className="flex items-center justify-between text-[10px] text-[#A1A1AA] mb-1">
-                        <span>Avaliação:</span>
-                        <span className="font-bold text-white">R$ {miniTradeInVal.toLocaleString('pt-BR')}</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="100000"
-                        max="160000"
-                        step="2000"
-                        value={miniTradeInVal}
-                        onChange={(e) => setMiniTradeInVal(Number(e.target.value))}
-                        className="w-full accent-[#8B5CF6] cursor-pointer"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Entrada em Dinheiro */}
-                <div className="p-2.5 rounded-xl bg-[#1C1C1E] border border-white/10 space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-bold text-white">Entrada Complementar:</span>
-                    <span className="font-extrabold text-white">R$ {miniCashDown.toLocaleString('pt-BR')}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100000"
-                    step="5000"
-                    value={miniCashDown}
-                    onChange={(e) => setMiniCashDown(Number(e.target.value))}
-                    className="w-full accent-[#8B5CF6] cursor-pointer"
-                  />
-                  <div className="flex items-center justify-between text-[10px] text-[#A1A1AA] pt-1 border-t border-white/5">
-                    <span>Saldo Financiado:</span>
-                    <span className="font-bold text-[#8B5CF6] text-xs">
-                      R$ {miniFinanced.toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Seletor de Banco */}
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-bold text-[#A1A1AA]">Banco Parceiro:</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { id: 'itau', name: 'Itaú Auto', rate: '0,99% a.m.' },
-                      { id: 'santander', name: 'Santander', rate: '1,09% a.m.' },
-                      { id: 'bv', name: 'BV Financeira', rate: '1,15% a.m.' },
-                      { id: 'pan', name: 'Banco PAN', rate: '1,22% a.m.' },
-                    ].map((b) => (
-                      <button
-                        key={b.id}
-                        type="button"
-                        onClick={() => setMiniBank(b.id as any)}
-                        className={`p-2 rounded-xl text-left border transition-all cursor-pointer ${
-                          miniBank === b.id
-                            ? 'bg-[#8B5CF6]/20 border-[#8B5CF6] text-white'
-                            : 'bg-[#1C1C1E] border-white/10 text-[#A1A1AA] hover:border-white/20'
-                        }`}
-                      >
-                        <span className="text-[11px] font-bold block">{b.name}</span>
-                        <span className="text-[10px] text-[#8B5CF6] font-semibold">{b.rate}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Simulação Calculada pela IA */}
-                <div className="p-3.5 rounded-xl bg-[#1C1C1E] border border-[#8B5CF6]/40 space-y-2">
-                  <span className="text-[10px] font-bold text-[#A1A1AA] uppercase block">
-                    Cenários de Parcelas Gerados pela IA
+            {/* Corpo do Painel Lateral: Hierarquia dos 5 Cards */}
+            <div className="p-3 space-y-3">
+              
+              {/* ------------------------------------------------------------- */}
+              {/* 1. FOTO E INFORMAÇÕES DO VEÍCULO DE INTERESSE & CONTATO */}
+              {/* ------------------------------------------------------------- */}
+              <div className="p-3 bg-[#1C1C1E] border border-white/10 rounded-xl space-y-2.5 shadow-sm">
+                <div className="flex items-center justify-between text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">
+                  <span className="flex items-center gap-1 text-white">
+                    <Car className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                    Veículo de Interesse
                   </span>
+                  {renderChannelChip(selectedConv.channel, true)}
+                </div>
 
-                  <div className="space-y-1.5">
-                    <div className="p-2 rounded-lg bg-[#101012] flex items-center justify-between border border-[#8B5CF6]/30">
-                      <span className="text-xs font-bold text-white">48x de</span>
-                      <span className="text-sm font-black text-[#8B5CF6]">
-                        R$ {miniPmt48.toLocaleString('pt-BR')}
-                      </span>
+                {/* Foto do Veículo com Preço em destaque */}
+                <div className="relative h-28 w-full rounded-lg overflow-hidden border border-white/10 bg-[#101012]">
+                  <img
+                    src={selectedConv.tracking.vehicleOfInterest?.photo || 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=600&auto=format&fit=crop&q=80'}
+                    alt={selectedConv.tracking.vehicleOfInterest?.model || 'Veículo'}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/85 text-[#8B5CF6] font-extrabold text-xs border border-[#8B5CF6]/40 shadow-md">
+                    R$ {carPrice.toLocaleString('pt-BR')}
+                  </span>
+                </div>
+
+                {/* Dados do Carro */}
+                <div className="space-y-1.5">
+                  <div>
+                    <h4 className="font-bold text-white text-xs leading-tight">
+                      {selectedConv.tracking.vehicleOfInterest?.brand || 'Toyota'}{' '}
+                      {selectedConv.tracking.vehicleOfInterest?.model || 'Corolla XEi 2.0 DirectShift'}
+                    </h4>
+                    <p className="text-[10px] text-[#A1A1AA] truncate">
+                      {selectedConv.tracking.vehicleOfInterest?.version || '2.0 16V Flex DirectShift'}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5 text-[10px] text-white">
+                    <div className="p-1.5 rounded-lg bg-[#101012] border border-white/5 flex items-center justify-between">
+                      <span className="text-[#A1A1AA]">Ano:</span>
+                      <span className="font-bold">{selectedConv.tracking.vehicleOfInterest?.year || '2024'}</span>
                     </div>
-
-                    <div className="p-2 rounded-lg bg-[#101012] flex items-center justify-between border border-white/5">
-                      <span className="text-xs text-[#A1A1AA]">36x de</span>
-                      <span className="text-xs font-bold text-white">
-                        R$ {miniPmt36.toLocaleString('pt-BR')}
+                    <div className="p-1.5 rounded-lg bg-[#101012] border border-white/5 flex items-center justify-between">
+                      <span className="text-[#A1A1AA]">Km:</span>
+                      <span className="font-bold">
+                        {(selectedConv.tracking.vehicleOfInterest?.km || 42000).toLocaleString('pt-BR')} km
                       </span>
                     </div>
                   </div>
+
+                  <div className="flex items-center justify-between text-[10px] text-[#A1A1AA] pt-1 border-t border-white/5">
+                    <span className="truncate">📍 {selectedConv.tracking.vehicleOfInterest?.store || 'Alphaville Matriz'}</span>
+                    {selectedConv.temperature && getTemperatureBadge(selectedConv.temperature)}
+                  </div>
                 </div>
 
-                {/* Botões de Ação do Simulador */}
-                <div className="space-y-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const proposal = `🏁 *MOTORGRID — SIMULAÇÃO EXCLUSIVA DE FINANCIAMENTO* 🏁
+                {/* Mini Contato e Ações Rápidas */}
+                <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <img
+                      src={selectedConv.contactAvatar}
+                      alt={selectedConv.contactName}
+                      className="w-7 h-7 rounded-full object-cover ring-1 ring-white/20 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <span className="text-[11px] font-bold text-white block truncate">{selectedConv.contactName}</span>
+                      <span className="text-[9px] text-[#A1A1AA] block font-mono">{selectedConv.contactPhone}</span>
+                    </div>
+                  </div>
 
-Olá, *${selectedConv.contactName}*!
-Preparamos sua simulação com condição VIP para a *${selectedConv.tracking.vehicleOfInterest?.brand} ${selectedConv.tracking.vehicleOfInterest?.model}*:
-
-🚘 *Veículo:* ${selectedConv.tracking.vehicleOfInterest?.brand} ${selectedConv.tracking.vehicleOfInterest?.model} (${selectedConv.tracking.vehicleOfInterest?.year})
-💵 *Valor Especial:* R$ ${carPrice.toLocaleString('pt-BR')}
-🚗 *Avaliação da sua Troca:* R$ ${miniTradeInVal.toLocaleString('pt-BR')}
-💰 *Entrada Total:* R$ ${totalMiniDown.toLocaleString('pt-BR')}
-📊 *Saldo Financiado:* R$ ${miniFinanced.toLocaleString('pt-BR')}
-
-🌟 *PLANO RECOMENDADO PELA IA:*
-• *48x* de R$ ${miniPmt48.toLocaleString('pt-BR')} (Taxa: ${(miniRate * 100).toFixed(2)}% a.m.)
-• *36x* de R$ ${miniPmt36.toLocaleString('pt-BR')}
-
-✅ *Score A+:* Pré-aprovado sem burocracia. Agendamos seu Test Drive hoje?`;
-                      handleSendMessage(proposal);
-                    }}
-                    className="w-full py-2.5 px-3 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold shadow-lg shadow-[#8B5CF6]/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>Enviar Proposta ao WhatsApp</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsFinancingModalOpen(true)}
-                    className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-white text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/10"
-                  >
-                    <Calculator className="w-4 h-4 text-[#8B5CF6]" />
-                    <span>Abrir Simulador Completo (Modal)</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* TAB CONTENT 2: FICHA 360° DO CONTATO */
-              <div className="p-3 space-y-3">
-                
-                {/* Profile Card */}
-                <div className="p-3.5 bg-[#1C1C1E] border border-white/10 rounded-2xl flex flex-col items-center text-center">
-                  <img
-                    src={selectedConv.contactAvatar}
-                    alt={selectedConv.contactName}
-                    className="w-16 h-16 rounded-full object-cover shadow-lg ring-3 ring-[#8B5CF6]/30"
-                  />
-                  <h4 className="font-bold text-sm text-white mt-2 truncate max-w-[200px]">{selectedConv.contactName}</h4>
-                  <p className="text-[11px] text-[#A1A1AA]">{selectedConv.contactPhone}</p>
-
-                  {/* 4 Call & Quick Actions: Áudio | Vídeo | Agendar | Simular */}
-                  <div className="grid grid-cols-4 gap-2 mt-3 w-full text-[#8B5CF6]">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
-                      className="flex flex-col items-center gap-1 text-[10px] hover:opacity-80 cursor-pointer"
+                      className="p-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white transition-colors cursor-pointer"
                       title="Ligar para Cliente"
                     >
-                      <span className="p-2 rounded-xl bg-[#27272A] border border-white/5 text-white hover:bg-[#323236] transition-colors">
-                        <Phone className="w-3.5 h-3.5" />
-                      </span>
-                      <span className="text-[#A1A1AA]">Áudio</span>
+                      <Phone className="w-3 h-3 text-[#A1A1AA]" />
                     </button>
-                    
-                    <button
-                      className="flex flex-col items-center gap-1 text-[10px] hover:opacity-80 cursor-pointer"
-                      title="Videochamada VIP"
-                    >
-                      <span className="p-2 rounded-xl bg-[#27272A] border border-white/5 text-white hover:bg-[#323236] transition-colors">
-                        <Video className="w-3.5 h-3.5" />
-                      </span>
-                      <span className="text-[#A1A1AA]">Vídeo</span>
-                    </button>
-
                     <button
                       onClick={() => setIsScheduleModalOpen(true)}
-                      className="flex flex-col items-center gap-1 text-[10px] hover:opacity-80 cursor-pointer"
-                      title="Abrir Agenda de Test Drive (Mês/Dia/Ano)"
+                      className="p-1.5 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-[#8B5CF6] transition-colors cursor-pointer"
+                      title="Agendar Visita / Test Drive"
                     >
-                      <span className="p-2 rounded-xl bg-[#8B5CF6]/20 border border-[#8B5CF6]/40 text-[#8B5CF6] hover:bg-[#8B5CF6]/30 transition-colors">
-                        <Calendar className="w-3.5 h-3.5" />
-                      </span>
-                      <span className="text-[#8B5CF6] font-bold">Agendar</span>
+                      <Calendar className="w-3 h-3" />
                     </button>
-
                     <button
-                      onClick={() => setRightDrawerTab('financing')}
-                      className="flex flex-col items-center gap-1 text-[10px] hover:opacity-80 cursor-pointer"
-                      title="Simulador de Financiamento IA"
+                      onClick={() => setIsFinancingModalOpen(true)}
+                      className="p-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white transition-colors cursor-pointer"
+                      title="Simular Financiamento IA"
                     >
-                      <span className="p-2 rounded-xl bg-[#27272A] border border-white/5 text-white hover:bg-[#323236] transition-colors">
-                        <Calculator className="w-3.5 h-3.5" />
-                      </span>
-                      <span className="text-[#A1A1AA]">Simular</span>
+                      <Calculator className="w-3 h-3 text-[#8B5CF6]" />
                     </button>
                   </div>
-                </div>
-
-                {/* Grid Score Automotivo */}
-                <div className="p-3 bg-[#1C1C1E] border border-white/10 rounded-2xl space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-white flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-[#8B5CF6]" />
-                      Grid Score
-                    </span>
-                    <span className="text-sm font-black text-[#8B5CF6] font-mono">
-                      {selectedConv.leadScore || 92} / 100
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 rounded-full bg-[#27272A] overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#8B5CF6] to-purple-400 rounded-full"
-                      style={{ width: `${selectedConv.leadScore || 92}%` }}
-                    />
-                  </div>
-                  <p className="text-[10px] text-[#A1A1AA] leading-snug">
-                    ⚡ <strong>Alta Intenção:</strong> Entrada pré-aprovada e troca com laudo em dia.
-                  </p>
-                </div>
-
-                {/* Veículo de Interesse */}
-                {selectedConv.tracking.vehicleOfInterest && (
-                  <div className="p-3 bg-[#1C1C1E] border border-white/10 rounded-2xl space-y-2">
-                    <span className="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider block">
-                      Veículo de Interesse
-                    </span>
-                    <div className="rounded-xl bg-[#101012] border border-white/10 overflow-hidden">
-                      <div className="relative h-24 w-full overflow-hidden">
-                        <img
-                          src={selectedConv.tracking.vehicleOfInterest.photo}
-                          alt={selectedConv.tracking.vehicleOfInterest.model}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        />
-                        <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/80 text-[#8B5CF6] font-bold text-[10px] border border-[#8B5CF6]/40">
-                          R$ {selectedConv.tracking.vehicleOfInterest.price.toLocaleString('pt-BR')}
-                        </span>
-                      </div>
-
-                      <div className="p-2 space-y-1.5">
-                        <div>
-                          <h5 className="font-bold text-white text-[11px] truncate">
-                            {selectedConv.tracking.vehicleOfInterest.brand}{' '}
-                            {selectedConv.tracking.vehicleOfInterest.model}
-                          </h5>
-                          <p className="text-[9px] text-[#A1A1AA] truncate">
-                            {selectedConv.tracking.vehicleOfInterest.version}
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-1 text-[9px] text-white/80">
-                          <div className="p-1 rounded bg-[#1C1C1E]">
-                            <span className="text-[#A1A1AA] block">Ano:</span>
-                            <span className="font-bold">{selectedConv.tracking.vehicleOfInterest.year}</span>
-                          </div>
-                          <div className="p-1 rounded bg-[#1C1C1E]">
-                            <span className="text-[#A1A1AA] block">Km:</span>
-                            <span className="font-bold">
-                              {selectedConv.tracking.vehicleOfInterest.km.toLocaleString('pt-BR')} km
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="text-[9px] text-[#A1A1AA] pt-1 border-t border-white/5 truncate">
-                          📍 {selectedConv.tracking.vehicleOfInterest.store}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Origem do Lead & Campanha */}
-                <div className="p-3 bg-[#1C1C1E] border border-white/10 rounded-2xl space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider block">
-                      Canal &amp; Origem
-                    </span>
-                    {renderChannelChip(selectedConv.channel, true)}
-                  </div>
-                  <div className="space-y-1 font-mono text-[10px]">
-                    <div className="p-1.5 rounded-lg bg-[#101012] text-white/80 border border-white/5 flex items-center justify-between">
-                      <span className="text-[#A1A1AA]">Origem: </span>
-                      <span className="text-[#8B5CF6] font-semibold truncate max-w-[130px]">{selectedConv.tracking.origin}</span>
-                    </div>
-                    {selectedConv.tracking.campaign && (
-                      <div className="p-1.5 rounded-lg bg-[#101012] text-white/80 border border-white/5 truncate">
-                        <span className="text-[#A1A1AA]">Campanha: </span>
-                        <span>{selectedConv.tracking.campaign}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-1.5 pt-1">
-                  <button
-                    onClick={() => setIsScheduleModalOpen(true)}
-                    className="w-full py-2 px-2.5 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-[11px] font-bold shadow-md shadow-[#8B5CF6]/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>Agendar Test Drive / Visita</span>
-                  </button>
-                  <button
-                    onClick={() => setRightDrawerTab('financing')}
-                    className="w-full py-1.5 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[11px] font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-[#8B5CF6]" />
-                    <span>Simular Financiamento IA</span>
-                  </button>
                 </div>
               </div>
-            )}
+
+              {/* ------------------------------------------------------------- */}
+              {/* 2. FILA DE ATENDIMENTO */}
+              {/* ------------------------------------------------------------- */}
+              <div className="p-3 rounded-xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between shadow-sm">
+                <div>
+                  <div className="text-[11px] font-semibold text-[#A1A1AA] flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                    Fila de Atendimento
+                  </div>
+                  <div className="text-base font-bold text-white mt-0.5">8 aguardando</div>
+                  <div className="text-[10px] text-emerald-400 mt-0.5 font-medium flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    ● SLA médio: 1.8 min
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#8B5CF6]/15 text-[#8B5CF6] border border-[#8B5CF6]/30 shrink-0">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* ------------------------------------------------------------- */}
+              {/* 3. LEADS QUENTES (ALTA INTENÇÃO) */}
+              {/* ------------------------------------------------------------- */}
+              <div className="p-3 rounded-xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between shadow-sm">
+                <div>
+                  <div className="text-[11px] font-semibold text-[#A1A1AA] flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5 text-rose-400 fill-rose-400" />
+                    Leads Quentes <span className="text-[9px] text-rose-400 font-bold">(Alta Intenção)</span>
+                  </div>
+                  <div className="text-base font-bold text-rose-400 mt-0.5">5 oportunidades</div>
+                  <div className="text-[10px] text-[#A1A1AA] mt-0.5 flex items-center gap-1">
+                    <span>Grid Score &gt; 85 pts</span>
+                    <span className="text-[#8B5CF6] font-semibold">({selectedConv.leadScore || 92} pts)</span>
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/30 shrink-0">
+                  <Flame className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* ------------------------------------------------------------- */}
+              {/* 4. TEST DRIVES AGENDADOS HOJE */}
+              {/* ------------------------------------------------------------- */}
+              <div
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="p-3 rounded-xl bg-[#1C1C1E] border border-white/10 hover:border-[#8B5CF6]/40 flex items-center justify-between shadow-sm cursor-pointer transition-all hover:bg-[#232326] group"
+              >
+                <div>
+                  <div className="text-[11px] font-semibold text-[#A1A1AA] flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                    Test Drives Agendados Hoje
+                  </div>
+                  <div className="text-base font-bold text-[#8B5CF6] mt-0.5 group-hover:text-purple-300 transition-colors">
+                    4 visitas VIP
+                  </div>
+                  <div className="text-[10px] text-[#A1A1AA] mt-0.5">Lembretes WhatsApp ativos</div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#8B5CF6]/15 text-[#8B5CF6] border border-[#8B5CF6]/30 shrink-0 group-hover:scale-105 transition-transform">
+                  <Calendar className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* ------------------------------------------------------------- */}
+              {/* 5. SIMULADOR FINANCIAMENTO IA */}
+              {/* ------------------------------------------------------------- */}
+              <div
+                onClick={() => setIsFinancingModalOpen(true)}
+                className="p-3 rounded-xl bg-gradient-to-br from-[#1C1C1E] via-[#23202E] to-[#1C1C1E] border border-[#8B5CF6]/50 hover:border-[#8B5CF6] flex items-center justify-between shadow-lg cursor-pointer transition-all hover:scale-[1.01] group"
+              >
+                <div>
+                  <div className="text-[11px] font-bold text-[#8B5CF6] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                    Simulador Financiamento IA
+                  </div>
+                  <div className="text-sm font-bold text-white mt-0.5 group-hover:text-[#8B5CF6] transition-colors">
+                    Simular em 1 Clique
+                  </div>
+                  <div className="text-[10px] text-[#A1A1AA] mt-0.5">Itaú, Santander, BV &amp; PAN</div>
+                </div>
+                <div className="p-2.5 rounded-xl bg-[#8B5CF6] text-white shadow-lg shadow-[#8B5CF6]/40 shrink-0 group-hover:rotate-6 transition-transform">
+                  <Calculator className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

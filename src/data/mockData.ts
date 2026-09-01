@@ -506,6 +506,14 @@ export const initialConversations: Conversation[] = [
         timestamp: '12:05',
       },
     ],
+    summary: {
+      text: `Interesse: BMW 320i M Sport 2024 (R$ 289.900)\nTroca: Jeep Compass Longitude 2022 (35.000 km)\nFinanciamento: Sim (financiar saldo da diferença)\nIntenção: Alta (Grid Score 92 pts)\nOrigem: Instagram Ads (Feirão Premium)`,
+      nextAction: '💰 Simular financiamento com a avaliação da troca e enviar proposta',
+      source: 'ai',
+      isManuallyEdited: false,
+      lastUpdated: 'Hoje às 12:06',
+      updatedBy: '✦ IA MotorGrid',
+    },
   },
   {
     id: 'conv-2',
