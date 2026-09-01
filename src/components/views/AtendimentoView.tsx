@@ -39,11 +39,12 @@ import {
   Radio,
   SlidersHorizontal,
 } from 'lucide-react';
-import { Conversation, LeadTemperature, CommunicationChannel } from '../../types';
+import { Conversation, LeadTemperature, CommunicationChannel, AttendanceSummary } from '../../types';
 import { initialConversations } from '../../data/mockData';
 import { TransferChatModal } from '../modals/TransferChatModal';
 import { ScheduleAppointmentModal } from '../modals/ScheduleAppointmentModal';
 import { AIFinancingSimulatorModal } from '../modals/AIFinancingSimulatorModal';
+import { LeadAttendanceSummaryCard } from '../atendimento/LeadAttendanceSummaryCard';
 
 interface ChannelConfigItem {
   id: string;
@@ -425,6 +426,12 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
     }
     setShowEmojiPicker(false);
     setShowAttachMenu(false);
+  };
+
+  const handleUpdateSummary = (convId: string, updatedSummary: AttendanceSummary) => {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === convId ? { ...c, summary: updatedSummary } : c))
+    );
   };
 
   const handleSimulateVoiceRecording = () => {
@@ -1474,7 +1481,18 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               </div>
 
               {/* ------------------------------------------------------------- */}
-              {/* 2. FILA DE ATENDIMENTO */}
+              {/* 2. RESUMO DO ATENDIMENTO (IA + EDIÇÃO MANUAL + PRÓXIMA AÇÃO) */}
+              {/* ------------------------------------------------------------- */}
+              <LeadAttendanceSummaryCard
+                conversation={selectedConv}
+                onUpdateSummary={handleUpdateSummary}
+                onOpenScheduleModal={() => setIsScheduleModalOpen(true)}
+                onOpenFinancingModal={() => setIsFinancingModalOpen(true)}
+                onSendMessage={handleSendMessage}
+              />
+
+              {/* ------------------------------------------------------------- */}
+              {/* 3. FILA DE ATENDIMENTO */}
               {/* ------------------------------------------------------------- */}
               <div className="p-3 rounded-xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between shadow-sm">
                 <div>

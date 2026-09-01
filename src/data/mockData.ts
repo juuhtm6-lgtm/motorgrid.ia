@@ -618,6 +618,14 @@ export const initialConversations: Conversation[] = [
         timestamp: '11:45',
       },
     ],
+    summary: {
+      text: `Interesse: Porsche Macan GTS 2023 (R$ 589.000)\nTroca: Sem veículo na troca (proposta direta à vista)\nLaudo Cautelar: 100% aprovado Dekra verificado\nTest Drive: Agendado para hoje às 16h30 (Filial Jardins)\nIntenção: Altíssima (Grid Score 96 pts)`,
+      nextAction: '📅 Confirmar recepção VIP para Test Drive hoje às 16h30',
+      source: 'ai',
+      isManuallyEdited: false,
+      lastUpdated: 'Hoje às 11:46',
+      updatedBy: '✦ IA MotorGrid',
+    },
   },
   {
     id: 'conv-3',
