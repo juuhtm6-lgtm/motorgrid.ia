@@ -12,8 +12,10 @@ import {
   LogOut,
   User,
   ChevronDown,
+  Sun,
+  Moon,
 } from 'lucide-react';
-import { ActiveTab, AuthUser } from '../types';
+import { ActiveTab, AuthUser, ThemeMode } from '../types';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -28,6 +30,8 @@ interface NavbarProps {
   onOpenLogoutModal: () => void;
   availableUsers?: AuthUser[];
   onSwitchUser?: (user: AuthUser) => void;
+  theme?: ThemeMode;
+  onToggleTheme?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -41,6 +45,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onOpenCreateUser,
   onOpenLogoutModal,
+  theme = 'dark',
+  onToggleTheme,
 }) => {
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -214,6 +220,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[#8B5CF6] rounded-full text-[10px] font-bold text-white flex items-center justify-center border-2 border-[#0A0A0B]">
               {unreadNotifications}
             </span>
+          )}
+        </button>
+
+        {/* Global Dark / Light Theme Toggle */}
+        <button
+          id="navbar-theme-toggle-btn"
+          type="button"
+          onClick={onToggleTheme}
+          className="p-2 rounded-xl bg-[#1C1C1E] hover:bg-[#27272A] border border-[rgba(255,255,255,0.08)] hover:border-[#8B5CF6] text-[#A1A1AA] hover:text-white transition-all cursor-pointer group flex items-center justify-center shadow-sm"
+          title={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+          aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+        >
+          {theme === 'dark' ? (
+            <Moon className="w-4 h-4 text-purple-400 group-hover:text-purple-300 transition-colors" />
+          ) : (
+            <Sun className="w-4 h-4 text-amber-500 group-hover:text-amber-600 transition-colors" />
           )}
         </button>
 

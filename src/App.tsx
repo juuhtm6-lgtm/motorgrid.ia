@@ -26,6 +26,7 @@ import {
   LeadItem,
   LeadStatus,
   ActiveTab,
+  ThemeMode,
 } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
@@ -115,6 +116,43 @@ export default function App() {
   const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+  // Global Theme Mode State (dark | light) with localStorage Persistence
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    try {
+      const saved = localStorage.getItem('theme') || localStorage.getItem('motorgrid_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch (e) {
+      console.error('Error reading theme from storage:', e);
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('theme', theme);
+      localStorage.setItem('motorgrid_theme', theme);
+    } catch (e) {
+      console.error('Error writing theme to storage:', e);
+    }
+
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+      root.classList.remove('dark');
+      document.body.classList.add('light');
+      document.body.classList.remove('dark');
+    } else {
+      root.classList.add('dark');
+      root.classList.remove('light');
+      document.body.classList.add('dark');
+      document.body.classList.remove('light');
+    }
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   // Application Data States
   const [metrics, setMetrics] = useState(initialMetrics);
@@ -547,6 +585,8 @@ export default function App() {
           onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
           availableUsers={authUsers}
           onSwitchUser={handleSwitchUser}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
         />
 
         {/* Scrollable View Area */}

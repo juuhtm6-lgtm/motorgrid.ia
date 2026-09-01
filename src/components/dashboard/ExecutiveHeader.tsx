@@ -1,17 +1,16 @@
 import React from 'react';
-import { Printer, Download, Plus, Calendar, ShieldCheck } from 'lucide-react';
+import { Printer, Download, Calendar, ShieldCheck } from 'lucide-react';
 import { DashboardFilters } from '../../types/dashboard';
 
 interface ExecutiveHeaderProps {
   filters: DashboardFilters;
-  onOpenNewLead: () => void;
+  onOpenNewLead?: () => void;
   onOpenExport: () => void;
   onPrint: () => void;
 }
 
 export const ExecutiveHeader: React.FC<ExecutiveHeaderProps> = ({
   filters,
-  onOpenNewLead,
   onOpenExport,
   onPrint,
 }) => {
@@ -77,15 +76,6 @@ export const ExecutiveHeader: React.FC<ExecutiveHeaderProps> = ({
         >
           <Download className="w-3.5 h-3.5 text-[#8B5CF6]" />
           <span>Exportar</span>
-        </button>
-
-        <button
-          id="btn-dashboard-new-lead"
-          onClick={onOpenNewLead}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-semibold shadow-lg shadow-[#8B5CF6]/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Novo Lead</span>
         </button>
       </div>
     </div>

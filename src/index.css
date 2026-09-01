@@ -15,22 +15,81 @@
     --border: rgba(255, 255, 255, 0.08);
     --border-highlight: rgba(139, 92, 246, 0.35);
     --border-subtle: rgba(255, 255, 255, 0.05);
+
+    /* MotorGrid Official Design Tokens (Dark Mode Baseline) */
+    --bg-primary: #0A0A0B;
+    --bg-secondary: #101012;
+    --surface-primary: #1C1C1E;
+    --surface-secondary: #202023;
+    --surface-highlight: #2A1F45;
+    --text-primary-token: #FFFFFF;
+    --text-secondary-token: #A1A1AA;
+    --text-muted-token: #71717A;
+    --border-default: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.15);
+    --brand-primary: #8B5CF6;
+    --brand-hover: #7C3AED;
+    --brand-soft: rgba(139, 92, 246, 0.15);
+    --success: #10B981;
+    --success-soft: rgba(16, 185, 129, 0.15);
+    --warning: #F59E0B;
+    --warning-soft: rgba(245, 158, 11, 0.15);
+    --danger: #EF4444;
+    --danger-soft: rgba(239, 68, 68, 0.15);
+
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
+  html.light,
+  body.light {
+    --background: #F6F7FB;
+    --background-secondary: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface-secondary: #F8FAFC;
+    --surface-hover: #F1F5F9;
+    --text-primary: #111827;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+    --border: #DCE3EC;
+    --border-highlight: rgba(139, 92, 246, 0.45);
+    --border-subtle: #EDF2F7;
+
+    /* MotorGrid Official Design Tokens (Light Mode Standard) */
+    --bg-primary: #F6F7FB;
+    --bg-secondary: #F8FAFC;
+    --surface-primary: #FFFFFF;
+    --surface-secondary: #F8FAFC;
+    --surface-highlight: #F3F0FF;
+    --text-primary-token: #111827;
+    --text-secondary-token: #475569;
+    --text-muted-token: #64748B;
+    --border-default: #DCE3EC;
+    --border-strong: #CBD5E1;
+    --brand-primary: #8B5CF6;
+    --brand-hover: #7C3AED;
+    --brand-soft: #F3E8FF;
+    --success: #059669;
+    --success-soft: #ECFDF5;
+    --warning: #D97706;
+    --warning-soft: #FFFBEB;
+    --danger: #DC2626;
+    --danger-soft: #FEF2F2;
+  }
+
   body {
-    background-color: #0A0A0B;
-    color: #FFFFFF;
+    background-color: var(--background);
+    color: var(--text-primary);
     font-family: var(--font-family);
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   /* Default Headings */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-family);
-    color: #FFFFFF;
+    color: var(--text-primary);
   }
 }
 
@@ -41,7 +100,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0B;
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -53,11 +112,603 @@
   background: #8B5CF6;
 }
 
-/* Input Focus Glow from Design Manual: 0 0 0 2px rgba(139,92,246,0.10) */
+html.light ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #8B5CF6;
+}
+
+/* Input Focus Glow */
 .focus-ring-primary:focus {
   outline: none;
   border-color: #8B5CF6;
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.10);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
 }
+
+/* ==========================================================================
+   MOTORGRID OFFICIAL LIGHT MODE ENGINE
+   Automotiva + Tecnológica + Premium + IA
+   Paleta: Branco (#FFFFFF) + Grafite (#111827 / #475569) + Roxo MotorGrid (#8B5CF6)
+   Cores Semânticas: Verde (#059669), Laranja (#D97706), Vermelho (#DC2626), Azul (#1D4ED8)
+   ========================================================================== */
+
+html.light,
+html.light body {
+  background-color: #F6F7FB !important;
+  color: #111827 !important;
+}
+
+/* 1. BACKGROUNDS GERAIS */
+html.light .bg-\[\#0A0A0B\],
+html.light .bg-\[\#101012\],
+html.light .bg-\[\#141416\],
+html.light .bg-\[\#121214\],
+html.light .bg-\[\#0E0E11\],
+html.light .bg-\[\#0D0D0E\],
+html.light .bg-zinc-950,
+html.light .bg-neutral-950,
+html.light .bg-slate-950 {
+  background-color: #F6F7FB !important;
+}
+
+/* 2. REMOÇÃO DE GRANDES FUNDOS ESCUROS - SUPERFÍCIES E CARDS PRINCIPAIS */
+html.light .bg-\[\#1C1C1E\],
+html.light .bg-\[\#18181B\],
+html.light .bg-\[\#202023\],
+html.light .bg-\[\#161618\],
+html.light .bg-\[\#242428\],
+html.light .bg-\[\#25193A\],
+html.light .bg-neutral-900,
+html.light .bg-neutral-900\/90,
+html.light .bg-neutral-900\/80,
+html.light .bg-neutral-900\/60,
+html.light .bg-neutral-850,
+html.light .bg-neutral-800,
+html.light .bg-zinc-900,
+html.light .bg-slate-900,
+html.light .bg-slate-800 {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+}
+
+/* 3. SUPERFÍCIES SECUNDÁRIAS */
+html.light .bg-\[\#27272A\],
+html.light .bg-\[\#25252a\],
+html.light .bg-\[\#26262b\],
+html.light .bg-\[\#323236\],
+html.light .bg-zinc-800,
+html.light .bg-neutral-700,
+html.light .bg-slate-700 {
+  background-color: #F8FAFC !important;
+  border-color: #DCE3EC !important;
+}
+
+/* 4. SIDEBAR E NAVBAR */
+html.light #main-sidebar {
+  background-color: #FFFFFF !important;
+  border-right-color: #DCE3EC !important;
+  box-shadow: 1px 0 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+html.light #main-sidebar .bg-\[\#0A0A0B\],
+html.light #main-sidebar .bg-\[\#101012\],
+html.light #main-sidebar .bg-\[\#18181B\] {
+  background-color: #FFFFFF !important;
+}
+
+html.light #main-navbar {
+  background-color: #FFFFFF !important;
+  border-bottom-color: #DCE3EC !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* 5. INTERACTIVE HOVERS */
+html.light .hover\:bg-\[\#27272A\]:hover,
+html.light .hover\:bg-\[\#323236\]:hover,
+html.light .hover\:bg-\[\#1C1C1E\]:hover,
+html.light .hover\:bg-\[\#242428\]:hover,
+html.light .hover\:bg-\[\#25252a\]:hover,
+html.light .hover\:bg-\[\#26262b\]:hover,
+html.light .hover\:bg-neutral-850:hover,
+html.light .hover\:bg-neutral-800:hover,
+html.light .hover\:bg-neutral-900\/80:hover,
+html.light .hover\:bg-zinc-800:hover,
+html.light .hover\:bg-zinc-900:hover,
+html.light .hover\:bg-neutral-800\/80:hover {
+  background-color: #F1F5F9 !important;
+}
+
+html.light .hover\:bg-white\/10:hover,
+html.light .hover\:bg-white\/5:hover {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+
+/* ==========================================================================
+   6. TIPOGRAFIA - HIERARQUIA & CONTRASTE OFICIAL
+   Títulos/Valores: #111827 (Grafite/Preto Profundo)
+   Subtítulos/Secundário: #475569 (Grafite Médio)
+   Auxiliar/Muted: #64748B (Slate Neutro)
+   ========================================================================== */
+
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6,
+html.light th,
+html.light .text-white,
+html.light .text-white\/90,
+html.light .text-white\/80,
+html.light .text-neutral-100,
+html.light .text-zinc-100,
+html.light .text-slate-100,
+html.light .text-neutral-200,
+html.light .text-zinc-200,
+html.light .text-slate-200 {
+  color: #111827 !important;
+}
+
+/* Textos Secundários (#475569) */
+html.light .text-white\/70,
+html.light .text-white\/60,
+html.light .text-neutral-300,
+html.light .text-zinc-300,
+html.light .text-slate-300,
+html.light .text-neutral-400,
+html.light .text-zinc-400,
+html.light .text-slate-400,
+html.light .text-gray-400,
+html.light .text-\[\#A1A1AA\] {
+  color: #475569 !important;
+}
+
+/* Textos Muted / Auxiliares (#64748B) */
+html.light .text-white\/50,
+html.light .text-white\/40,
+html.light .text-neutral-500,
+html.light .text-zinc-500,
+html.light .text-slate-500,
+html.light .text-gray-500,
+html.light .text-\[\#71717A\],
+html.light .text-neutral-600,
+html.light .text-zinc-600 {
+  color: #64748B !important;
+}
+
+html.light .hover\:text-white:hover,
+html.light .group:hover .group-hover\:text-white {
+  color: #111827 !important;
+}
+
+/* ==========================================================================
+   7. BOTÕES SÓLIDOS & AÇÕES PRIMÁRIAS
+   ========================================================================== */
+html.light button.bg-\[\#8B5CF6\],
+html.light button.bg-\[\#7C3AED\],
+html.light button.bg-\[\#6D28D9\],
+html.light .bg-\[\#8B5CF6\] button,
+html.light .bg-\[\#8B5CF6\] .text-white,
+html.light .bg-\[\#7C3AED\] .text-white,
+html.light .bg-\[\#6D28D9\] .text-white,
+html.light [class*="bg-purple-600"],
+html.light [class*="bg-purple-700"],
+html.light [class*="bg-emerald-600"],
+html.light [class*="bg-emerald-700"],
+html.light [class*="bg-rose-600"],
+html.light [class*="bg-rose-700"],
+html.light [class*="bg-red-600"],
+html.light [class*="bg-red-700"],
+html.light [class*="bg-blue-600"],
+html.light [class*="bg-blue-700"] {
+  color: #FFFFFF !important;
+}
+
+html.light button[class*="bg-\[\#8B5CF6\]"] *,
+html.light button[class*="bg-\[\#7C3AED\]"] *,
+html.light button[class*="bg-purple-600"] *,
+html.light button[class*="bg-emerald-600"] *,
+html.light button[class*="bg-rose-600"] *,
+html.light button[class*="bg-blue-600"] *,
+html.light .btn-primary,
+html.light .btn-primary * {
+  color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   8. CORES SEMÂNTICAS & BADGES OFICIAIS
+   ========================================================================== */
+
+/* VERDE (Positivo / Sucesso / Vendas / No Prazo) */
+html.light .text-emerald-400,
+html.light .text-emerald-300,
+html.light .text-green-400,
+html.light .text-green-300 {
+  color: #059669 !important;
+}
+
+html.light .bg-emerald-500\/10,
+html.light .bg-emerald-500\/15,
+html.light .bg-emerald-500\/20,
+html.light .bg-emerald-500\/30,
+html.light .bg-emerald-950\/10,
+html.light .bg-green-500\/10,
+html.light .bg-green-500\/20 {
+  background-color: #ECFDF5 !important;
+  border-color: #A7F3D0 !important;
+  color: #059669 !important;
+}
+
+html.light .border-emerald-500\/20,
+html.light .border-emerald-500\/30,
+html.light .border-emerald-500\/40 {
+  border-color: #A7F3D0 !important;
+}
+
+html.light .fill-emerald-400,
+html.light .bg-emerald-500 {
+  background-color: #059669 !important;
+  fill: #059669 !important;
+}
+
+/* LARANJA / ÂMBAR (Atenção / Gargalo / Morno) */
+html.light .text-amber-400,
+html.light .text-amber-300,
+html.light .text-yellow-400,
+html.light .text-yellow-300,
+html.light .text-orange-400,
+html.light .text-orange-300 {
+  color: #D97706 !important;
+}
+
+html.light .bg-amber-500\/10,
+html.light .bg-amber-500\/15,
+html.light .bg-amber-500\/20,
+html.light .bg-amber-500\/30,
+html.light .bg-yellow-500\/10,
+html.light .bg-yellow-500\/20,
+html.light .bg-orange-500\/10 {
+  background-color: #FFFBEB !important;
+  border-color: #FDE68A !important;
+  color: #D97706 !important;
+}
+
+html.light .border-amber-500\/20,
+html.light .border-amber-500\/30,
+html.light .border-amber-500\/40,
+html.light .border-yellow-500\/20 {
+  border-color: #FDE68A !important;
+}
+
+html.light .fill-amber-400 {
+  fill: #D97706 !important;
+}
+
+/* VERMELHO (Crítico / Perda / Risco / Atraso) */
+html.light .text-rose-400,
+html.light .text-rose-300,
+html.light .text-red-400,
+html.light .text-red-300 {
+  color: #DC2626 !important;
+}
+
+html.light .bg-rose-500\/10,
+html.light .bg-rose-500\/15,
+html.light .bg-rose-500\/20,
+html.light .bg-rose-500\/30,
+html.light .bg-red-500\/10,
+html.light .bg-red-500\/15,
+html.light .bg-red-500\/20 {
+  background-color: #FEF2F2 !important;
+  border-color: #FECDD3 !important;
+  color: #DC2626 !important;
+}
+
+html.light .border-rose-500\/20,
+html.light .border-rose-500\/30,
+html.light .border-rose-500\/40,
+html.light .border-red-500\/20,
+html.light .border-red-500\/30 {
+  border-color: #FECDD3 !important;
+}
+
+html.light .fill-rose-400 {
+  fill: #DC2626 !important;
+}
+
+/* AZUL / CYAN (Informação / Novos Leads / Canais) */
+html.light .text-blue-400,
+html.light .text-blue-300,
+html.light .text-sky-400,
+html.light .text-sky-300,
+html.light .text-cyan-400,
+html.light .text-cyan-300 {
+  color: #1D4ED8 !important;
+}
+
+html.light .bg-blue-500\/10,
+html.light .bg-blue-500\/15,
+html.light .bg-blue-500\/20,
+html.light .bg-blue-500\/30,
+html.light .bg-sky-500\/10,
+html.light .bg-sky-500\/20,
+html.light .bg-cyan-500\/10,
+html.light .bg-cyan-500\/20 {
+  background-color: #EFF6FF !important;
+  border-color: #BFDBFE !important;
+  color: #1D4ED8 !important;
+}
+
+html.light .border-blue-500\/20,
+html.light .border-blue-500\/30,
+html.light .border-blue-500\/40,
+html.light .border-cyan-500\/20 {
+  border-color: #BFDBFE !important;
+}
+
+/* ROXO MOTORGRID (#8B5CF6 / #7C3AED / #F3E8FF) */
+html.light .text-\[\#8B5CF6\],
+html.light .text-\[\#A78BFA\],
+html.light .text-\[\#C4B5FD\],
+html.light .text-purple-400,
+html.light .text-purple-300,
+html.light .text-violet-400,
+html.light .text-violet-300 {
+  color: #8B5CF6 !important;
+}
+
+html.light .text-\[\#DDD6FE\] {
+  color: #7C3AED !important;
+}
+
+html.light .bg-\[\#8B5CF6\]\/10,
+html.light .bg-\[\#8B5CF6\]\/15,
+html.light .bg-\[\#8B5CF6\]\/20,
+html.light .bg-\[rgba\(139\,92\,246\,0\.15\)\],
+html.light .bg-purple-500\/10,
+html.light .bg-purple-500\/15,
+html.light .bg-purple-500\/20,
+html.light .bg-purple-950\/20,
+html.light .bg-purple-950\/30 {
+  background-color: #F3E8FF !important;
+  border-color: #DDD6FE !important;
+  color: #7C3AED !important;
+}
+
+html.light .border-\[\#8B5CF6\]\/20,
+html.light .border-\[\#8B5CF6\]\/30,
+html.light .border-\[\#8B5CF6\]\/40,
+html.light .border-purple-500\/20,
+html.light .border-purple-500\/30 {
+  border-color: #DDD6FE !important;
+}
+
+/* ==========================================================================
+   9. ESPECIFICAÇÕES DOS COMPONENTES DO DASHBOARD NO LIGHT MODE
+   ========================================================================== */
+
+/* FUNIL COMERCIAL COMPLETO */
+html.light [id^="funnel-stage-"] {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light [id^="funnel-stage-"]:hover {
+  background-color: #F8FAFC !important;
+  border-color: #DDD6FE !important;
+}
+
+html.light [id^="funnel-stage-"] .text-neutral-300 {
+  color: #334155 !important;
+}
+
+html.light [id^="funnel-stage-"] .text-white {
+  color: #111827 !important;
+}
+
+html.light [id^="funnel-stage-"] .bg-neutral-800\/80,
+html.light [id^="funnel-stage-"] .bg-neutral-800 {
+  background-color: #F1F5F9 !important;
+}
+
+/* Etapa VENDIDOS no Funil (Destaque Verde) */
+html.light #funnel-stage-ganho,
+html.light #funnel-stage-vendidos,
+html.light [id^="funnel-stage-"].border-emerald-500\/40 {
+  background-color: #FFFFFF !important;
+  border-color: #A7F3D0 !important;
+}
+
+html.light #funnel-stage-ganho .text-emerald-400,
+html.light [id^="funnel-stage-"].border-emerald-500\/40 .text-emerald-400 {
+  color: #059669 !important;
+}
+
+/* COMPARATIVO PRESENCIAL VS ONLINE */
+html.light #card-channel-online {
+  background-color: #FFFFFF !important;
+  border-color: #DDD6FE !important;
+}
+
+html.light #card-channel-online .bg-neutral-850,
+html.light #card-channel-online .bg-neutral-900 {
+  background-color: #F8FAFC !important;
+  border: 1px solid #DCE3EC !important;
+}
+
+html.light #card-channel-presential {
+  background-color: #FFFFFF !important;
+  border-color: #A7F3D0 !important;
+}
+
+html.light #card-channel-presential .bg-neutral-850,
+html.light #card-channel-presential .bg-neutral-900 {
+  background-color: #F8FAFC !important;
+  border: 1px solid #DCE3EC !important;
+}
+
+/* GRID AI — INSIGHTS EXECUTIVOS */
+html.light .bg-\[\#1C1C1E\].border-\[\#8B5CF6\]\/30 {
+  background-color: #FFFFFF !important;
+  border-color: #DDD6FE !important;
+}
+
+html.light .bg-\[\#1C1C1E\].border-\[\#8B5CF6\]\/30 .bg-neutral-900\/90,
+html.light .bg-\[\#1C1C1E\].border-\[\#8B5CF6\]\/30 .bg-neutral-900 {
+  background-color: #F5F3FF !important;
+  border-color: #DDD6FE !important;
+}
+
+html.light .bg-\[\#1C1C1E\].border-\[\#8B5CF6\]\/30 .text-neutral-200 {
+  color: #334155 !important;
+}
+
+/* ALERTAS DA OPERAÇÃO & ATENÇÃO NO ESTOQUE */
+html.light .bg-neutral-900\/60 {
+  background-color: #ECFDF5 !important;
+  border-color: #A7F3D0 !important;
+  color: #047857 !important;
+}
+
+/* FILTRO DE PERÍODO & BOTÕES */
+html.light [id^="filter-period-"] {
+  background-color: #F1F5F9 !important;
+  color: #334155 !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+html.light [id^="filter-period-"]:hover {
+  background-color: #F3E8FF !important;
+  color: #7C3AED !important;
+  border-color: #DDD6FE !important;
+}
+
+html.light [id^="filter-period-"].bg-\[\#8B5CF6\],
+html.light [id^="filter-period-"].bg-\[\#8B5CF6\]:hover {
+  background-color: #8B5CF6 !important;
+  color: #FFFFFF !important;
+  border-color: #8B5CF6 !important;
+}
+
+html.light #btn-reset-filters {
+  background-color: #FFFFFF !important;
+  border: 1px solid #DCE3EC !important;
+  color: #334155 !important;
+}
+
+html.light #btn-reset-filters:hover {
+  background-color: #F3E8FF !important;
+  border-color: #DDD6FE !important;
+  color: #7C3AED !important;
+}
+
+/* ==========================================================================
+   10. BORDAS, DIVIDERS & FORMS
+   ========================================================================== */
+html.light [class*="border-white/"],
+html.light [class*="border-\[rgba(255,255,255"],
+html.light .border-neutral-800,
+html.light .border-neutral-700,
+html.light .border-neutral-750,
+html.light .border-neutral-800\/80,
+html.light .border-neutral-800\/60,
+html.light .border-neutral-800\/50,
+html.light .border-zinc-800,
+html.light .border-zinc-700,
+html.light .border-zinc-800\/80,
+html.light .border-zinc-800\/50,
+html.light .border-\[\#27272A\] {
+  border-color: #DCE3EC !important;
+}
+
+html.light [class*="divide-white/"],
+html.light [class*="divide-\[rgba(255,255,255"],
+html.light .divide-neutral-800,
+html.light .divide-neutral-850,
+html.light .divide-zinc-800,
+html.light .divide-zinc-700 {
+  border-color: #DCE3EC !important;
+}
+
+html.light [class*="ring-white/"] {
+  --tw-ring-color: #DCE3EC !important;
+}
+
+/* INPUTS, FORMS & SELECTS */
+html.light input:not([type="checkbox"]):not([type="radio"]),
+html.light textarea,
+html.light select {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #64748B !important;
+}
+
+/* TABELAS & CABEÇALHOS */
+html.light table thead tr {
+  background-color: #F8FAFC !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light table thead th {
+  color: #475569 !important;
+}
+
+html.light table tbody tr {
+  border-color: #DCE3EC !important;
+}
+
+html.light table tbody tr:hover {
+  background-color: #F8FAFC !important;
+}
+
+/* MODAIS & POPUPS */
+html.light [role="dialog"],
+html.light .modal-container,
+html.light .dropdown-menu {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* RECHARTS TOOLTIPS */
+html.light .recharts-default-tooltip {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  color: #111827 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ATENDIMENTO & CHAT */
+html.light .bg-motorgrid-pattern {
+  background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px) !important;
+}
+
+html.light .chat-bubble-client {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  color: #111827 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .chat-bubble-seller {
+  background-color: #F3E8FF !important;
+  border-color: #DDD6FE !important;
+  color: #111827 !important;
+}
+
+html.light .chat-bubble-ai {
+  background-color: #F5F3FF !important;
+  border-color: #DDD6FE !important;
+  color: #111827 !important;
+}
+
+
 
 

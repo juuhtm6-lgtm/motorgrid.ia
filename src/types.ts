@@ -30,6 +30,7 @@ export type ActiveTab =
 
 export type PlanTier = 'Starter' | 'Pro' | 'Enterprise' | 'Custom';
 export type LeadTemperature = 'Frio' | 'Morno' | 'Quente' | 'Pronto para Fechar';
+export type ThemeMode = 'dark' | 'light';
 
 export interface IntegrationItem {
   id: string;

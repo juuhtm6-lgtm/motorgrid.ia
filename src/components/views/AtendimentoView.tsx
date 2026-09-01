@@ -903,48 +903,31 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
           
           {/* Header */}
           <div className="h-[64px] px-4 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 z-10 shrink-0">
-            <div className="flex items-center gap-3 min-w-0 cursor-pointer" onClick={() => setShowContactInfo(!showContactInfo)}>
-              <div className="relative shrink-0">
-                <img
-                  src={selectedConv.contactAvatar}
-                  alt={selectedConv.contactName}
-                  className="w-10 h-10 rounded-full object-cover ring-1 ring-white/20"
-                />
-                {renderChannelAvatarBadge(selectedConv.channel)}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-bold text-white text-sm truncate">
-                    {selectedConv.contactName}
-                  </h3>
-                  {renderChannelChip(selectedConv.channel, false)}
-                  {selectedConv.temperature && getTemperatureBadge(selectedConv.temperature)}
-                </div>
-                <div className="text-[11px] text-[#A1A1AA] flex items-center gap-1.5 truncate mt-0.5">
-                  <span className="text-[#8B5CF6] font-semibold">online</span>
-                  <span>•</span>
-                  <span>{selectedConv.contactPhone}</span>
-                  <span>•</span>
-                  <span className="text-white/70">Resp: {selectedConv.assignedTo}</span>
-                </div>
+            {/* Informações do Cliente */}
+            <div
+              className="min-w-0 flex-1 pr-4 cursor-pointer group"
+              onClick={() => setShowContactInfo(true)}
+              title="Clique para ver o Painel de Ação"
+            >
+              <h3 className="font-bold text-white text-sm truncate leading-tight group-hover:text-[#8B5CF6] transition-colors">
+                {selectedConv.contactName}
+              </h3>
+              <div className="text-[11px] text-[#A1A1AA] flex items-center gap-1.5 truncate mt-0.5">
+                <span className="text-[#8B5CF6] font-semibold">online</span>
+                <span>•</span>
+                <span>{selectedConv.contactPhone}</span>
+                <span>•</span>
+                <span className="text-white/70">Resp: {selectedConv.assignedTo}</span>
               </div>
             </div>
 
-            {/* Header Action Buttons */}
-            <div className="flex items-center gap-2 text-[#A1A1AA]">
-              {/* Simulator Action Button */}
+            {/* Header Action Buttons: Apenas Agendar e Transferir */}
+            <div className="flex items-center gap-2 shrink-0">
               <button
-                onClick={() => setIsFinancingModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-[#8B5CF6] border border-[#8B5CF6]/40 text-xs font-bold transition-all cursor-pointer shadow-sm"
-                title="Simular Financiamento por IA"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-[#8B5CF6]" />
-                <span className="hidden sm:inline">Simular Financiamento</span>
-              </button>
-
-              <button
+                type="button"
+                id="btn-atendimento-agendar"
                 onClick={() => setIsScheduleModalOpen(true)}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white text-xs font-semibold transition-all cursor-pointer border border-white/5"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white text-xs font-semibold transition-all cursor-pointer border border-white/10 shadow-sm"
                 title="Agendar Test Drive"
               >
                 <Calendar className="w-3.5 h-3.5 text-[#8B5CF6]" />
@@ -952,23 +935,28 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               </button>
 
               <button
+                type="button"
+                id="btn-atendimento-transferir"
                 onClick={() => setIsTransferModalOpen(true)}
-                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white text-xs font-medium transition-all cursor-pointer border border-white/5"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white text-xs font-medium transition-all cursor-pointer border border-white/10 shadow-sm"
                 title="Transferir conversa"
               >
                 <UserCheck className="w-3.5 h-3.5 text-[#8B5CF6]" />
                 <span>Transferir</span>
               </button>
 
-              <button
-                onClick={() => setShowContactInfo(!showContactInfo)}
-                className={`p-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer ${
-                  showContactInfo ? 'text-[#8B5CF6] bg-[#8B5CF6]/20' : ''
-                }`}
-                title="Painel Ficha 360 / Simulador"
-              >
-                <Info className="w-5 h-5" />
-              </button>
+              {!showContactInfo && (
+                <button
+                  type="button"
+                  id="btn-abrir-painel-acao"
+                  onClick={() => setShowContactInfo(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#8B5CF6]/15 hover:bg-[#8B5CF6]/25 text-[#8B5CF6] border border-[#8B5CF6]/30 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                  title="Abrir Painel de Ação"
+                >
+                  <Zap className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                  <span className="hidden sm:inline">Painel de Ação</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -1355,18 +1343,29 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
             
             {/* Header do Painel Lateral */}
             <div className="h-[64px] px-3.5 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="p-1.5 rounded-lg bg-[#8B5CF6]/20 text-[#8B5CF6]">
+              <div className="flex items-center gap-2 min-w-0">
+                <button
+                  type="button"
+                  id="btn-voltar-atendimento"
+                  onClick={() => setShowContactInfo(false)}
+                  className="p-1.5 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 text-[#A1A1AA] hover:text-[#8B5CF6] border border-white/10 hover:border-[#8B5CF6]/40 transition-all cursor-pointer shadow-sm shrink-0 group"
+                  title="Voltar ao atendimento"
+                >
+                  <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+                </button>
+
+                <span className="p-1.5 rounded-lg bg-[#8B5CF6]/20 text-[#8B5CF6] shrink-0">
                   <Zap className="w-4 h-4" />
                 </span>
-                <div>
-                  <span className="text-xs font-bold text-white block leading-tight">Painel de Ação</span>
-                  <span className="text-[10px] text-[#A1A1AA]">Contexto do Atendimento</span>
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-white block leading-tight truncate">Painel de Ação</span>
+                  <span className="text-[10px] text-[#A1A1AA] block truncate">Contexto do Atendimento</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
+                  type="button"
                   onClick={() => setIsFinancingModalOpen(true)}
                   className="p-1.5 rounded-lg hover:bg-[#8B5CF6]/20 text-[#8B5CF6] transition-colors cursor-pointer"
                   title="Abrir Simulador IA Completo"
@@ -1374,6 +1373,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   <Sparkles className="w-4 h-4" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => setShowContactInfo(false)}
                   className="p-1.5 rounded-lg hover:bg-white/10 text-[#A1A1AA] hover:text-white transition-colors cursor-pointer"
                   title="Ocultar Painel Lateral"
