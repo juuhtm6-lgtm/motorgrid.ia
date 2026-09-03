@@ -54,6 +54,7 @@ import { CreateLeadModal } from './components/modals/CreateLeadModal';
 import { CreateUserModal } from './components/modals/CreateUserModal';
 import { LogoutConfirmModal } from './components/modals/LogoutConfirmModal';
 import { AuthPortal } from './components/auth/AuthPortal';
+import { MotorGridLoginView } from './components/auth/MotorGridLoginView';
 import { SalesLandingPage } from './components/sales/SalesLandingPage';
 
 export default function App() {
@@ -78,7 +79,7 @@ export default function App() {
     } catch (e) {
       console.error('Error reading current user:', e);
     }
-    return initialAuthUsers[0] || null;
+    return null;
   });
 
   // Modal States
@@ -273,7 +274,13 @@ export default function App() {
 
   const handleConfirmLogout = () => {
     const prevName = currentUser?.name || 'Usuário';
+    try {
+      localStorage.removeItem('motorgrid_current_user');
+    } catch (e) {
+      console.error('Error clearing storage on logout:', e);
+    }
     setCurrentUser(null);
+    setUnauthenticatedScreen('login');
     setIsLogoutModalOpen(false);
 
     const newNotif: ActivityNotification = {
@@ -448,14 +455,30 @@ export default function App() {
   const unreadCount = notifications.filter((n) => !n.read).length;
   const customersRiskCount = customers.filter((c) => c.healthScore < 60).length;
 
-  // If not authenticated, display full screen SalesLandingPage with integrated Login & Registration Checkout
+  // Unauthenticated view toggle ('login' | 'sales')
+  const [unauthenticatedScreen, setUnauthenticatedScreen] = useState<'login' | 'sales'>('login');
+
+  // If not authenticated, display official MotorGrid Login View
   if (!currentUser) {
+    if (unauthenticatedScreen === 'sales') {
+      return (
+        <SalesLandingPage
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+          availableUsers={authUsers}
+          currentUser={null}
+          onGoToDashboard={() => setUnauthenticatedScreen('login')}
+        />
+      );
+    }
+
     return (
-      <SalesLandingPage
+      <MotorGridLoginView
         onLogin={handleLogin}
-        onRegister={handleRegister}
         availableUsers={authUsers}
-        currentUser={null}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        onNavigateToPlans={() => setUnauthenticatedScreen('sales')}
       />
     );
   }
@@ -548,8 +571,10 @@ export default function App() {
       <LogoutConfirmModal
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
         onConfirmLogout={handleConfirmLogout}
         user={currentUser}
+        theme={theme}
       />
 
       {/* Sidebar Navigation */}
@@ -859,6 +884,18 @@ export default function App() {
                 })
               }
             />
+          )}
+
+          {activeTab === 'login' && (
+            <div className="py-4">
+              <MotorGridLoginView
+                onLogin={handleLogin}
+                availableUsers={authUsers}
+                theme={theme}
+                onToggleTheme={handleToggleTheme}
+                onNavigateToPlans={() => setActiveTab('sales')}
+              />
+            </div>
           )}
 
           {(activeTab === 'administracao' || activeTab === 'settings') && (

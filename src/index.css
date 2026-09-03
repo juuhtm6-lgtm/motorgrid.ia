@@ -685,29 +685,1015 @@ html.light .recharts-default-tooltip {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08) !important;
 }
 
-/* ATENDIMENTO & CHAT */
-html.light .bg-motorgrid-pattern {
-  background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px) !important;
+/* ==========================================================================
+   11. ATENDIMENTO & CHAT WHATSAPP NO LIGHT MODE
+   ========================================================================== */
+
+/* CANVAS E ÁREA DE MENSAGENS */
+html.light #atendimento-chat-canvas,
+html.light .atendimento-chat-canvas {
+  background-color: #F6F7FB !important;
+  background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1.5px, transparent 1.5px) !important;
+  background-size: 24px 24px !important;
 }
 
-html.light .chat-bubble-client {
+/* BARRA SUPERIOR DE FILTRAGEM POR CANAIS */
+html.light #atendimento-channel-bar {
   background-color: #FFFFFF !important;
   border-color: #DCE3EC !important;
-  color: #111827 !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
 }
 
-html.light .chat-bubble-seller {
+html.light .channel-filter-inactive {
+  background-color: #F8FAFC !important;
+  color: #475569 !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light .channel-filter-inactive:hover {
+  background-color: #F3E8FF !important;
+  color: #7C3AED !important;
+  border-color: #DDD6FE !important;
+}
+
+html.light .channel-filter-active {
+  background-color: #8B5CF6 !important;
+  color: #FFFFFF !important;
+  border-color: #8B5CF6 !important;
+}
+
+html.light .channel-count-badge {
+  background-color: #E2E8F0 !important;
+  color: #475569 !important;
+}
+
+/* CONTAINER PRINCIPAL DO ATENDIMENTO */
+html.light #atendimento-main-container {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* COLUNA ESQUERDA: LISTA DE CONVERSAS */
+html.light #atendimento-conversations-sidebar {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light #atendimento-sidebar-header {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light #atendimento-sidebar-header .text-white {
+  color: #111827 !important;
+}
+
+html.light #atendimento-search-section {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light #atendimento-search-box {
+  background-color: #F8FAFC !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light #input-busca-conversas {
+  background-color: transparent !important;
+  color: #111827 !important;
+}
+
+html.light #input-busca-conversas::placeholder {
+  color: #64748B !important;
+}
+
+html.light .inbox-filter-inactive {
+  background-color: #F1F5F9 !important;
+  color: #334155 !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light .inbox-filter-inactive:hover {
+  background-color: #F3E8FF !important;
+  color: #7C3AED !important;
+}
+
+html.light .inbox-filter-active {
+  background-color: #8B5CF6 !important;
+  color: #FFFFFF !important;
+  border-color: #8B5CF6 !important;
+}
+
+html.light #atendimento-conversations-list {
+  border-color: #DCE3EC !important;
+}
+
+/* ITEM DE CONVERSA NORMAL */
+html.light .conversation-item-normal {
+  background-color: #FFFFFF !important;
+  border-left: 4px solid transparent !important;
+}
+
+html.light .conversation-item-normal:hover {
+  background-color: #F8FAFC !important;
+}
+
+/* 2. CONVERSA SELECIONADA NA LISTA (CRÍTICO) */
+html.light .conversation-item-selected {
+  background-color: #F3E8FF !important;
+  border-left: 4px solid #8B5CF6 !important;
+  border-top: 1px solid #C4B5FD !important;
+  border-right: 1px solid #C4B5FD !important;
+  border-bottom: 1px solid #C4B5FD !important;
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.08) !important;
+}
+
+/* Nomes de clientes: #111827, font-weight 600 */
+html.light .conversation-item .conversation-contact-name,
+html.light .conversation-item-selected .conversation-contact-name,
+html.light .conversation-contact-name {
+  color: #111827 !important;
+  font-weight: 600 !important;
+}
+
+/* Última mensagem: #475569 */
+html.light .conversation-item .conversation-last-msg,
+html.light .conversation-item .conversation-last-msg span,
+html.light .conversation-item-selected .conversation-last-msg,
+html.light .conversation-item-selected .conversation-last-msg span,
+html.light .conversation-last-msg,
+html.light .conversation-last-msg span {
+  color: #475569 !important;
+}
+
+/* Horário: #64748B */
+html.light .conversation-item .conversation-time,
+html.light .conversation-item-selected .conversation-time,
+html.light .conversation-time {
+  color: #64748B !important;
+}
+
+/* Contador de mensagens não lidas: Fundo #8B5CF6, Texto #FFFFFF */
+html.light .conversation-unread-badge {
+  background-color: #8B5CF6 !important;
+  color: #FFFFFF !important;
+}
+
+/* Veículo: Fundo #FFFFFF, Borda #CBD5E1, Texto #475569, Ícone #64748B (Neutro para não competir com os canais) */
+html.light .conversation-car-chip {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
+}
+
+html.light .conversation-car-chip svg {
+  color: #64748B !important;
+}
+
+/* STATUS DE CONEXÃO DO WHATSAPP NO CABEÇALHO */
+html.light .atendimento-connected-status {
+  color: #16A34A !important;
+  font-weight: 600 !important;
+}
+
+/* ==========================================================================
+   BADGES DE AVATAR DO CANAL (CANTO INFERIOR DO AVATAR)
+   ========================================================================== */
+html.light .channel-avatar-badge {
+  border-color: #FFFFFF !important;
+}
+
+html.light .channel-avatar-badge-whatsapp {
+  background-color: #16A34A !important;
+  color: #FFFFFF !important;
+}
+
+html.light .channel-avatar-badge-instagram {
+  background-color: #DB2777 !important;
+  color: #FFFFFF !important;
+}
+
+html.light .channel-avatar-badge-facebook {
+  background-color: #1877F2 !important;
+  color: #FFFFFF !important;
+}
+
+html.light .channel-avatar-badge-olx {
+  background-color: #7C3AED !important;
+  color: #FFFFFF !important;
+}
+
+html.light .channel-avatar-badge-webmotors {
+  background-color: #E11D48 !important;
+  color: #FFFFFF !important;
+}
+
+html.light .channel-avatar-badge-tiktok {
+  background-color: #0F172A !important;
+  color: #38BDF8 !important;
+}
+
+/* ==========================================================================
+   FILTRO DE CANAIS NO TOPO (BARRA HORIZONTAL)
+   ========================================================================== */
+html.light .channel-filter-pill {
+  background-color: #FFFFFF !important;
+  border: 1px solid #DCE3EC !important;
+  color: #475569 !important;
+}
+
+html.light .channel-filter-pill:hover {
+  background-color: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+  color: #111827 !important;
+}
+
+html.light .channel-filter-pill .channel-count-badge {
+  background-color: #F1F5F9 !important;
+  color: #64748B !important;
+}
+
+/* Pílulas de canal ativas */
+html.light .channel-filter-pill.channel-filter-active {
+  background-color: #7C3AED !important;
+  border-color: #7C3AED !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25) !important;
+}
+
+html.light .channel-filter-pill.channel-filter-active span {
+  color: #FFFFFF !important;
+}
+
+html.light .channel-filter-pill-whatsapp.channel-filter-active {
+  background-color: #16A34A !important;
+  border-color: #16A34A !important;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25) !important;
+}
+
+html.light .channel-filter-pill-instagram.channel-filter-active {
+  background-color: #DB2777 !important;
+  border-color: #DB2777 !important;
+  box-shadow: 0 4px 12px rgba(219, 39, 119, 0.25) !important;
+}
+
+html.light .channel-filter-pill-facebook.channel-filter-active {
+  background-color: #1877F2 !important;
+  border-color: #1877F2 !important;
+  box-shadow: 0 4px 12px rgba(24, 119, 242, 0.25) !important;
+}
+
+html.light .channel-filter-pill-olx.channel-filter-active {
+  background-color: #7C3AED !important;
+  border-color: #7C3AED !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25) !important;
+}
+
+/* Tags internas nas pílulas inativas */
+html.light .channel-filter-pill-inactive .channel-filter-tag-whatsapp {
+  background-color: #ECFDF3 !important;
+  color: #16A34A !important;
+}
+
+html.light .channel-filter-pill-inactive .channel-filter-tag-instagram {
+  background-color: #FDF2F8 !important;
+  color: #DB2777 !important;
+}
+
+html.light .channel-filter-pill-inactive .channel-filter-tag-facebook {
+  background-color: #EFF6FF !important;
+  color: #1877F2 !important;
+}
+
+html.light .channel-filter-pill-inactive .channel-filter-tag-olx {
+  background-color: #FAF5FF !important;
+  color: #7C3AED !important;
+}
+
+/* ==========================================================================
+   CHIPS & BADGES DE CANAL NO LIGHT MODE (CORES SEMÂNTICAS OFICIAIS)
+   ========================================================================== */
+
+/* WHATSAPP: Verde (#16A34A, Fundo #ECFDF3, Borda #86EFAC) */
+html.light .channel-chip-whatsapp {
+  background-color: #ECFDF3 !important;
+  border: 1px solid #86EFAC !important;
+  color: #16A34A !important;
+}
+
+html.light .channel-chip-whatsapp span,
+html.light .channel-chip-whatsapp svg {
+  color: #16A34A !important;
+}
+
+html.light .channel-chip-whatsapp .bg-black\/40 {
+  background-color: #DCFCE7 !important;
+  color: #16A34A !important;
+}
+
+/* INSTAGRAM: Rosa/Magenta (#DB2777, Fundo #FDF2F8, Borda #F9A8D4) */
+html.light .channel-chip-instagram {
+  background-color: #FDF2F8 !important;
+  border: 1px solid #F9A8D4 !important;
+  color: #DB2777 !important;
+}
+
+html.light .channel-chip-instagram span,
+html.light .channel-chip-instagram svg {
+  color: #DB2777 !important;
+}
+
+html.light .channel-chip-instagram .bg-black\/40 {
+  background-color: #FCE7F3 !important;
+  color: #DB2777 !important;
+}
+
+/* FACEBOOK: Azul (#1877F2, Fundo #EFF6FF, Borda #BFDBFE) */
+html.light .channel-chip-facebook {
+  background-color: #EFF6FF !important;
+  border: 1px solid #BFDBFE !important;
+  color: #1877F2 !important;
+}
+
+html.light .channel-chip-facebook span,
+html.light .channel-chip-facebook svg {
+  color: #1877F2 !important;
+}
+
+html.light .channel-chip-facebook .bg-black\/40 {
+  background-color: #DBEAFE !important;
+  color: #1877F2 !important;
+}
+
+/* OLX: Roxo do Canal (#7C3AED, Fundo #FAF5FF, Borda #E9D5FF) */
+html.light .channel-chip-olx {
+  background-color: #FAF5FF !important;
+  border: 1px solid #E9D5FF !important;
+  color: #7C3AED !important;
+}
+
+html.light .channel-chip-olx span,
+html.light .channel-chip-olx svg {
+  color: #7C3AED !important;
+}
+
+html.light .channel-chip-olx .bg-black\/40 {
+  background-color: #F3E8FF !important;
+  color: #7C3AED !important;
+}
+
+/* WEBMOTORS: Vermelho (#E11D48, Fundo #FFF1F2, Borda #FECDD3) */
+html.light .channel-chip-webmotors {
+  background-color: #FFF1F2 !important;
+  border: 1px solid #FECDD3 !important;
+  color: #E11D48 !important;
+}
+
+html.light .channel-chip-webmotors span,
+html.light .channel-chip-webmotors svg {
+  color: #E11D48 !important;
+}
+
+/* TIKTOK: Grafite/Cyan (#0F172A, Fundo #F1F5F9, Borda #CBD5E1) */
+html.light .channel-chip-tiktok {
+  background-color: #F1F5F9 !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+/* MOBIAUTO: Sky (#0284C7, Fundo #F0F9FF, Borda #BAE6FD) */
+html.light .channel-chip-mobiauto {
+  background-color: #F0F9FF !important;
+  border: 1px solid #BAE6FD !important;
+  color: #0284C7 !important;
+}
+
+/* ICARROS: Indigo (#4F46E5, Fundo #EEF2FF, Borda #C7D2FE) */
+html.light .channel-chip-icarros {
+  background-color: #EEF2FF !important;
+  border: 1px solid #C7D2FE !important;
+  color: #4F46E5 !important;
+}
+
+/* CHAVE NA MÃO: Âmbar (#D97706, Fundo #FFFBEB, Borda #FDE68A) */
+html.light .channel-chip-chave-na-m-o,
+html.light .channel-chip-chave-na-mao {
+  background-color: #FFFBEB !important;
+  border: 1px solid #FDE68A !important;
+  color: #D97706 !important;
+}
+
+/* MERCADO LIVRE: Amarelo/Gold (#CA8A04, Fundo #FEFCE8, Borda #FEF08A) */
+html.light .channel-chip-mercado-livre {
+  background-color: #FEFCE8 !important;
+  border: 1px solid #FEF08A !important;
+  color: #CA8A04 !important;
+}
+
+/* WEBCHAT / SITE / WEBHOOK */
+html.light .channel-chip-webchat,
+html.light .channel-chip-webchat---site,
+html.light .channel-chip-site-chat,
+html.light .channel-chip-site,
+html.light .channel-chip-webhook,
+html.light .channel-chip-webhook-api,
+html.light .channel-chip-todos {
+  background-color: #F5F3FF !important;
+  border: 1px solid #DDD6FE !important;
+  color: #7C3AED !important;
+}
+
+/* ==========================================================================
+   BADGES DE TEMPERATURA NO LIGHT MODE
+   ========================================================================== */
+
+/* LEAD QUENTE: Vermelho (#DC2626, Fundo #FFF1F2, Borda #FDA4AF) */
+html.light .badge-temp-quente {
+  background-color: #FFF1F2 !important;
+  border-color: #FDA4AF !important;
+  color: #DC2626 !important;
+  font-weight: 600 !important;
+}
+
+html.light .badge-temp-quente svg {
+  color: #DC2626 !important;
+  fill: #DC2626 !important;
+}
+
+/* LEAD MORNO: Laranja (#EA580C / #C2410C, Fundo #FFF7ED, Borda #FDBA74) */
+html.light .badge-temp-morno {
+  background-color: #FFF7ED !important;
+  border-color: #FDBA74 !important;
+  color: #C2410C !important;
+  font-weight: 600 !important;
+}
+
+html.light .badge-temp-morno svg {
+  color: #EA580C !important;
+}
+
+/* LEAD FRIO: Azul (#2563EB / #1D4ED8, Fundo #EFF6FF, Borda #93C5FD) */
+html.light .badge-temp-frio {
+  background-color: #EFF6FF !important;
+  border-color: #93C5FD !important;
+  color: #1D4ED8 !important;
+  font-weight: 600 !important;
+}
+
+html.light .badge-temp-frio svg {
+  color: #2563EB !important;
+}
+
+/* ==========================================================================
+   1. CALCULADORA & FINANCIAMENTO (IDENTIDADE AZUL FUNCIONAL)
+   Cor Principal: #2563EB | Fundo: #EFF6FF | Borda: #93C5FD | Hover: #DBEAFE
+   ========================================================================== */
+html.light .btn-calc-financing-ai,
+html.light #btn-ai-suggestion-calc-financing,
+html.light #btn-summary-simulate-financing,
+html.light #btn-attach-financing-simulator,
+html.light #btn-sidebar-calc,
+html.light #btn-context-calc,
+html.light .btn-calc-action {
+  background-color: #EFF6FF !important;
+  border: 1px solid #93C5FD !important;
+  color: #2563EB !important;
+  font-weight: 600 !important;
+}
+
+html.light .btn-calc-financing-ai svg,
+html.light #btn-ai-suggestion-calc-financing svg,
+html.light #btn-summary-simulate-financing svg,
+html.light #btn-attach-financing-simulator svg,
+html.light #btn-sidebar-calc svg,
+html.light #btn-context-calc svg,
+html.light .btn-calc-action svg {
+  color: #2563EB !important;
+}
+
+html.light .btn-calc-financing-ai span,
+html.light #btn-ai-suggestion-calc-financing span,
+html.light #btn-summary-simulate-financing span,
+html.light #btn-attach-financing-simulator span,
+html.light .btn-calc-action span {
+  color: #2563EB !important;
+}
+
+html.light #btn-attach-financing-simulator span.bg-\[\#8B5CF6\],
+html.light #btn-attach-financing-simulator span.p-2 {
+  background-color: #DBEAFE !important;
+  color: #2563EB !important;
+}
+
+html.light .btn-calc-financing-ai:hover,
+html.light #btn-ai-suggestion-calc-financing:hover,
+html.light #btn-summary-simulate-financing:hover,
+html.light #btn-attach-financing-simulator:hover,
+html.light #btn-sidebar-calc:hover,
+html.light #btn-context-calc:hover,
+html.light .btn-calc-action:hover {
+  background-color: #DBEAFE !important;
+  border-color: #60A5FA !important;
+  color: #1D4ED8 !important;
+}
+
+html.light .btn-calc-financing-ai:hover svg,
+html.light #btn-ai-suggestion-calc-financing:hover svg,
+html.light #btn-summary-simulate-financing:hover svg,
+html.light #btn-attach-financing-simulator:hover svg,
+html.light #btn-sidebar-calc:hover svg,
+html.light #btn-context-calc:hover svg,
+html.light .btn-calc-action:hover svg {
+  color: #1D4ED8 !important;
+}
+
+html.light .btn-calc-financing-ai:hover span,
+html.light #btn-ai-suggestion-calc-financing:hover span,
+html.light #btn-summary-simulate-financing:hover span,
+html.light #btn-attach-financing-simulator:hover span,
+html.light .btn-calc-action:hover span {
+  color: #1D4ED8 !important;
+}
+
+/* BANNER DE SIMULADOR DE FINANCIAMENTO IA (PAINEL LATERAL) */
+html.light #card-context-simulator-banner {
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE, #EFF6FF) !important;
+  border-color: #93C5FD !important;
+}
+
+html.light #card-context-simulator-banner .text-\[\#8B5CF6\],
+html.light #card-context-simulator-banner .text-purple-400 {
+  color: #2563EB !important;
+}
+
+html.light #card-context-simulator-banner svg {
+  color: #2563EB !important;
+}
+
+html.light #card-context-simulator-banner .text-white {
+  color: #1E40AF !important;
+  font-weight: 700 !important;
+}
+
+html.light #card-context-simulator-banner .text-\[\#A1A1AA\] {
+  color: #475569 !important;
+}
+
+html.light #card-context-simulator-banner .bg-\[\#8B5CF6\] {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
+}
+
+html.light #card-context-simulator-banner .bg-\[\#8B5CF6\] svg {
+  color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   2. GRID AI / INTELIGÊNCIA ARTIFICIAL (ROXO MOTORGRID #7C3AED)
+   Cor Principal: #7C3AED | Fundo: #F3E8FF | Borda: #C4B5FD
+   ========================================================================== */
+html.light .btn-grid-ai,
+html.light #btn-summary-generate-ai,
+html.light #btn-summary-update-ai {
+  background-color: #F3E8FF !important;
+  border: 1px solid #C4B5FD !important;
+  color: #7C3AED !important;
+  font-weight: 600 !important;
+}
+
+html.light .btn-grid-ai svg,
+html.light #btn-summary-generate-ai svg,
+html.light #btn-summary-update-ai svg {
+  color: #7C3AED !important;
+}
+
+html.light .btn-grid-ai span,
+html.light #btn-summary-generate-ai span,
+html.light #btn-summary-update-ai span {
+  color: #7C3AED !important;
+}
+
+html.light .btn-grid-ai:hover,
+html.light #btn-summary-generate-ai:hover:not(:disabled),
+html.light #btn-summary-update-ai:hover:not(:disabled) {
+  background-color: #EDE9FE !important;
+  border-color: #8B5CF6 !important;
+  color: #7C3AED !important;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.22) !important;
+}
+
+html.light .btn-grid-ai:hover svg,
+html.light #btn-summary-generate-ai:hover:not(:disabled) svg,
+html.light #btn-summary-update-ai:hover:not(:disabled) svg {
+  color: #7C3AED !important;
+}
+
+/* Quando ativo / processando IA */
+html.light .btn-grid-ai.active,
+html.light .btn-grid-ai:active,
+html.light #btn-summary-generate-ai.active,
+html.light #btn-summary-generate-ai:disabled {
+  background-color: #7C3AED !important;
+  border-color: #7C3AED !important;
+  color: #FFFFFF !important;
+}
+
+html.light .btn-grid-ai.active svg,
+html.light .btn-grid-ai:active svg,
+html.light #btn-summary-generate-ai.active svg,
+html.light #btn-summary-generate-ai:disabled svg {
+  color: #FFFFFF !important;
+}
+
+html.light .btn-grid-ai.active span,
+html.light .btn-grid-ai:active span,
+html.light #btn-summary-generate-ai.active span,
+html.light #btn-summary-generate-ai:disabled span {
+  color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   3. AGENDAR / CALENDÁRIO (ROXO MOTORGRID / TEXTO GRAFITE)
+   Ícone: #7C3AED | Fundo: #F5F3FF | Hover: #EDE9FE | Texto: Grafite
+   ========================================================================== */
+html.light #btn-atendimento-agendar,
+html.light #btn-context-calendar,
+html.light .btn-calendar-action {
+  background-color: #F5F3FF !important;
+  border: 1px solid #DDD6FE !important;
+  color: #111827 !important;
+}
+
+html.light #btn-atendimento-agendar svg,
+html.light #btn-context-calendar svg,
+html.light .btn-calendar-action svg {
+  color: #7C3AED !important;
+}
+
+html.light #btn-atendimento-agendar:hover,
+html.light #btn-context-calendar:hover,
+html.light .btn-calendar-action:hover {
+  background-color: #EDE9FE !important;
+  border-color: #C4B5FD !important;
+  color: #111827 !important;
+}
+
+/* CARD TEST DRIVES AGENDADOS HOJE */
+html.light #card-context-testdrives {
+  background-color: #F5F3FF !important;
+  border-color: #DDD6FE !important;
+}
+
+html.light #card-context-testdrives .text-\[\#A1A1AA\] {
+  color: #475569 !important;
+}
+
+html.light #card-context-testdrives .text-\[\#8B5CF6\] {
+  color: #7C3AED !important;
+  font-weight: 700 !important;
+}
+
+html.light #card-context-testdrives .bg-\[\#8B5CF6\]\/15 {
+  background-color: #EDE9FE !important;
+  border-color: #C4B5FD !important;
+  color: #7C3AED !important;
+}
+
+html.light #card-context-testdrives:hover {
+  background-color: #EDE9FE !important;
+  border-color: #C4B5FD !important;
+}
+
+/* ==========================================================================
+   4. LEADS QUENTES (CARD NO PAINEL LATERAL)
+   Fundo: #FFF1F2 | Borda: #FDA4AF | Ícone: #DC2626 | Texto: #DC2626
+   ========================================================================== */
+html.light #card-context-hotleads {
+  background-color: #FFF1F2 !important;
+  border-color: #FDA4AF !important;
+}
+
+html.light #card-context-hotleads .text-rose-400 {
+  color: #DC2626 !important;
+}
+
+html.light #card-context-hotleads .bg-rose-500\/15 {
+  background-color: #FEE2E2 !important;
+  border-color: #FDA4AF !important;
+  color: #DC2626 !important;
+}
+
+html.light #card-context-hotleads .bg-rose-500\/15 svg {
+  color: #DC2626 !important;
+  fill: #DC2626 !important;
+}
+
+html.light #card-context-hotleads .text-\[\#A1A1AA\] {
+  color: #64748B !important;
+}
+
+/* BOTÕES QUADRADOS DE AÇÃO DO CONTEXTO */
+html.light .context-quick-btn,
+html.light .btn-square-action,
+html.light #btn-context-phone,
+html.light #btn-sidebar-filter {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #64748B !important;
+}
+
+html.light .context-quick-btn svg,
+html.light .btn-square-action svg,
+html.light #btn-context-phone svg,
+html.light #btn-sidebar-filter svg {
+  color: #64748B !important;
+}
+
+html.light .context-quick-btn:hover,
+html.light .btn-square-action:hover,
+html.light #btn-context-phone:hover,
+html.light #btn-sidebar-filter:hover {
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #111827 !important;
+}
+
+html.light .context-quick-btn:hover svg,
+html.light .btn-square-action:hover svg,
+html.light #btn-context-phone:hover svg,
+html.light #btn-sidebar-filter:hover svg {
+  color: #111827 !important;
+}
+
+/* COLUNA CENTRAL: JANELA DE CHAT */
+html.light #atendimento-chat-window {
+  background-color: #F6F7FB !important;
+}
+
+html.light #atendimento-chat-header {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light #atendimento-chat-header h3 {
+  color: #111827 !important;
+  font-weight: 600 !important;
+}
+
+html.light #atendimento-chat-header .chat-header-btn {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light #atendimento-chat-header .chat-header-btn:hover {
+  background-color: #F3E8FF !important;
+  border-color: #DDD6FE !important;
+  color: #7C3AED !important;
+}
+
+/* PILLS DO SISTEMA & DATA */
+html.light .chat-system-pill,
+html.light .chat-date-pill {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  color: #475569 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .chat-crm-event {
+  background-color: #FFFFFF !important;
+  border-color: #DDD6FE !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .chat-event-time {
+  color: #64748B !important;
+}
+
+html.light .chat-event-desc {
+  color: #334155 !important;
+}
+
+/* BALÕES DE MENSAGENS: CLIENTE (BRANCO) VS VENDEDOR (ROXO CLARO) */
+html.light .chat-bubble-customer {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  color: #1F2937 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light .chat-bubble-customer .chat-bubble-sender-name {
+  color: #7C3AED !important;
+  font-weight: 600 !important;
+}
+
+html.light .chat-bubble-customer .chat-message-text {
+  color: #1F2937 !important;
+}
+
+html.light .chat-bubble-customer .chat-message-footer {
+  color: #64748B !important;
+}
+
+html.light .chat-bubble-agent {
   background-color: #F3E8FF !important;
   border-color: #DDD6FE !important;
   color: #111827 !important;
+  box-shadow: 0 1px 3px rgba(139, 92, 246, 0.08) !important;
 }
 
-html.light .chat-bubble-ai {
-  background-color: #F5F3FF !important;
-  border-color: #DDD6FE !important;
+html.light .chat-bubble-agent .chat-message-text {
   color: #111827 !important;
 }
+
+html.light .chat-bubble-agent .chat-message-footer {
+  color: #64748B !important;
+}
+
+/* ÁUDIO & TRANSCRIÇÃO */
+html.light .chat-audio-timing {
+  color: #64748B !important;
+}
+
+html.light .chat-audio-controls {
+  border-color: #DDD6FE !important;
+}
+
+html.light .chat-speed-btn {
+  background-color: #E2E8F0 !important;
+  color: #111827 !important;
+}
+
+html.light .chat-audio-transcription {
+  background-color: #F8FAFC !important;
+  border-color: #DCE3EC !important;
+  color: #334155 !important;
+}
+
+/* REAÇÕES */
+html.light .chat-reaction-badge,
+html.light .chat-floating-reactions {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* SUGESTÕES IA */
+html.light #atendimento-ai-suggestions {
+  background-color: #F8FAFC !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light .chat-ai-suggestion-btn {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  color: #334155 !important;
+}
+
+html.light .chat-ai-suggestion-btn:hover {
+  background-color: #F3E8FF !important;
+  border-color: #DDD6FE !important;
+  color: #7C3AED !important;
+}
+
+/* CAMPO DE DIGITAÇÃO (COMPOSER) */
+html.light #atendimento-composer-container {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light .chat-composer-input {
+  background-color: #F8FAFC !important;
+  border-color: #DCE3EC !important;
+  color: #111827 !important;
+}
+
+html.light .chat-composer-input::placeholder {
+  color: #64748B !important;
+}
+
+html.light .chat-action-icon-btn {
+  color: #64748B !important;
+}
+
+html.light .chat-action-icon-btn:hover {
+  background-color: #F3E8FF !important;
+  color: #7C3AED !important;
+}
+
+html.light .chat-popover {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light .chat-popover-item {
+  color: #111827 !important;
+}
+
+html.light .chat-popover-item:hover {
+  background-color: #F8FAFC !important;
+}
+
+/* COLUNA DIREITA: PAINEL DE AÇÃO CONTEXTUAL */
+html.light #atendimento-context-panel {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light #atendimento-context-header {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light #atendimento-context-header .text-white {
+  color: #111827 !important;
+}
+
+html.light .context-card {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .context-card .text-white {
+  color: #111827 !important;
+}
+
+html.light .context-mini-spec {
+  background-color: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light .context-mini-spec span:first-child {
+  color: #64748B !important;
+}
+
+html.light .context-mini-spec .font-bold {
+  color: #111827 !important;
+}
+
+html.light .context-car-price-badge {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #CBD5E1 !important;
+  color: #111827 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06) !important;
+}
+
+html.light .context-edit-btn {
+  background-color: #F1F5F9 !important;
+  color: #475569 !important;
+}
+
+html.light .context-edit-btn:hover {
+  background-color: #E2E8F0 !important;
+  color: #111827 !important;
+}
+
+html.light .summary-text-box {
+  background-color: #F8FAFC !important;
+  border-color: #DCE3EC !important;
+}
+
+html.light .summary-label {
+  color: #475569 !important;
+}
+
+html.light .summary-value,
+html.light .summary-line {
+  color: #111827 !important;
+}
+
+html.light .summary-gradient-overlay {
+  background-image: linear-gradient(to top, #F8FAFC, transparent) !important;
+}
+
+html.light .summary-next-action-card {
+  background: linear-gradient(to right, #FAF5FF, #F3E8FF) !important;
+  border-color: #DDD6FE !important;
+}
+
+html.light .summary-next-action-text {
+  color: #111827 !important;
+}
+
+html.light .summary-edit-textarea,
+html.light .summary-edit-input {
+  background-color: #FFFFFF !important;
+  border-color: #DCE3EC !important;
+  color: #111827 !important;
+}
+
+html.light .chat-system-pill {
+  background-color: #F1F5F9 !important;
+  border-color: #DCE3EC !important;
+  color: #475569 !important;
+}
+
 
 
 

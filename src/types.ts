@@ -26,6 +26,7 @@ export type ActiveTab =
   | 'settings'
   | 'sales'
   | 'ai-copilot'
+  | 'login'
   | 'administracao';
 
 export type PlanTier = 'Starter' | 'Pro' | 'Enterprise' | 'Custom';

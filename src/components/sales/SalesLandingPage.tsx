@@ -119,8 +119,12 @@ export const SalesLandingPage: React.FC<SalesLandingPageProps> = ({
   };
 
   const handleOpenLogin = () => {
-    setAuthMode('login');
-    setIsAuthModalOpen(true);
+    if (onGoToDashboard) {
+      onGoToDashboard();
+    } else {
+      setAuthMode('login');
+      setIsAuthModalOpen(true);
+    }
   };
 
   // Form Submissions

@@ -239,7 +239,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </button>
 
-        {/* Authenticated User Menu Dropdown & Logout */}
+        {/* Authenticated User Menu Dropdown */}
         <div className="relative">
           <button
             id="navbar-user-avatar-btn"
@@ -306,7 +306,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setUserDropdownOpen(false);
                     onOpenLogoutModal();
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-rose-400 hover:text-white hover:bg-rose-600/25 rounded-lg transition-colors text-left cursor-pointer"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-600 rounded-lg transition-colors text-left cursor-pointer"
                 >
                   <LogOut className="w-4 h-4 text-rose-400" />
                   <span>Sair da Conta (Logout)</span>
@@ -315,6 +315,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             </>
           )}
         </div>
+
+        {/* Direct Sair / Logout Quick Button */}
+        <button
+          id="navbar-direct-logout-btn"
+          type="button"
+          onClick={onOpenLogoutModal}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:bg-rose-500/30 border border-rose-500/30 hover:border-rose-500/50 text-rose-400 hover:text-rose-300 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+          title="Sair do sistema (Logout)"
+        >
+          <LogOut className="w-3.5 h-3.5 text-rose-400" />
+          <span className="hidden sm:inline">Sair</span>
+        </button>
       </div>
     </header>
   );

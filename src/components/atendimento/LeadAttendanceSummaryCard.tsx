@@ -201,7 +201,7 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
   const isLong = lineCount > 5 || (currentSummary?.text && currentSummary.text.length > 250);
 
   return (
-    <div className="p-3 bg-[#1C1C1E] border border-white/10 rounded-xl space-y-2.5 shadow-sm relative transition-all">
+    <div id="card-context-summary" className="context-card p-3 bg-[#1C1C1E] border border-white/10 rounded-xl space-y-2.5 shadow-sm relative transition-all">
       {/* ------------------------------------------------------------- */}
       {/* HEADER DO CARD: RESUMO DO ATENDIMENTO + [ ✦ IA ] [ Editar ] */}
       {/* ------------------------------------------------------------- */}
@@ -216,9 +216,10 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
         <div className="flex items-center gap-1">
           <button
             type="button"
+            id="btn-summary-generate-ai"
             onClick={handleAiClick}
             disabled={isGenerating}
-            className="px-2 py-1 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-[#8B5CF6] border border-[#8B5CF6]/40 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 shadow-sm"
+            className="btn-grid-ai px-2 py-1 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-[#8B5CF6] border border-[#8B5CF6]/40 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 shadow-sm"
             title="Gerar ou Atualizar Resumo com IA"
           >
             <Sparkles className="w-3 h-3 text-[#8B5CF6]" />
@@ -227,11 +228,12 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
 
           <button
             type="button"
+            id="btn-summary-edit-manual"
             onClick={handleEditClick}
             className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-all flex items-center gap-1 cursor-pointer ${
               isEditing
                 ? 'bg-[#8B5CF6] text-white'
-                : 'bg-white/5 hover:bg-white/10 text-[#A1A1AA] hover:text-white'
+                : 'context-edit-btn bg-white/5 hover:bg-white/10 text-[#A1A1AA] hover:text-white'
             }`}
             title="Editar Resumo Manualmente"
           >
@@ -305,7 +307,7 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
               onChange={(e) => setDraftText(e.target.value)}
               rows={5}
               placeholder="Ex:&#10;Interesse: Porsche Macan GTS&#10;Troca: BMW X1&#10;Entrada: R$ 150 mil&#10;Intenção: Alta"
-              className="w-full p-2 rounded-lg bg-[#101012] border border-[#8B5CF6]/40 focus:border-[#8B5CF6] text-white text-xs leading-relaxed focus:outline-none scrollbar-thin resize-y"
+              className="summary-edit-textarea w-full p-2 rounded-lg bg-[#101012] border border-[#8B5CF6]/40 focus:border-[#8B5CF6] text-white text-xs leading-relaxed focus:outline-none scrollbar-thin resize-y"
             />
           </div>
 
@@ -319,7 +321,7 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
               value={draftNextAction}
               onChange={(e) => setDraftNextAction(e.target.value)}
               placeholder="Ex: 📅 Confirmar visita amanhã às 14h."
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#101012] border border-white/10 focus:border-[#8B5CF6] text-white text-xs focus:outline-none"
+              className="summary-edit-input w-full px-2.5 py-1.5 rounded-lg bg-[#101012] border border-white/10 focus:border-[#8B5CF6] text-white text-xs focus:outline-none"
             />
           </div>
 
@@ -389,7 +391,7 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
           {/* Texto do Resumo Estruturado */}
           <div className="relative">
             <div
-              className={`p-2.5 rounded-lg bg-[#101012] border border-white/5 text-xs text-white/90 leading-relaxed font-sans transition-all ${
+              className={`summary-text-box p-2.5 rounded-lg bg-[#101012] border border-white/5 text-xs text-white/90 leading-relaxed font-sans transition-all ${
                 isLong && !isExpanded ? 'max-h-[140px] overflow-hidden' : ''
               }`}
             >
@@ -400,17 +402,17 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
                   if (parts.length > 1) {
                     return (
                       <div key={idx} className="flex items-start gap-1">
-                        <span className="text-[#A1A1AA] font-semibold shrink-0">
+                        <span className="summary-label text-[#A1A1AA] font-semibold shrink-0">
                           {parts[0]}:
                         </span>
-                        <span className="text-white font-medium">
+                        <span className="summary-value text-white font-medium">
                           {parts.slice(1).join(':')}
                         </span>
                       </div>
                     );
                   }
                   return (
-                    <div key={idx} className="text-white/90">
+                    <div key={idx} className="summary-line text-white/90">
                       {line}
                     </div>
                   );
@@ -419,7 +421,7 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
 
               {/* Gradient Fade if clamped */}
               {isLong && !isExpanded && (
-                <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#101012] to-transparent pointer-events-none rounded-b-lg" />
+                <div className="summary-gradient-overlay absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#101012] to-transparent pointer-events-none rounded-b-lg" />
               )}
             </div>
 
@@ -449,14 +451,14 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
           {/* PRÓXIMA AÇÃO (DESTAQUE VISUAL INTELIGENTE) */}
           {/* ------------------------------------------------------------- */}
           {currentSummary.nextAction && (
-            <div className="p-2.5 rounded-lg bg-gradient-to-r from-[#8B5CF6]/15 via-[#8B5CF6]/10 to-transparent border border-[#8B5CF6]/30 space-y-1.5 shadow-sm">
+            <div className="summary-next-action-card p-2.5 rounded-lg bg-gradient-to-r from-[#8B5CF6]/15 via-[#8B5CF6]/10 to-transparent border border-[#8B5CF6]/30 space-y-1.5 shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-[#8B5CF6] uppercase tracking-wider flex items-center gap-1">
                   <ArrowRight className="w-3 h-3 text-[#8B5CF6]" />
                   Próxima Ação
                 </span>
               </div>
-              <p className="text-xs font-semibold text-white leading-snug">
+              <p className="summary-next-action-text text-xs font-semibold text-white leading-snug">
                 {currentSummary.nextAction}
               </p>
 
@@ -467,8 +469,9 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
                 currentSummary.nextAction.toLowerCase().includes('agend') ? (
                   <button
                     type="button"
+                    id="btn-summary-schedule-visit"
                     onClick={onOpenScheduleModal}
-                    className="px-2 py-1 rounded-md bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-[10px] font-bold flex items-center gap-1 transition-all shadow-sm cursor-pointer"
+                    className="btn-calendar-action px-2 py-1 rounded-md bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-[10px] font-bold flex items-center gap-1 transition-all shadow-sm cursor-pointer"
                   >
                     <Calendar className="w-3 h-3" />
                     <span>Agendar Visita</span>
@@ -480,8 +483,9 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
                 currentSummary.nextAction.toLowerCase().includes('parcela') ? (
                   <button
                     type="button"
+                    id="btn-summary-simulate-financing"
                     onClick={onOpenFinancingModal}
-                    className="px-2 py-1 rounded-md bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-[10px] font-bold flex items-center gap-1 transition-all shadow-sm cursor-pointer"
+                    className="btn-calc-financing-ai px-2 py-1 rounded-md bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-[10px] font-bold flex items-center gap-1 transition-all shadow-sm cursor-pointer"
                   >
                     <Calculator className="w-3 h-3" />
                     <span>Simular Financiamento</span>
@@ -490,8 +494,9 @@ export const LeadAttendanceSummaryCard: React.FC<LeadAttendanceSummaryCardProps>
 
                 <button
                   type="button"
+                  id="btn-summary-update-ai"
                   onClick={() => generateAiSummary(false)}
-                  className="px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-[#A1A1AA] hover:text-white text-[10px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                  className="btn-grid-ai px-2 py-1 rounded-md bg-white/5 hover:bg-white/10 text-[#A1A1AA] hover:text-white text-[10px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
                   title="Atualizar análise da conversa com a IA"
                 >
                   <Sparkles className="w-2.5 h-2.5 text-[#8B5CF6]" />

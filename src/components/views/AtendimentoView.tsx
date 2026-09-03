@@ -360,9 +360,10 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
 
   const renderChannelAvatarBadge = (channel: string) => {
     const meta = getChannelMeta(channel);
+    const badgeClass = `channel-avatar-badge channel-avatar-badge-${channel.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
     return (
       <span
-        className={`absolute -bottom-1 -right-1 px-1 min-w-[18px] h-4 rounded-full ${meta.avatarBg} ${meta.avatarText} border-2 border-[#141416] flex items-center justify-center text-[8px] font-black tracking-tighter shadow-sm`}
+        className={`absolute -bottom-1 -right-1 px-1 min-w-[18px] h-4 rounded-full ${meta.avatarBg} ${meta.avatarText} border-2 border-[#141416] flex items-center justify-center text-[8px] font-black tracking-tighter shadow-sm ${badgeClass}`}
         title={`Canal: ${meta.name}`}
       >
         {meta.iconTag}
@@ -372,10 +373,11 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
 
   const renderChannelChip = (channel: string, compact = false) => {
     const meta = getChannelMeta(channel);
+    const channelClass = `channel-chip channel-chip-${channel.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
     if (compact) {
       return (
         <span
-          className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${meta.badgeBg} ${meta.badgeText} ${meta.badgeBorder}`}
+          className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border ${meta.badgeBg} ${meta.badgeText} ${meta.badgeBorder} ${channelClass}`}
         >
           <span className="font-mono text-[8px] opacity-80">{meta.iconTag}</span>
           <span>{meta.shortLabel}</span>
@@ -385,7 +387,7 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
 
     return (
       <span
-        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-bold border ${meta.badgeBg} ${meta.badgeText} ${meta.badgeBorder}`}
+        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-bold border ${meta.badgeBg} ${meta.badgeText} ${meta.badgeBorder} ${channelClass}`}
       >
         <span className="px-1 py-0.2 rounded bg-black/40 text-[9px] font-mono font-black">{meta.iconTag}</span>
         <span>{meta.name}</span>
@@ -495,21 +497,21 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
     switch (temp) {
       case 'Quente':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-semibold">
+          <span className="badge-temp-quente inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-semibold">
             <Flame className="w-3 h-3 text-rose-400 fill-rose-400" />
             Lead Quente
           </span>
         );
       case 'Morno':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold">
+          <span className="badge-temp-morno inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold">
             <Thermometer className="w-3 h-3 text-amber-400" />
             Lead Morno
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-semibold">
+          <span className="badge-temp-frio inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-semibold">
             <Snowflake className="w-3 h-3 text-blue-400" />
             Lead Frio
           </span>
@@ -652,7 +654,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
       {/* ========================================================================= */}
       {/* 1. FILTRAR POR CANAL NO TOPO (BARRA SUPERIOR HORIZONTAL INTEGRADA) */}
       {/* ========================================================================= */}
-      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-[#141416] border border-white/10 shadow-sm">
+      <div id="atendimento-channel-bar" className="w-full flex flex-col md:flex-row md:items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-[#141416] border border-white/10 shadow-sm transition-colors">
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-[11px] font-bold uppercase tracking-wider text-[#8B5CF6] flex items-center gap-1.5">
             <SlidersHorizontal className="w-3.5 h-3.5 text-[#8B5CF6]" />
@@ -677,15 +679,16 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
             return (
               <button
                 key={ch.id}
+                id={`filter-channel-${ch.id.toLowerCase().replace(/\s+/g, '-')}`}
                 onClick={() => setSelectedChannel(ch.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border ${
+                className={`channel-filter-pill channel-filter-pill-${ch.id.toLowerCase().replace(/\s+/g, '-')} px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shrink-0 border ${
                   isActive
-                    ? 'bg-[#8B5CF6] text-white border-[#8B5CF6] shadow-md shadow-[#8B5CF6]/30'
-                    : 'bg-[#1C1C1E] text-[#A1A1AA] hover:text-white hover:border-[#8B5CF6]/50 border-white/10'
+                    ? 'channel-filter-active bg-[#8B5CF6] text-white border-[#8B5CF6] shadow-md shadow-[#8B5CF6]/30'
+                    : 'channel-filter-inactive bg-[#1C1C1E] text-[#A1A1AA] hover:text-white hover:border-[#8B5CF6]/50 border-white/10'
                 }`}
               >
                 <span
-                  className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-black ${
+                  className={`channel-filter-tag channel-filter-tag-${ch.id.toLowerCase().replace(/\s+/g, '-')} px-1.5 py-0.5 rounded text-[9px] font-mono font-black ${
                     isActive ? 'bg-black/30 text-white' : `${ch.badgeBg} ${ch.badgeText}`
                   }`}
                 >
@@ -694,7 +697,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                 <span>{ch.shortLabel}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    isActive ? 'bg-black/40 text-white' : 'bg-[#27272A] text-[#A1A1AA]'
+                    isActive ? 'bg-black/40 text-white' : 'channel-count-badge bg-[#27272A] text-[#A1A1AA]'
                   }`}
                 >
                   {count}
@@ -708,15 +711,15 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
       {/* ========================================================================= */}
       {/* 2. ÁREA PRINCIPAL: CONVERSAS | CHAT / ATENDIMENTO | PAINEL CONTEXTUAL DIREITO */}
       {/* ========================================================================= */}
-      <div className="h-[840px] rounded-2xl border border-white/10 bg-[#101012] overflow-hidden shadow-2xl flex flex-col md:flex-row">
+      <div id="atendimento-main-container" className="h-[840px] rounded-2xl border border-white/10 bg-[#101012] overflow-hidden shadow-2xl flex flex-col md:flex-row transition-colors">
         
         {/* ========================================================================= */}
         {/* COLUNA 1: WHATSAPP LEFT CONVERSATION LIST (MOTORGRID THEME) */}
         {/* ========================================================================= */}
-        <div className="w-full md:w-[280px] lg:w-[300px] xl:w-[310px] border-r border-white/10 bg-[#141416] flex flex-col shrink-0 h-full">
+        <div id="atendimento-conversations-sidebar" className="w-full md:w-[280px] lg:w-[300px] xl:w-[310px] border-r border-white/10 bg-[#141416] flex flex-col shrink-0 h-full transition-colors">
           
           {/* Header do Chat Sidebar */}
-          <div className="h-[64px] px-4 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 shrink-0">
+          <div id="atendimento-sidebar-header" className="h-[64px] px-4 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 shrink-0 transition-colors">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <img
@@ -728,7 +731,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               </div>
               <div>
                 <span className="text-sm font-semibold text-white block leading-tight">Camila Rocha</span>
-                <span className="text-[11px] text-[#8B5CF6] font-medium flex items-center gap-1">
+                <span className="atendimento-connected-status text-[11px] text-[#8B5CF6] font-medium flex items-center gap-1">
                   ● Conectada (WhatsApp CRM)
                 </span>
               </div>
@@ -737,6 +740,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
             <div className="flex items-center gap-1 text-[#A1A1AA]">
               <button
                 onClick={() => setUnreadOnly(!unreadOnly)}
+                id="btn-sidebar-filter"
                 className={`p-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer ${
                   unreadOnly ? 'text-[#8B5CF6] bg-[#8B5CF6]/20' : ''
                 }`}
@@ -745,9 +749,10 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                 <Filter className="w-4 h-4" />
               </button>
               <button
+                id="btn-sidebar-calc"
                 onClick={() => setIsFinancingModalOpen(true)}
-                className="p-2 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-[#8B5CF6] transition-colors cursor-pointer"
-                title="Abrir Simulador IA"
+                className="btn-calc-action p-2 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-[#8B5CF6] transition-colors cursor-pointer"
+                title="Abrir Simulador Financeiro"
               >
                 <Calculator className="w-4 h-4" />
               </button>
@@ -755,10 +760,11 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
           </div>
 
           {/* Search Bar & Inbox Filter Tabs */}
-          <div className="p-3 bg-[#141416] border-b border-white/5 space-y-2.5">
-            <div className="relative flex items-center bg-[#1C1C1E] border border-white/10 rounded-xl px-3 py-2 focus-within:border-[#8B5CF6] transition-all">
+          <div id="atendimento-search-section" className="p-3 bg-[#141416] border-b border-white/5 space-y-2.5 transition-colors">
+            <div id="atendimento-search-box" className="relative flex items-center bg-[#1C1C1E] border border-white/10 rounded-xl px-3 py-2 focus-within:border-[#8B5CF6] transition-all">
               <Search className="w-4 h-4 text-[#A1A1AA] shrink-0 mr-2.5" />
               <input
+                id="input-busca-conversas"
                 type="text"
                 placeholder="Buscar cliente, carro, canal..."
                 value={searchQuery}
@@ -782,11 +788,12 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                 ].map((tab) => (
                   <button
                     key={tab.id}
+                    id={`filter-inbox-${tab.id}`}
                     onClick={() => setInboxTab(tab.id as any)}
-                    className={`flex-1 px-2 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-center ${
+                    className={`inbox-filter-tab flex-1 px-2 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer text-center ${
                       inboxTab === tab.id
-                        ? 'bg-[#8B5CF6] text-white shadow-sm'
-                        : 'bg-[#1C1C1E] text-[#A1A1AA] hover:text-white hover:bg-[#27272A] border border-white/5'
+                        ? 'inbox-filter-active bg-[#8B5CF6] text-white shadow-sm'
+                        : 'inbox-filter-inactive bg-[#1C1C1E] text-[#A1A1AA] hover:text-white hover:bg-[#27272A] border border-white/5'
                     }`}
                   >
                     {tab.label}
@@ -797,7 +804,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
           </div>
 
           {/* Conversation List */}
-          <div className="flex-1 overflow-y-auto divide-y divide-white/5 scrollbar-thin">
+          <div id="atendimento-conversations-list" className="flex-1 overflow-y-auto divide-y divide-white/5 scrollbar-thin transition-colors">
             {filteredConversations.length === 0 ? (
               <div className="p-8 text-center space-y-3">
                 <div className="w-12 h-12 rounded-full bg-[#1C1C1E] border border-white/10 flex items-center justify-center mx-auto text-[#A1A1AA]">
@@ -824,16 +831,17 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                 return (
                   <button
                     key={conv.id}
+                    id={`conversation-item-${conv.id}`}
                     onClick={() => {
                       setSelectedConvId(conv.id);
                       setConversations((prev) =>
                         prev.map((c) => (c.id === conv.id ? { ...c, unreadCount: 0 } : c))
                       );
                     }}
-                    className={`w-full text-left px-3.5 py-3 transition-all flex items-center gap-3 cursor-pointer relative ${
+                    className={`conversation-item w-full text-left px-3.5 py-3 transition-all flex items-center gap-3 cursor-pointer relative ${
                       isSelected
-                        ? 'bg-[#8B5CF6]/15 border-l-4 border-[#8B5CF6]'
-                        : 'hover:bg-[#1C1C1E] bg-transparent'
+                        ? 'conversation-item-selected bg-[#8B5CF6]/15 border-l-4 border-[#8B5CF6]'
+                        : 'conversation-item-normal hover:bg-[#1C1C1E] bg-transparent'
                     }`}
                   >
                     {/* Avatar with Channel Badge */}
@@ -849,11 +857,11 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                     {/* Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-semibold text-white truncate">
+                        <h4 className="conversation-contact-name text-sm font-semibold text-white truncate">
                           {conv.contactName}
                         </h4>
                         <span
-                          className={`text-[11px] font-medium shrink-0 ml-2 ${
+                          className={`conversation-time text-[11px] font-medium shrink-0 ml-2 ${
                             conv.unreadCount > 0 ? 'text-[#8B5CF6] font-bold' : 'text-[#A1A1AA]'
                           }`}
                         >
@@ -862,7 +870,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                       </div>
 
                       <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs text-[#A1A1AA] truncate flex items-center gap-1 max-w-[200px]">
+                        <p className="conversation-last-msg text-xs text-[#A1A1AA] truncate flex items-center gap-1 max-w-[200px]">
                           {conv.messages[conv.messages.length - 1]?.sender === 'agent' && (
                             <CheckCheck className="w-3.5 h-3.5 text-[#8B5CF6] shrink-0" />
                           )}
@@ -870,7 +878,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                         </p>
 
                         {conv.unreadCount > 0 && (
-                          <span className="ml-2 min-w-[20px] h-5 px-1.5 rounded-full bg-[#8B5CF6] text-white text-[11px] font-bold flex items-center justify-center shrink-0 shadow-sm">
+                          <span className="conversation-unread-badge ml-2 min-w-[20px] h-5 px-1.5 rounded-full bg-[#8B5CF6] text-white text-[11px] font-bold flex items-center justify-center shrink-0 shadow-sm">
                             {conv.unreadCount}
                           </span>
                         )}
@@ -881,7 +889,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                         {renderChannelChip(conv.channel, true)}
 
                         {conv.tracking.vehicleOfInterest && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#1C1C1E] text-[#A1A1AA] border border-white/5 truncate max-w-[130px] flex items-center gap-1 font-medium">
+                          <span className="conversation-car-chip text-[10px] px-2 py-0.5 rounded-md bg-[#1C1C1E] text-[#A1A1AA] border border-white/5 truncate max-w-[130px] flex items-center gap-1 font-medium">
                             <Car className="w-2.5 h-2.5 text-[#8B5CF6]" />
                             {conv.tracking.vehicleOfInterest.model}
                           </span>
@@ -899,10 +907,10 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
         {/* ========================================================================= */}
         {/* COLUNA 2: WHATSAPP CHAT WINDOW (MOTORGRID PALETTE & UX) */}
         {/* ========================================================================= */}
-        <div className="flex-1 flex flex-col h-full bg-[#0C0C0E] relative overflow-hidden min-w-0">
+        <div id="atendimento-chat-window" className="flex-1 flex flex-col h-full bg-[#0C0C0E] relative overflow-hidden min-w-0 transition-colors">
           
           {/* Header */}
-          <div className="h-[64px] px-4 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 z-10 shrink-0">
+          <div id="atendimento-chat-header" className="h-[64px] px-4 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 z-10 shrink-0 transition-colors">
             {/* Informações do Cliente */}
             <div
               className="min-w-0 flex-1 pr-4 cursor-pointer group"
@@ -927,7 +935,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                 type="button"
                 id="btn-atendimento-agendar"
                 onClick={() => setIsScheduleModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white text-xs font-semibold transition-all cursor-pointer border border-white/10 shadow-sm"
+                className="chat-header-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white text-xs font-semibold transition-all cursor-pointer border border-white/10 shadow-sm"
                 title="Agendar Test Drive"
               >
                 <Calendar className="w-3.5 h-3.5 text-[#8B5CF6]" />
@@ -938,7 +946,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                 type="button"
                 id="btn-atendimento-transferir"
                 onClick={() => setIsTransferModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white text-xs font-medium transition-all cursor-pointer border border-white/10 shadow-sm"
+                className="chat-header-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white text-xs font-medium transition-all cursor-pointer border border-white/10 shadow-sm"
                 title="Transferir conversa"
               >
                 <UserCheck className="w-3.5 h-3.5 text-[#8B5CF6]" />
@@ -960,18 +968,14 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
             </div>
           </div>
 
-          {/* Chat Messages Body with WhatsApp Style Background & MotorGrid Accents */}
+          {/* Chat Messages Body with Pattern Background */}
           <div
-            className="flex-1 p-4 overflow-y-auto space-y-3.5 relative scrollbar-thin"
-            style={{
-              backgroundColor: '#0C0C0E',
-              backgroundImage: `radial-gradient(rgba(139,92,246,0.06) 1.5px, transparent 1.5px)`,
-              backgroundSize: '24px 24px',
-            }}
+            id="atendimento-chat-canvas"
+            className="atendimento-chat-canvas flex-1 p-4 overflow-y-auto space-y-3.5 relative scrollbar-thin transition-colors"
           >
             {/* E2E Security Pill */}
             <div className="flex justify-center my-1.5">
-              <div className="bg-[#1C1C1E] border border-white/10 text-[#A1A1AA] text-[11px] px-3.5 py-1.5 rounded-lg shadow-sm max-w-md text-center flex items-center gap-2">
+              <div className="chat-system-pill bg-[#1C1C1E] border border-white/10 text-[#A1A1AA] text-[11px] px-3.5 py-1.5 rounded-lg shadow-sm max-w-md text-center flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#8B5CF6] shrink-0" />
                 <span>Atendimento WhatsApp integrado ao CRM MotorGrid com inteligência financeira.</span>
               </div>
@@ -979,7 +983,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
 
             {/* Date Pill */}
             <div className="flex justify-center my-2">
-              <span className="bg-[#1C1C1E] border border-white/10 text-[#A1A1AA] text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-wider shadow-sm">
+              <span className="chat-date-pill bg-[#1C1C1E] border border-white/10 text-[#A1A1AA] text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-wider shadow-sm">
                 Hoje
               </span>
             </div>
@@ -987,15 +991,15 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
             {/* CRM Timeline Events */}
             {selectedConv.events.map((ev) => (
               <div key={ev.id} className="flex justify-center my-1">
-                <div className="max-w-md w-full px-3 py-2 rounded-lg bg-[#1C1C1E] border border-[#8B5CF6]/30 text-xs shadow-sm space-y-0.5">
+                <div className="chat-crm-event max-w-md w-full px-3 py-2 rounded-lg bg-[#1C1C1E] border border-[#8B5CF6]/30 text-xs shadow-sm space-y-0.5">
                   <div className="flex items-center justify-between text-[11px] font-bold text-[#8B5CF6]">
                     <span className="flex items-center gap-1.5">
                       <Zap className="w-3.5 h-3.5 text-[#8B5CF6]" />
                       {ev.title}
                     </span>
-                    <span className="text-[10px] text-[#A1A1AA] font-mono">{ev.timestamp}</span>
+                    <span className="chat-event-time text-[10px] text-[#A1A1AA] font-mono">{ev.timestamp}</span>
                   </div>
-                  <p className="text-[11px] text-white/80">{ev.description}</p>
+                  <p className="chat-event-desc text-[11px] text-white/80">{ev.description}</p>
                 </div>
               </div>
             ))}
@@ -1012,12 +1016,12 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   <div
                     className={`max-w-[88%] sm:max-w-lg p-3 rounded-2xl text-sm relative shadow-md transition-all ${
                       isMe
-                        ? 'bg-[#2E1065] text-white border border-[#8B5CF6]/40 rounded-tr-none'
-                        : 'bg-[#1C1C1E] text-white border border-white/10 rounded-tl-none'
+                        ? 'chat-bubble-agent bg-[#2E1065] text-white border border-[#8B5CF6]/40 rounded-tr-none'
+                        : 'chat-bubble-customer bg-[#1C1C1E] text-white border border-white/10 rounded-tl-none'
                     }`}
                   >
                     {!isMe && (
-                      <div className="text-[11px] font-bold text-[#8B5CF6] mb-1">
+                      <div className="chat-bubble-sender-name text-[11px] font-bold text-[#8B5CF6] mb-1">
                         {m.senderName}
                       </div>
                     )}
@@ -1053,7 +1057,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                                 )
                               )}
                             </div>
-                            <div className="flex items-center justify-between text-[10px] text-[#A1A1AA] font-mono">
+                            <div className="chat-audio-timing flex items-center justify-between text-[10px] text-[#A1A1AA] font-mono">
                               <span>{isPlayingAudio ? '0:09' : '0:00'}</span>
                               <span>{m.audioDuration || '0:18'}</span>
                             </div>
@@ -1073,12 +1077,12 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                         </div>
 
                         {/* Speed Toggle + Transcrição IA */}
-                        <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+                        <div className="chat-audio-controls pt-2 border-t border-white/10 flex items-center justify-between">
                           <button
                             onClick={() =>
                               setAudioPlaybackSpeed((prev) => (prev === '1x' ? '1.5x' : prev === '1.5x' ? '2x' : '1x'))
                             }
-                            className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
+                            className="chat-speed-btn text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/10 text-white hover:bg-white/20 transition-colors"
                           >
                             {audioPlaybackSpeed}
                           </button>
@@ -1088,33 +1092,33 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                           </span>
                         </div>
 
-                        <p className="text-xs text-white/90 italic bg-black/30 p-2.5 rounded-lg border border-white/5">
+                        <p className="chat-audio-transcription text-xs text-white/90 italic bg-black/30 p-2.5 rounded-lg border border-white/5">
                           "{m.audioTranscription}"
                         </p>
                       </div>
                     ) : (
                       /* Text Message Body */
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap pr-12 pb-1 text-white">
+                      <p className="chat-message-text text-sm leading-relaxed whitespace-pre-wrap pr-12 pb-1 text-white">
                         {m.text}
                       </p>
                     )}
 
                     {/* Timestamp & Double Checkmarks */}
-                    <div className="flex items-center justify-end gap-1 text-[11px] text-white/60 float-right -mt-2 ml-2 font-normal select-none">
+                    <div className="chat-message-footer flex items-center justify-end gap-1 text-[11px] text-white/60 float-right -mt-2 ml-2 font-normal select-none">
                       <span>{m.timestamp}</span>
                       {isMe && <CheckCheck className="w-4 h-4 text-[#8B5CF6]" />}
                     </div>
 
                     {/* Reaction Badge */}
                     {reaction && (
-                      <div className="absolute -bottom-2 right-2 bg-[#1C1C1E] border border-white/20 rounded-full px-1.5 py-0.5 text-xs shadow-md">
+                      <div className="chat-reaction-badge absolute -bottom-2 right-2 bg-[#1C1C1E] border border-white/20 rounded-full px-1.5 py-0.5 text-xs shadow-md">
                         {reaction}
                       </div>
                     )}
                   </div>
 
                   {/* Floating Message Reactions */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-4 flex items-center gap-1 bg-[#1C1C1E] border border-white/20 rounded-full px-2 py-0.5 shadow-xl z-20">
+                  <div className="chat-floating-reactions opacity-0 group-hover:opacity-100 transition-opacity absolute -top-4 flex items-center gap-1 bg-[#1C1C1E] border border-white/20 rounded-full px-2 py-0.5 shadow-xl z-20">
                     {['👍', '❤️', '🔥', '🚗'].map((emoji) => (
                       <button
                         key={emoji}
@@ -1137,17 +1141,18 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
           </div>
 
           {/* AI Quick Response Bar (Grid AI Suggestions) */}
-          <div className="px-3.5 py-2 bg-[#141416] border-t border-white/10 flex items-center gap-2 overflow-x-auto scrollbar-none z-10">
+          <div id="atendimento-ai-suggestions" className="px-3.5 py-2 bg-[#141416] border-t border-white/10 flex items-center gap-2 overflow-x-auto scrollbar-none z-10 transition-colors">
             <span className="text-[#8B5CF6] flex items-center gap-1 shrink-0 text-xs font-bold">
               <Sparkles className="w-3.5 h-3.5" />
               Sugestões IA:
             </span>
             <button
+              id="btn-ai-suggestion-calc-financing"
               onClick={() => setIsFinancingModalOpen(true)}
-              className="px-3 py-1 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-xs text-[#8B5CF6] border border-[#8B5CF6]/40 whitespace-nowrap transition-colors cursor-pointer font-semibold flex items-center gap-1"
+              className="btn-calc-financing-ai px-3 py-1 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-xs text-[#8B5CF6] border border-[#8B5CF6]/40 whitespace-nowrap transition-colors cursor-pointer font-semibold flex items-center gap-1"
             >
-              <Calculator className="w-3 h-3" />
-              "Calcular Financiamento IA..."
+              <Calculator className="w-3 h-3 text-[#8B5CF6]" />
+              <span>"Calcular Financiamento IA..."</span>
             </button>
             <button
               onClick={() =>
@@ -1155,7 +1160,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   'Olá Marcelo! Com certeza, pegamos seu Jeep Compass 2022 na troca com avaliação técnica no showroom de Alphaville. Podemos agendar hoje às 15h?'
                 )
               }
-              className="px-3 py-1 rounded-lg bg-[#1C1C1E] hover:bg-[#27272A] text-xs text-white border border-white/10 whitespace-nowrap transition-colors cursor-pointer"
+              className="chat-ai-suggestion-btn px-3 py-1 rounded-lg bg-[#1C1C1E] hover:bg-[#27272A] text-xs text-white border border-white/10 whitespace-nowrap transition-colors cursor-pointer"
             >
               "Pegamos o Compass 2022 na troca..."
             </button>
@@ -1165,7 +1170,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   'Consigo segurar a BMW 320i M Sport reservada para você com condição de taxa especial 0,99% a.m. até amanhã.'
                 )
               }
-              className="px-3 py-1 rounded-lg bg-[#1C1C1E] hover:bg-[#27272A] text-xs text-white border border-white/10 whitespace-nowrap transition-colors cursor-pointer"
+              className="chat-ai-suggestion-btn px-3 py-1 rounded-lg bg-[#1C1C1E] hover:bg-[#27272A] text-xs text-white border border-white/10 whitespace-nowrap transition-colors cursor-pointer"
             >
               "Taxa especial 0,99% a.m..."
             </button>
@@ -1174,11 +1179,11 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
           {/* ========================================================================= */}
           {/* CHAT COMPOSER INPUT BAR */}
           {/* ========================================================================= */}
-          <div className="p-3.5 bg-[#1C1C1E] border-t border-white/10 relative z-20">
+          <div id="atendimento-composer-container" className="p-3.5 bg-[#1C1C1E] border-t border-white/10 relative z-20 transition-colors">
             
             {/* Emoji Picker Popover */}
             {showEmojiPicker && (
-              <div className="absolute bottom-16 left-4 bg-[#1C1C1E] border border-white/15 rounded-2xl p-3 shadow-2xl z-30 grid grid-cols-4 gap-2">
+              <div id="atendimento-emoji-popover" className="chat-popover absolute bottom-16 left-4 bg-[#1C1C1E] border border-white/15 rounded-2xl p-3 shadow-2xl z-30 grid grid-cols-4 gap-2">
                 {quickEmojis.map((emoji) => (
                   <button
                     key={emoji}
@@ -1197,14 +1202,15 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
 
             {/* Attachments Menu Popover */}
             {showAttachMenu && (
-              <div className="absolute bottom-16 left-12 bg-[#1C1C1E] border border-white/15 rounded-2xl p-3 shadow-2xl z-30 space-y-1.5 w-64">
+              <div id="atendimento-attach-popover" className="chat-popover absolute bottom-16 left-12 bg-[#1C1C1E] border border-white/15 rounded-2xl p-3 shadow-2xl z-30 space-y-1.5 w-64">
                 <button
                   type="button"
+                  id="btn-attach-financing-simulator"
                   onClick={() => {
                     setShowAttachMenu(false);
                     setIsFinancingModalOpen(true);
                   }}
-                  className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-[#8B5CF6]/15 hover:bg-[#8B5CF6]/25 border border-[#8B5CF6]/30 text-xs text-white transition-colors cursor-pointer"
+                  className="btn-calc-financing-ai w-full flex items-center gap-3 p-2.5 rounded-xl bg-[#8B5CF6]/15 hover:bg-[#8B5CF6]/25 border border-[#8B5CF6]/30 text-xs text-white transition-colors cursor-pointer"
                 >
                   <span className="p-2 rounded-lg bg-[#8B5CF6] text-white">
                     <Calculator className="w-4 h-4" />
@@ -1218,7 +1224,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                 <button
                   type="button"
                   onClick={() => handleSendAttachment('document', 'Ficha_Tecnica_BMW_320i_M_Sport.pdf')}
-                  className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#27272A] text-xs text-white transition-colors cursor-pointer"
+                  className="chat-popover-item w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#27272A] text-xs text-white transition-colors cursor-pointer"
                 >
                   <span className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
                     <FileText className="w-4 h-4" />
@@ -1229,7 +1235,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                 <button
                   type="button"
                   onClick={() => handleSendAttachment('image', 'Fotos_Showroom_BMW_320i.jpg')}
-                  className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#27272A] text-xs text-white transition-colors cursor-pointer"
+                  className="chat-popover-item w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#27272A] text-xs text-white transition-colors cursor-pointer"
                 >
                   <span className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
                     <ImageIcon className="w-4 h-4" />
@@ -1240,7 +1246,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                 <button
                   type="button"
                   onClick={() => handleSendAttachment('location', 'Localizacao_Showroom_Alphaville.map')}
-                  className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#27272A] text-xs text-white transition-colors cursor-pointer"
+                  className="chat-popover-item w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#27272A] text-xs text-white transition-colors cursor-pointer"
                 >
                   <span className="p-2 rounded-lg bg-rose-500/20 text-rose-400">
                     <MapPin className="w-4 h-4" />
@@ -1255,11 +1261,12 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               {/* Emoji Icon */}
               <button
                 type="button"
+                id="btn-atendimento-emoji"
                 onClick={() => {
                   setShowEmojiPicker(!showEmojiPicker);
                   setShowAttachMenu(false);
                 }}
-                className={`p-2 rounded-xl text-[#A1A1AA] hover:text-white hover:bg-white/5 transition-colors cursor-pointer ${
+                className={`chat-action-icon-btn p-2 rounded-xl text-[#A1A1AA] hover:text-white hover:bg-white/5 transition-colors cursor-pointer ${
                   showEmojiPicker ? 'text-[#8B5CF6] bg-[#8B5CF6]/20' : ''
                 }`}
                 title="Emojis"
@@ -1270,11 +1277,12 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               {/* Attachment Clip */}
               <button
                 type="button"
+                id="btn-atendimento-anexo"
                 onClick={() => {
                   setShowAttachMenu(!showAttachMenu);
                   setShowEmojiPicker(false);
                 }}
-                className={`p-2 rounded-xl text-[#A1A1AA] hover:text-white hover:bg-white/5 transition-colors cursor-pointer ${
+                className={`chat-action-icon-btn p-2 rounded-xl text-[#A1A1AA] hover:text-white hover:bg-white/5 transition-colors cursor-pointer ${
                   showAttachMenu ? 'text-[#8B5CF6] bg-[#8B5CF6]/20' : ''
                 }`}
                 title="Anexar arquivos ou Simulação"
@@ -1304,7 +1312,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   placeholder="Digite uma mensagem ou envie uma proposta..."
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  className="flex-1 px-4 py-2.5 text-sm rounded-xl bg-[#101012] text-white placeholder-[#A1A1AA] border border-white/10 focus:border-[#8B5CF6] focus:outline-none transition-all"
+                  className="chat-composer-input flex-1 px-4 py-2.5 text-sm rounded-xl bg-[#101012] text-white placeholder-[#A1A1AA] border border-white/10 focus:border-[#8B5CF6] focus:outline-none transition-all"
                 />
               )}
 
@@ -1320,6 +1328,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               ) : (
                 <button
                   type="button"
+                  id="atendimento-voice-message-btn"
                   onClick={handleSimulateVoiceRecording}
                   className={`p-2.5 rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center shrink-0 ${
                     isRecordingAudio
@@ -1339,10 +1348,10 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
         {/* COLUNA 3: PAINEL CONTEXTUAL DO ATENDIMENTO / PAINEL DE AÇÃO DO VENDEDOR */}
         {/* ========================================================================= */}
         {showContactInfo && (
-          <div className="w-full md:w-[280px] lg:w-[300px] xl:w-[320px] border-l border-white/10 bg-[#141416] flex flex-col shrink-0 h-full overflow-y-auto scrollbar-thin">
+          <div id="atendimento-context-panel" className="w-full md:w-[280px] lg:w-[300px] xl:w-[320px] border-l border-white/10 bg-[#141416] flex flex-col shrink-0 h-full overflow-y-auto scrollbar-thin transition-colors">
             
             {/* Header do Painel Lateral */}
-            <div className="h-[64px] px-3.5 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 shrink-0">
+            <div id="atendimento-context-header" className="h-[64px] px-3.5 bg-[#1C1C1E] flex items-center justify-between border-b border-white/10 shrink-0 transition-colors">
               <div className="flex items-center gap-2 min-w-0">
                 <button
                   type="button"
@@ -1389,7 +1398,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               {/* ------------------------------------------------------------- */}
               {/* 1. FOTO E INFORMAÇÕES DO VEÍCULO DE INTERESSE & CONTATO */}
               {/* ------------------------------------------------------------- */}
-              <div className="p-3 bg-[#1C1C1E] border border-white/10 rounded-xl space-y-2.5 shadow-sm">
+              <div id="card-context-vehicle" className="context-card p-3 bg-[#1C1C1E] border border-white/10 rounded-xl space-y-2.5 shadow-sm transition-colors">
                 <div className="flex items-center justify-between text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">
                   <span className="flex items-center gap-1 text-white">
                     <Car className="w-3.5 h-3.5 text-[#8B5CF6]" />
@@ -1405,7 +1414,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                     alt={selectedConv.tracking.vehicleOfInterest?.model || 'Veículo'}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
-                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/85 text-[#8B5CF6] font-extrabold text-xs border border-[#8B5CF6]/40 shadow-md">
+                  <span className="context-car-price-badge absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/85 text-[#8B5CF6] font-extrabold text-xs border border-[#8B5CF6]/40 shadow-md">
                     R$ {carPrice.toLocaleString('pt-BR')}
                   </span>
                 </div>
@@ -1423,11 +1432,11 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   </div>
 
                   <div className="grid grid-cols-2 gap-1.5 text-[10px] text-white">
-                    <div className="p-1.5 rounded-lg bg-[#101012] border border-white/5 flex items-center justify-between">
+                    <div className="context-mini-spec p-1.5 rounded-lg bg-[#101012] border border-white/5 flex items-center justify-between">
                       <span className="text-[#A1A1AA]">Ano:</span>
                       <span className="font-bold">{selectedConv.tracking.vehicleOfInterest?.year || '2024'}</span>
                     </div>
-                    <div className="p-1.5 rounded-lg bg-[#101012] border border-white/5 flex items-center justify-between">
+                    <div className="context-mini-spec p-1.5 rounded-lg bg-[#101012] border border-white/5 flex items-center justify-between">
                       <span className="text-[#A1A1AA]">Km:</span>
                       <span className="font-bold">
                         {(selectedConv.tracking.vehicleOfInterest?.km || 42000).toLocaleString('pt-BR')} km
@@ -1457,22 +1466,25 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
 
                   <div className="flex items-center gap-1 shrink-0">
                     <button
-                      className="p-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white transition-colors cursor-pointer"
+                      id="btn-context-phone"
+                      className="context-quick-btn p-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white transition-colors cursor-pointer"
                       title="Ligar para Cliente"
                     >
                       <Phone className="w-3 h-3 text-[#A1A1AA]" />
                     </button>
                     <button
+                      id="btn-context-calendar"
                       onClick={() => setIsScheduleModalOpen(true)}
-                      className="p-1.5 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-[#8B5CF6] transition-colors cursor-pointer"
+                      className="btn-calendar-action p-1.5 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6]/30 text-[#8B5CF6] transition-colors cursor-pointer"
                       title="Agendar Visita / Test Drive"
                     >
                       <Calendar className="w-3 h-3" />
                     </button>
                     <button
+                      id="btn-context-calc"
                       onClick={() => setIsFinancingModalOpen(true)}
-                      className="p-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white transition-colors cursor-pointer"
-                      title="Simular Financiamento IA"
+                      className="btn-calc-action context-quick-btn p-1.5 rounded-lg bg-[#27272A] hover:bg-[#323236] text-white transition-colors cursor-pointer"
+                      title="Simular Financiamento"
                     >
                       <Calculator className="w-3 h-3 text-[#8B5CF6]" />
                     </button>
@@ -1494,7 +1506,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               {/* ------------------------------------------------------------- */}
               {/* 3. FILA DE ATENDIMENTO */}
               {/* ------------------------------------------------------------- */}
-              <div className="p-3 rounded-xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between shadow-sm">
+              <div id="card-context-queue" className="context-card p-3 rounded-xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between shadow-sm transition-colors">
                 <div>
                   <div className="text-[11px] font-semibold text-[#A1A1AA] flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 text-[#8B5CF6]" />
@@ -1514,7 +1526,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               {/* ------------------------------------------------------------- */}
               {/* 3. LEADS QUENTES (ALTA INTENÇÃO) */}
               {/* ------------------------------------------------------------- */}
-              <div className="p-3 rounded-xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between shadow-sm">
+              <div id="card-context-hotleads" className="context-card p-3 rounded-xl bg-[#1C1C1E] border border-white/10 flex items-center justify-between shadow-sm transition-colors">
                 <div>
                   <div className="text-[11px] font-semibold text-[#A1A1AA] flex items-center gap-1.5">
                     <Flame className="w-3.5 h-3.5 text-rose-400 fill-rose-400" />
@@ -1535,8 +1547,9 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               {/* 4. TEST DRIVES AGENDADOS HOJE */}
               {/* ------------------------------------------------------------- */}
               <div
+                id="card-context-testdrives"
                 onClick={() => setIsScheduleModalOpen(true)}
-                className="p-3 rounded-xl bg-[#1C1C1E] border border-white/10 hover:border-[#8B5CF6]/40 flex items-center justify-between shadow-sm cursor-pointer transition-all hover:bg-[#232326] group"
+                className="context-card p-3 rounded-xl bg-[#1C1C1E] border border-white/10 hover:border-[#8B5CF6]/40 flex items-center justify-between shadow-sm cursor-pointer transition-all hover:bg-[#232326] group"
               >
                 <div>
                   <div className="text-[11px] font-semibold text-[#A1A1AA] flex items-center gap-1.5">
@@ -1557,6 +1570,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               {/* 5. SIMULADOR FINANCIAMENTO IA */}
               {/* ------------------------------------------------------------- */}
               <div
+                id="card-context-simulator-banner"
                 onClick={() => setIsFinancingModalOpen(true)}
                 className="p-3 rounded-xl bg-gradient-to-br from-[#1C1C1E] via-[#23202E] to-[#1C1C1E] border border-[#8B5CF6]/50 hover:border-[#8B5CF6] flex items-center justify-between shadow-lg cursor-pointer transition-all hover:scale-[1.01] group"
               >
