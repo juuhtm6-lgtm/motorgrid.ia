@@ -259,7 +259,7 @@ export const ScheduleAppointmentModal: React.FC<ScheduleAppointmentModalProps> =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-4xl max-h-[92vh] bg-[#141416] border border-[#8B5CF6]/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
+      <div role="dialog" className="modal-container modal-card w-full max-w-4xl max-h-[92vh] bg-[#141416] border border-[#8B5CF6]/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="px-6 py-4 border-b border-white/10 bg-[#1C1C1E] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -364,35 +364,35 @@ export const ScheduleAppointmentModal: React.FC<ScheduleAppointmentModalProps> =
               <button
                 type="button"
                 onClick={() => handleQuickPreset('today')}
-                className="px-2.5 py-1 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 hover:text-[#8B5CF6] text-white text-[11px] font-semibold transition-all border border-white/5 cursor-pointer whitespace-nowrap"
+                className="modal-quick-preset-btn px-2.5 py-1 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 hover:text-[#8B5CF6] text-white text-[11px] font-semibold transition-all border border-white/5 cursor-pointer whitespace-nowrap"
               >
                 Hoje (28/08)
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickPreset('tomorrow')}
-                className="px-2.5 py-1 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 hover:text-[#8B5CF6] text-white text-[11px] font-semibold transition-all border border-white/5 cursor-pointer whitespace-nowrap"
+                className="modal-quick-preset-btn px-2.5 py-1 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 hover:text-[#8B5CF6] text-white text-[11px] font-semibold transition-all border border-white/5 cursor-pointer whitespace-nowrap"
               >
                 Amanhã
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickPreset('saturday')}
-                className="px-2.5 py-1 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 hover:text-[#8B5CF6] text-white text-[11px] font-semibold transition-all border border-white/5 cursor-pointer whitespace-nowrap"
+                className="modal-quick-preset-btn px-2.5 py-1 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 hover:text-[#8B5CF6] text-white text-[11px] font-semibold transition-all border border-white/5 cursor-pointer whitespace-nowrap"
               >
                 Sábado
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickPreset('nextWeek')}
-                className="px-2.5 py-1 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 hover:text-[#8B5CF6] text-white text-[11px] font-semibold transition-all border border-white/5 cursor-pointer whitespace-nowrap"
+                className="modal-quick-preset-btn px-2.5 py-1 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 hover:text-[#8B5CF6] text-white text-[11px] font-semibold transition-all border border-white/5 cursor-pointer whitespace-nowrap"
               >
                 Próx. Semana
               </button>
             </div>
 
             {/* Calendar Grid */}
-            <div className="p-4 bg-[#141416] rounded-2xl border border-white/10">
+            <div className="modal-calendar-grid p-4 bg-[#141416] rounded-2xl border border-white/10">
               {/* Day names */}
               <div className="grid grid-cols-7 gap-1 text-center mb-2">
                 {WEEK_DAYS.map((wd, i) => (
@@ -501,7 +501,7 @@ export const ScheduleAppointmentModal: React.FC<ScheduleAppointmentModalProps> =
                         key={slot}
                         type="button"
                         onClick={() => setTime(slot)}
-                        className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
+                        className={`time-slot-btn py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer text-center border ${
                           isTimeSelected
                             ? 'bg-[#8B5CF6] text-white border-white/20 shadow-md shadow-[#8B5CF6]/30 font-mono'
                             : 'bg-[#1C1C1E] text-[#A1A1AA] hover:text-white hover:bg-[#27272A] border-white/5 font-mono'

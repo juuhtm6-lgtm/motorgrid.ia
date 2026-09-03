@@ -74,7 +74,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
         <div className="p-4 rounded-2xl bg-[#1C1C1E] border border-zinc-800/80 flex items-center justify-between">
           <div>
             <div className="text-xs font-semibold text-zinc-400">Potencial de Veículos</div>
-            <div className="text-2xl font-bold text-emerald-400 mt-1">{totalFleetPotential} carros/caminhões</div>
+            <div className="text-2xl font-bold text-emerald-400 mt-1">{totalFleetPotential} veículos</div>
             <div className="text-[11px] text-zinc-400 mt-0.5">Demanda de instalação rastreador</div>
           </div>
           <div className="p-3 rounded-xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
@@ -256,7 +256,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     <td className="py-4 px-4 text-right">
                       <button
                         onClick={() => onOpenChat(lead)}
-                        className="px-3.5 py-1.5 rounded-xl bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 text-xs font-bold transition-all flex items-center gap-1.5 ml-auto cursor-pointer shadow-sm hover:shadow-md hover:shadow-[#8B5CF6]/25 group"
+                        className="btn-conversa-action px-3.5 py-1.5 rounded-xl bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 text-xs font-bold transition-all flex items-center gap-1.5 ml-auto cursor-pointer shadow-sm hover:shadow-md hover:shadow-[#8B5CF6]/25 group"
                         title={`Abrir conversa de ${lead.name} no Atendimento`}
                       >
                         <MessageSquare className="w-3.5 h-3.5 text-[#A78BFA] group-hover:text-white transition-colors" />

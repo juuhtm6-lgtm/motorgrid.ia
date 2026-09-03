@@ -1566,7 +1566,7 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
                                 alert(`Abrindo conversa com ${lead.customerName} no módulo de Atendimento.`);
                               }
                             }}
-                            className="px-3 py-1.5 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 text-xs font-semibold transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                            className="btn-conversa-action px-3 py-1.5 rounded-lg bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 text-xs font-semibold transition-all inline-flex items-center gap-1.5 cursor-pointer"
                           >
                             <span>Conversa</span>
                             <span>→</span>

@@ -37,6 +37,24 @@
     --danger: #EF4444;
     --danger-soft: rgba(239, 68, 68, 0.15);
 
+    /* MotorGrid Tokens Semânticos (:root - Dark Mode Defaults) */
+    --mg-text-primary: #FFFFFF;
+    --mg-text-secondary: #A1A1AA;
+    --mg-text-muted: #71717A;
+    --mg-border: rgba(255, 255, 255, 0.08);
+    --mg-surface: #1C1C1E;
+    --mg-background: #0A0A0B;
+    --mg-purple: #8B5CF6;
+    --mg-purple-soft: rgba(139, 92, 246, 0.15);
+    --mg-whatsapp: #10B981;
+    --mg-whatsapp-soft: rgba(16, 185, 129, 0.15);
+    --mg-instagram: #F43F5E;
+    --mg-instagram-soft: rgba(244, 63, 94, 0.15);
+    --mg-finance: #3B82F6;
+    --mg-finance-soft: rgba(59, 130, 246, 0.15);
+    --mg-hot: #EF4444;
+    --mg-hot-soft: rgba(239, 68, 68, 0.15);
+
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
@@ -74,6 +92,45 @@
     --warning-soft: #FFFBEB;
     --danger: #DC2626;
     --danger-soft: #FEF2F2;
+
+    /* MotorGrid Tokens Semânticos Oficiais (Light Mode) */
+    --mg-text-primary: #0F172A;
+    --mg-text-secondary: #475569;
+    --mg-text-muted: #64748B;
+    --mg-border: #CBD5E1;
+    --mg-surface: #FFFFFF;
+    --mg-background: #F8FAFC;
+    --mg-purple: #7C3AED;
+    --mg-purple-soft: #F5F3FF;
+    --mg-whatsapp: #16A34A;
+    --mg-whatsapp-soft: #ECFDF5;
+    --mg-instagram: #DB2777;
+    --mg-instagram-soft: #FDF2F8;
+    --mg-finance: #2563EB;
+    --mg-finance-soft: #EFF6FF;
+    --mg-hot: #DC2626;
+    --mg-hot-soft: #FFF1F2;
+
+    /* Design Tokens Funcionais Solicitados (Light Mode) */
+    --light-surface: #FFFFFF;
+    --light-border: #CBD5E1;
+    --light-border-subtle: #D6DCE8;
+    --light-text-primary: #1F2937;
+    --light-text-secondary: #64748B;
+    --light-purple: #7C3AED;
+    --light-purple-hover: #6D28D9;
+    --light-purple-soft: #F3E8FF;
+    --light-purple-active: #EDE9FE;
+    --light-purple-border-hover: #A78BFA;
+    --light-blue: #2563EB;
+    --light-blue-hover: #1D4ED8;
+    --light-blue-soft: #EFF6FF;
+    --light-blue-border: #93C5FD;
+    --light-blue-border-hover: #60A5FA;
+    --light-blue-hover-bg: #DBEAFE;
+    --light-disabled-bg: #F1F5F9;
+    --light-disabled-border: #CBD5E1;
+    --light-disabled-text: #94A3B8;
   }
 
   body {
@@ -636,18 +693,66 @@ html.light [class*="ring-white/"] {
   --tw-ring-color: #DCE3EC !important;
 }
 
-/* INPUTS, FORMS & SELECTS */
-html.light input:not([type="checkbox"]):not([type="radio"]),
+/* ==========================================================================
+   INPUTS, FORMS & SELECTS (LIGHT MODE)
+   Fundo: #FFFFFF | Borda: #CBD5E1 | Texto: #1F2937 | Placeholder: #64748B
+   Focus: Borda #8B5CF6 + box-shadow: 0 0 0 3px rgba(139,92,246,0.10)
+   ========================================================================== */
+html.light input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]),
 html.light textarea,
-html.light select {
-  background-color: #FFFFFF !important;
-  color: #111827 !important;
-  border-color: #CBD5E1 !important;
+html.light select,
+html.light .input-field {
+  background-color: var(--light-surface, #FFFFFF) !important;
+  color: var(--light-text-primary, #1F2937) !important;
+  border: 1px solid var(--light-border, #CBD5E1) !important;
 }
 
-html.light input::placeholder,
+html.light input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"])::placeholder,
 html.light textarea::placeholder {
-  color: #64748B !important;
+  color: var(--light-text-secondary, #64748B) !important;
+}
+
+html.light input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):focus,
+html.light textarea:focus,
+html.light select:focus,
+html.light .input-field:focus {
+  border-color: #8B5CF6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10) !important;
+  outline: none !important;
+}
+
+/* ==========================================================================
+   ELEMENTOS DESABILITADOS (LIGHT MODE)
+   Fundo: #F1F5F9 | Borda: #CBD5E1 | Ícone: #94A3B8 | Texto: #94A3B8
+   Opacidade mínima suficiente para continuar visível (mínimo 0.80)
+   ========================================================================== */
+html.light button:disabled,
+html.light button[disabled],
+html.light input:disabled,
+html.light select:disabled,
+html.light textarea:disabled,
+html.light [aria-disabled="true"],
+html.light .disabled {
+  background-color: var(--light-disabled-bg, #F1F5F9) !important;
+  border-color: var(--light-disabled-border, #CBD5E1) !important;
+  color: var(--light-disabled-text, #94A3B8) !important;
+  opacity: 0.85 !important;
+  cursor: not-allowed !important;
+}
+
+html.light button:disabled svg,
+html.light button[disabled] svg,
+html.light [aria-disabled="true"] svg,
+html.light .disabled svg {
+  color: var(--light-disabled-text, #94A3B8) !important;
+  stroke: var(--light-disabled-text, #94A3B8) !important;
+}
+
+html.light button:disabled span,
+html.light button[disabled] span,
+html.light [aria-disabled="true"] span,
+html.light .disabled span {
+  color: var(--light-disabled-text, #94A3B8) !important;
 }
 
 /* TABELAS & CABEÇALHOS */
@@ -755,17 +860,28 @@ html.light #atendimento-search-section {
 }
 
 html.light #atendimento-search-box {
-  background-color: #F8FAFC !important;
-  border-color: #DCE3EC !important;
+  background-color: var(--light-surface, #FFFFFF) !important;
+  border: 1px solid var(--light-border, #CBD5E1) !important;
+}
+
+html.light #atendimento-search-box:focus-within {
+  border-color: #8B5CF6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10) !important;
+}
+
+html.light #atendimento-search-box svg {
+  color: var(--light-text-secondary, #64748B) !important;
 }
 
 html.light #input-busca-conversas {
   background-color: transparent !important;
-  color: #111827 !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--light-text-primary, #1F2937) !important;
 }
 
 html.light #input-busca-conversas::placeholder {
-  color: #64748B !important;
+  color: var(--light-text-secondary, #64748B) !important;
 }
 
 html.light .inbox-filter-inactive {
@@ -840,16 +956,30 @@ html.light .conversation-unread-badge {
   color: #FFFFFF !important;
 }
 
-/* Veículo: Fundo #FFFFFF, Borda #CBD5E1, Texto #475569, Ícone #64748B (Neutro para não competir com os canais) */
+/* Veículo: Fundo #FFFFFF, Borda #CBD5E1, Texto #475569, Ícone #64748B */
 html.light .conversation-car-chip {
-  background-color: #FFFFFF !important;
-  border: 1px solid #CBD5E1 !important;
-  color: #475569 !important;
+  background-color: var(--mg-surface, #FFFFFF) !important;
+  border: 1px solid var(--mg-border, #CBD5E1) !important;
+  color: var(--mg-text-secondary, #475569) !important;
   font-weight: 500 !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
 }
 
 html.light .conversation-car-chip svg {
-  color: #64748B !important;
+  color: var(--mg-text-muted, #64748B) !important;
+  stroke: var(--mg-text-muted, #64748B) !important;
+  fill: none !important;
+  opacity: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+html.light .conversation-car-chip span,
+html.light .conversation-car-chip .conversation-car-text {
+  color: var(--mg-text-secondary, #475569) !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
 }
 
 /* STATUS DE CONEXÃO DO WHATSAPP NO CABEÇALHO */
@@ -1109,41 +1239,71 @@ html.light .channel-chip-todos {
    BADGES DE TEMPERATURA NO LIGHT MODE
    ========================================================================== */
 
-/* LEAD QUENTE: Vermelho (#DC2626, Fundo #FFF1F2, Borda #FDA4AF) */
+/* LEAD QUENTE: Vermelho (#DC2626, Fundo #FFF1F2, Borda #FDA4AF) - NUNCA TEXTO BRANCO */
 html.light .badge-temp-quente {
-  background-color: #FFF1F2 !important;
-  border-color: #FDA4AF !important;
-  color: #DC2626 !important;
+  background-color: var(--mg-hot-soft, #FFF1F2) !important;
+  border: 1px solid #FDA4AF !important;
+  color: var(--mg-hot, #DC2626) !important;
   font-weight: 600 !important;
+  opacity: 1 !important;
 }
 
 html.light .badge-temp-quente svg {
-  color: #DC2626 !important;
-  fill: #DC2626 !important;
+  color: var(--mg-hot, #DC2626) !important;
+  stroke: var(--mg-hot, #DC2626) !important;
+  fill: var(--mg-hot, #DC2626) !important;
+  opacity: 1 !important;
 }
 
-/* LEAD MORNO: Laranja (#EA580C / #C2410C, Fundo #FFF7ED, Borda #FDBA74) */
+html.light .badge-temp-quente span,
+html.light .badge-temp-quente .badge-temp-label {
+  color: var(--mg-hot, #DC2626) !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+/* LEAD MORNO: Laranja (#C2410C, Fundo #FFF7ED, Borda #FDBA74) */
 html.light .badge-temp-morno {
   background-color: #FFF7ED !important;
-  border-color: #FDBA74 !important;
+  border: 1px solid #FDBA74 !important;
   color: #C2410C !important;
   font-weight: 600 !important;
+  opacity: 1 !important;
 }
 
 html.light .badge-temp-morno svg {
   color: #EA580C !important;
+  stroke: #EA580C !important;
+  opacity: 1 !important;
 }
 
-/* LEAD FRIO: Azul (#2563EB / #1D4ED8, Fundo #EFF6FF, Borda #93C5FD) */
+html.light .badge-temp-morno span,
+html.light .badge-temp-morno .badge-temp-label {
+  color: #C2410C !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+/* LEAD FRIO: Azul (#1D4ED8, Fundo #EFF6FF, Borda #93C5FD) */
 html.light .badge-temp-frio {
   background-color: #EFF6FF !important;
-  border-color: #93C5FD !important;
+  border: 1px solid #93C5FD !important;
   color: #1D4ED8 !important;
   font-weight: 600 !important;
+  opacity: 1 !important;
 }
 
 html.light .badge-temp-frio svg {
   color: #2563EB !important;
+  stroke: #2563EB !important;
+  opacity: 1 !important;
+}
+
+html.light .badge-temp-frio span,
+html.light .badge-temp-frio .badge-temp-label {
+  color: #1D4ED8 !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
 }
 
 /* ==========================================================================
@@ -1157,9 +1317,9 @@ html.light #btn-attach-financing-simulator,
 html.light #btn-sidebar-calc,
 html.light #btn-context-calc,
 html.light .btn-calc-action {
-  background-color: #EFF6FF !important;
+  background-color: var(--mg-finance-soft, #EFF6FF) !important;
   border: 1px solid #93C5FD !important;
-  color: #2563EB !important;
+  color: var(--mg-finance, #2563EB) !important;
   font-weight: 600 !important;
 }
 
@@ -1170,7 +1330,8 @@ html.light #btn-attach-financing-simulator svg,
 html.light #btn-sidebar-calc svg,
 html.light #btn-context-calc svg,
 html.light .btn-calc-action svg {
-  color: #2563EB !important;
+  color: var(--mg-finance, #2563EB) !important;
+  stroke: var(--mg-finance, #2563EB) !important;
 }
 
 html.light .btn-calc-financing-ai span,
@@ -1214,7 +1375,62 @@ html.light #btn-ai-suggestion-calc-financing:hover span,
 html.light #btn-summary-simulate-financing:hover span,
 html.light #btn-attach-financing-simulator:hover span,
 html.light .btn-calc-action:hover span {
-  color: #1D4ED8 !important;
+  color: var(--light-blue-hover, #1D4ED8) !important;
+}
+
+/* CALCULADORA — ESTADO ATIVO (#2563EB + ÍCONE/TEXTO #FFFFFF) */
+html.light .btn-calc-financing-ai.active,
+html.light .btn-calc-financing-ai:active,
+html.light #btn-ai-suggestion-calc-financing.active,
+html.light #btn-ai-suggestion-calc-financing:active,
+html.light #btn-summary-simulate-financing.active,
+html.light #btn-summary-simulate-financing:active,
+html.light #btn-attach-financing-simulator.active,
+html.light #btn-attach-financing-simulator:active,
+html.light #btn-sidebar-calc.active,
+html.light #btn-sidebar-calc:active,
+html.light #btn-context-calc.active,
+html.light #btn-context-calc:active,
+html.light .btn-calc-action.active,
+html.light .btn-calc-action:active {
+  background-color: var(--light-blue, #2563EB) !important;
+  border-color: var(--light-blue, #2563EB) !important;
+  color: #FFFFFF !important;
+}
+
+html.light .btn-calc-financing-ai.active svg,
+html.light .btn-calc-financing-ai:active svg,
+html.light #btn-ai-suggestion-calc-financing.active svg,
+html.light #btn-ai-suggestion-calc-financing:active svg,
+html.light #btn-summary-simulate-financing.active svg,
+html.light #btn-summary-simulate-financing:active svg,
+html.light #btn-attach-financing-simulator.active svg,
+html.light #btn-attach-financing-simulator:active svg,
+html.light #btn-sidebar-calc.active svg,
+html.light #btn-sidebar-calc:active svg,
+html.light #btn-context-calc.active svg,
+html.light #btn-context-calc:active svg,
+html.light .btn-calc-action.active svg,
+html.light .btn-calc-action:active svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+html.light .btn-calc-financing-ai.active span,
+html.light .btn-calc-financing-ai:active span,
+html.light #btn-ai-suggestion-calc-financing.active span,
+html.light #btn-ai-suggestion-calc-financing:active span,
+html.light #btn-summary-simulate-financing.active span,
+html.light #btn-summary-simulate-financing:active span,
+html.light #btn-attach-financing-simulator.active span,
+html.light #btn-attach-financing-simulator:active span,
+html.light #btn-sidebar-calc.active span,
+html.light #btn-sidebar-calc:active span,
+html.light #btn-context-calc.active span,
+html.light #btn-context-calc:active span,
+html.light .btn-calc-action.active span,
+html.light .btn-calc-action:active span {
+  color: #FFFFFF !important;
 }
 
 /* BANNER DE SIMULADOR DE FINANCIAMENTO IA (PAINEL LATERAL) */
@@ -1316,29 +1532,92 @@ html.light #btn-summary-generate-ai:disabled span {
 }
 
 /* ==========================================================================
-   3. AGENDAR / CALENDÁRIO (ROXO MOTORGRID / TEXTO GRAFITE)
-   Ícone: #7C3AED | Fundo: #F5F3FF | Hover: #EDE9FE | Texto: Grafite
+   3. BOTÕES DE CALENDÁRIO & AGENDAR (LIGHT MODE)
+   Normal: Fundo #FFFFFF | Borda #D6DCE8 | Ícone #7C3AED
+   Hover:  Fundo #F3E8FF | Borda #A78BFA | Ícone #6D28D9
+   Ativo:  Fundo #EDE9FE | Borda #8B5CF6 | Ícone #6D28D9
+   (Não utilizar ícone branco no estado normal do Light Mode)
    ========================================================================== */
 html.light #btn-atendimento-agendar,
 html.light #btn-context-calendar,
+html.light #btn-summary-schedule-visit,
 html.light .btn-calendar-action {
-  background-color: #F5F3FF !important;
-  border: 1px solid #DDD6FE !important;
-  color: #111827 !important;
+  background-color: var(--light-surface, #FFFFFF) !important;
+  border: 1px solid var(--light-border-subtle, #D6DCE8) !important;
+  color: var(--light-text-primary, #1F2937) !important;
 }
 
 html.light #btn-atendimento-agendar svg,
 html.light #btn-context-calendar svg,
+html.light #btn-summary-schedule-visit svg,
 html.light .btn-calendar-action svg {
-  color: #7C3AED !important;
+  color: var(--light-purple, #7C3AED) !important;
+  stroke: var(--light-purple, #7C3AED) !important;
 }
 
+html.light #btn-atendimento-agendar span,
+html.light #btn-summary-schedule-visit span,
+html.light .btn-calendar-action span {
+  color: var(--light-text-primary, #1F2937) !important;
+}
+
+/* CALENDÁRIO — HOVER */
 html.light #btn-atendimento-agendar:hover,
 html.light #btn-context-calendar:hover,
+html.light #btn-summary-schedule-visit:hover,
 html.light .btn-calendar-action:hover {
-  background-color: #EDE9FE !important;
-  border-color: #C4B5FD !important;
-  color: #111827 !important;
+  background-color: var(--light-purple-soft, #F3E8FF) !important;
+  border-color: var(--light-purple-border-hover, #A78BFA) !important;
+  color: var(--light-purple-hover, #6D28D9) !important;
+}
+
+html.light #btn-atendimento-agendar:hover svg,
+html.light #btn-context-calendar:hover svg,
+html.light #btn-summary-schedule-visit:hover svg,
+html.light .btn-calendar-action:hover svg {
+  color: var(--light-purple-hover, #6D28D9) !important;
+  stroke: var(--light-purple-hover, #6D28D9) !important;
+}
+
+html.light #btn-atendimento-agendar:hover span,
+html.light #btn-summary-schedule-visit:hover span,
+html.light .btn-calendar-action:hover span {
+  color: var(--light-purple-hover, #6D28D9) !important;
+}
+
+/* CALENDÁRIO — ATIVO */
+html.light #btn-atendimento-agendar.active,
+html.light #btn-atendimento-agendar:active,
+html.light #btn-context-calendar.active,
+html.light #btn-context-calendar:active,
+html.light #btn-summary-schedule-visit.active,
+html.light #btn-summary-schedule-visit:active,
+html.light .btn-calendar-action.active,
+html.light .btn-calendar-action:active {
+  background-color: var(--light-purple-active, #EDE9FE) !important;
+  border-color: var(--brand-primary, #8B5CF6) !important;
+  color: var(--light-purple-hover, #6D28D9) !important;
+}
+
+html.light #btn-atendimento-agendar.active svg,
+html.light #btn-atendimento-agendar:active svg,
+html.light #btn-context-calendar.active svg,
+html.light #btn-context-calendar:active svg,
+html.light #btn-summary-schedule-visit.active svg,
+html.light #btn-summary-schedule-visit:active svg,
+html.light .btn-calendar-action.active svg,
+html.light .btn-calendar-action:active svg {
+  color: var(--light-purple-hover, #6D28D9) !important;
+  stroke: var(--light-purple-hover, #6D28D9) !important;
+}
+
+html.light #btn-atendimento-agendar.active span,
+html.light #btn-atendimento-agendar:active span,
+html.light #btn-summary-schedule-visit.active span,
+html.light #btn-summary-schedule-visit:active span,
+html.light .btn-calendar-action.active span,
+html.light .btn-calendar-action:active span {
+  color: var(--light-purple-hover, #6D28D9) !important;
 }
 
 /* CARD TEST DRIVES AGENDADOS HOJE */
@@ -1398,34 +1677,145 @@ html.light #card-context-hotleads .text-\[\#A1A1AA\] {
 /* BOTÕES QUADRADOS DE AÇÃO DO CONTEXTO */
 html.light .context-quick-btn,
 html.light .btn-square-action,
-html.light #btn-context-phone,
-html.light #btn-sidebar-filter {
+html.light #btn-context-phone {
   background-color: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
-  color: #64748B !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #475569 !important;
 }
 
 html.light .context-quick-btn svg,
 html.light .btn-square-action svg,
-html.light #btn-context-phone svg,
-html.light #btn-sidebar-filter svg {
-  color: #64748B !important;
+html.light #btn-context-phone svg {
+  color: #475569 !important;
+  stroke: #475569 !important;
 }
 
 html.light .context-quick-btn:hover,
 html.light .btn-square-action:hover,
-html.light #btn-context-phone:hover,
-html.light #btn-sidebar-filter:hover {
-  background-color: #F1F5F9 !important;
-  border-color: #CBD5E1 !important;
-  color: #111827 !important;
+html.light #btn-context-phone:hover {
+  background-color: #F8FAFC !important;
+  border-color: #94A3B8 !important;
+  color: #0F172A !important;
 }
 
 html.light .context-quick-btn:hover svg,
 html.light .btn-square-action:hover svg,
-html.light #btn-context-phone:hover svg,
+html.light #btn-context-phone:hover svg {
+  color: #0F172A !important;
+  stroke: #0F172A !important;
+}
+
+/* ==========================================================================
+   FILTRO AO LADO DA CALCULADORA NO TOPO DA SIDEBAR
+   Fundo: #FFFFFF | Borda: #CBD5E1 | Ícone: #475569
+   Hover: Fundo #F5F3FF | Borda: #A78BFA | Ícone: #7C3AED
+   ========================================================================== */
+html.light #btn-sidebar-filter {
+  background-color: var(--mg-surface, #FFFFFF) !important;
+  border: 1px solid var(--mg-border, #CBD5E1) !important;
+  color: var(--mg-text-secondary, #475569) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+html.light #btn-sidebar-filter svg {
+  color: var(--mg-text-secondary, #475569) !important;
+  stroke: var(--mg-text-secondary, #475569) !important;
+}
+
+html.light #btn-sidebar-filter:hover {
+  background-color: var(--mg-purple-soft, #F5F3FF) !important;
+  border-color: #A78BFA !important;
+  color: var(--mg-purple, #7C3AED) !important;
+}
+
 html.light #btn-sidebar-filter:hover svg {
-  color: #111827 !important;
+  color: var(--mg-purple, #7C3AED) !important;
+  stroke: var(--mg-purple, #7C3AED) !important;
+}
+
+/* ==========================================================================
+   BOTÃO DE RETORNO / VOLTAR AO ATENDIMENTO
+   Fundo: #FFFFFF | Borda: #CBD5E1 | Seta: #475569 (Claramente visível)
+   Hover: Fundo #F5F3FF | Borda: #A78BFA | Seta: #7C3AED
+   ========================================================================== */
+html.light #btn-voltar-atendimento,
+html.light .btn-retorno-action,
+html.light button[title*="Voltar ao atendimento"],
+html.light button[title*="Voltar"] {
+  background-color: var(--mg-surface, #FFFFFF) !important;
+  border: 1px solid var(--mg-border, #CBD5E1) !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+  color: var(--mg-text-secondary, #475569) !important;
+  opacity: 1 !important;
+}
+
+html.light #btn-voltar-atendimento svg,
+html.light .btn-retorno-action svg,
+html.light button[title*="Voltar ao atendimento"] svg,
+html.light button[title*="Voltar"] svg {
+  color: var(--mg-text-secondary, #475569) !important;
+  stroke: var(--mg-text-secondary, #475569) !important;
+  opacity: 1 !important;
+}
+
+html.light #btn-voltar-atendimento:hover,
+html.light .btn-retorno-action:hover,
+html.light button[title*="Voltar ao atendimento"]:hover,
+html.light button[title*="Voltar"]:hover {
+  background-color: var(--mg-purple-soft, #F5F3FF) !important;
+  border-color: #A78BFA !important;
+  color: var(--mg-purple, #7C3AED) !important;
+}
+
+html.light #btn-voltar-atendimento:hover svg,
+html.light .btn-retorno-action:hover svg,
+html.light button[title*="Voltar ao atendimento"]:hover svg,
+html.light button[title*="Voltar"]:hover svg {
+  color: var(--mg-purple, #7C3AED) !important;
+  stroke: var(--mg-purple, #7C3AED) !important;
+}
+
+/* ==========================================================================
+   BOTÃO CONVERSA — IDENTIDADE VERDE WHATSAPP (#16A34A)
+   ========================================================================== */
+html.light .btn-conversa-action,
+html.light .btn-action-conversa {
+  background-color: var(--mg-whatsapp-soft, #ECFDF5) !important;
+  border: 1px solid #22C55E !important;
+  color: #15803D !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(22, 163, 74, 0.12) !important;
+}
+
+html.light .btn-conversa-action span,
+html.light .btn-action-conversa span {
+  color: #15803D !important;
+  font-weight: 600 !important;
+}
+
+html.light .btn-conversa-action svg,
+html.light .btn-action-conversa svg {
+  color: #16A34A !important;
+  stroke: #16A34A !important;
+}
+
+html.light .btn-conversa-action:hover,
+html.light .btn-action-conversa:hover {
+  background-color: #DCFCE7 !important;
+  border-color: #16A34A !important;
+  color: #15803D !important;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2) !important;
+}
+
+html.light .btn-conversa-action:hover span,
+html.light .btn-action-conversa:hover span {
+  color: #15803D !important;
+}
+
+html.light .btn-conversa-action:hover svg,
+html.light .btn-action-conversa:hover svg {
+  color: #16A34A !important;
+  stroke: #16A34A !important;
 }
 
 /* COLUNA CENTRAL: JANELA DE CHAT */
@@ -1566,14 +1956,23 @@ html.light #atendimento-composer-container {
   border-color: #DCE3EC !important;
 }
 
-html.light .chat-composer-input {
-  background-color: #F8FAFC !important;
-  border-color: #DCE3EC !important;
-  color: #111827 !important;
+html.light .chat-composer-input,
+html.light #atendimento-message-input {
+  background-color: var(--light-surface, #FFFFFF) !important;
+  border: 1px solid var(--light-border, #CBD5E1) !important;
+  color: var(--light-text-primary, #1F2937) !important;
 }
 
-html.light .chat-composer-input::placeholder {
-  color: #64748B !important;
+html.light .chat-composer-input::placeholder,
+html.light #atendimento-message-input::placeholder {
+  color: var(--light-text-secondary, #64748B) !important;
+}
+
+html.light .chat-composer-input:focus,
+html.light #atendimento-message-input:focus {
+  border-color: #8B5CF6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10) !important;
+  outline: none !important;
 }
 
 html.light .chat-action-icon-btn {
@@ -1683,15 +2082,133 @@ html.light .summary-next-action-text {
 
 html.light .summary-edit-textarea,
 html.light .summary-edit-input {
-  background-color: #FFFFFF !important;
-  border-color: #DCE3EC !important;
-  color: #111827 !important;
+  background-color: var(--light-surface, #FFFFFF) !important;
+  border: 1px solid var(--light-border, #CBD5E1) !important;
+  color: var(--light-text-primary, #1F2937) !important;
+}
+
+html.light .summary-edit-textarea::placeholder,
+html.light .summary-edit-input::placeholder {
+  color: var(--light-text-secondary, #64748B) !important;
+}
+
+html.light .summary-edit-textarea:focus,
+html.light .summary-edit-input:focus {
+  border-color: #8B5CF6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.10) !important;
+  outline: none !important;
 }
 
 html.light .chat-system-pill {
   background-color: #F1F5F9 !important;
   border-color: #DCE3EC !important;
   color: #475569 !important;
+}
+
+/* ==========================================================================
+   MODAIS & COMPONENTES NO LIGHT MODE (VARREDURA VISUAL)
+   ========================================================================== */
+
+/* Schedule Appointment Modal no Light Mode */
+html.light .modal-calendar-grid button:not(.bg-\[\#8B5CF6\]) {
+  background-color: #F8FAFC !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1F2937 !important;
+}
+
+html.light .modal-calendar-grid button:not(.bg-\[\#8B5CF6\]):hover {
+  background-color: #F3E8FF !important;
+  border-color: #A78BFA !important;
+  color: #6D28D9 !important;
+}
+
+/* Quick Presets de data */
+html.light .modal-quick-preset-btn {
+  background-color: #FFFFFF !important;
+  border: 1px solid #D6DCE8 !important;
+  color: #334155 !important;
+}
+
+html.light .modal-quick-preset-btn:hover {
+  background-color: #F3E8FF !important;
+  border-color: #A78BFA !important;
+  color: #6D28D9 !important;
+}
+
+/* Time slots no Modal de Agendamento */
+html.light .time-slot-btn:not(.bg-\[\#8B5CF6\]) {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1F2937 !important;
+}
+
+html.light .time-slot-btn:not(.bg-\[\#8B5CF6\]):hover {
+  background-color: #F3E8FF !important;
+  border-color: #A78BFA !important;
+  color: #6D28D9 !important;
+}
+
+/* Planos de parcelamento do simulador de financiamento */
+html.light .installment-card-default {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #1F2937 !important;
+}
+
+html.light .installment-card-default:hover {
+  background-color: #EFF6FF !important;
+  border-color: #93C5FD !important;
+}
+
+/* Range sliders no Light Mode */
+html.light input[type="range"] {
+  accent-color: #2563EB !important;
+}
+
+/* ==========================================================================
+   ESTRUTURA GERAL DE MODAIS NO LIGHT MODE (CONTAINER & CABEÇALHOS)
+   ========================================================================== */
+html.light .modal-container,
+html.light .modal-card,
+html.light [role="dialog"] {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+}
+
+html.light .modal-container .bg-\[\#101012\],
+html.light .modal-container .bg-\[\#141416\],
+html.light .modal-container .bg-\[\#1C1C1E\],
+html.light .modal-container .bg-\[\#0A0A0B\],
+html.light [role="dialog"] .bg-\[\#101012\],
+html.light [role="dialog"] .bg-\[\#141416\],
+html.light [role="dialog"] .bg-\[\#1C1C1E\],
+html.light [role="dialog"] .bg-\[\#0A0A0B\] {
+  background-color: #FFFFFF !important;
+}
+
+html.light .modal-container .text-white,
+html.light [role="dialog"] .text-white {
+  color: #0F172A !important;
+}
+
+html.light .modal-container .text-zinc-300,
+html.light .modal-container .text-zinc-400,
+html.light .modal-container .text-\[\#A1A1AA\],
+html.light [role="dialog"] .text-zinc-300,
+html.light [role="dialog"] .text-zinc-400,
+html.light [role="dialog"] .text-\[\#A1A1AA\] {
+  color: #475569 !important;
+}
+
+html.light .modal-container .border-white\/10,
+html.light .modal-container .border-zinc-800,
+html.light .modal-container .border-zinc-800\/80,
+html.light [role="dialog"] .border-white\/10,
+html.light [role="dialog"] .border-zinc-800,
+html.light [role="dialog"] .border-zinc-800\/80 {
+  border-color: #E2E8F0 !important;
 }
 
 

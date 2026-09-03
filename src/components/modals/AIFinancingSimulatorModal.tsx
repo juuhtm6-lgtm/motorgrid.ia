@@ -178,7 +178,7 @@ Podemos formalizar a reserva do veículo ou agendar seu Test Drive para hoje?`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="w-full max-w-4xl bg-[#101012] border border-[#8B5CF6]/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div role="dialog" className="modal-container modal-card w-full max-w-4xl bg-[#101012] border border-[#8B5CF6]/30 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Modal Header */}
         <div className="px-6 py-4 bg-[#1C1C1E] border-b border-white/10 flex items-center justify-between shrink-0">

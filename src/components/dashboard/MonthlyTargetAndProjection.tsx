@@ -125,10 +125,10 @@ export const MonthlyTargetAndProjection: React.FC<MonthlyTargetAndProjectionProp
                 Projeção de Vendas
               </span>
               <div className="text-2xl font-bold text-white mt-1">
-                {data.projectedUnits} <span className="text-xs text-neutral-400 font-normal">carros</span>
+                {data.projectedUnits} <span className="text-xs text-neutral-400 font-normal">veículos</span>
               </div>
               <span className="text-[10px] text-neutral-500 mt-0.5 block">
-                Ritmo diário: {(data.realizedUnits / data.daysElapsed).toFixed(2)} carros/dia
+                Ritmo diário: {(data.realizedUnits / data.daysElapsed).toFixed(2)} veículos/dia
               </span>
             </div>
 

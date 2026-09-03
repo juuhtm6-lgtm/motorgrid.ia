@@ -499,21 +499,21 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
         return (
           <span className="badge-temp-quente inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-semibold">
             <Flame className="w-3 h-3 text-rose-400 fill-rose-400" />
-            Lead Quente
+            <span className="badge-temp-label">Lead Quente</span>
           </span>
         );
       case 'Morno':
         return (
           <span className="badge-temp-morno inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold">
             <Thermometer className="w-3 h-3 text-amber-400" />
-            Lead Morno
+            <span className="badge-temp-label">Lead Morno</span>
           </span>
         );
       default:
         return (
           <span className="badge-temp-frio inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-semibold">
             <Snowflake className="w-3 h-3 text-blue-400" />
-            Lead Frio
+            <span className="badge-temp-label">Lead Frio</span>
           </span>
         );
     }
@@ -889,9 +889,9 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                         {renderChannelChip(conv.channel, true)}
 
                         {conv.tracking.vehicleOfInterest && (
-                          <span className="conversation-car-chip text-[10px] px-2 py-0.5 rounded-md bg-[#1C1C1E] text-[#A1A1AA] border border-white/5 truncate max-w-[130px] flex items-center gap-1 font-medium">
-                            <Car className="w-2.5 h-2.5 text-[#8B5CF6]" />
-                            {conv.tracking.vehicleOfInterest.model}
+                          <span className="conversation-car-chip text-[10px] px-2 py-0.5 rounded-md bg-[#1C1C1E] text-[#A1A1AA] border border-white/5 max-w-[150px] inline-flex items-center gap-1 font-medium shrink-0">
+                            <Car className="w-3 h-3 text-[#8B5CF6] shrink-0" />
+                            <span className="truncate conversation-car-text font-medium">{conv.tracking.vehicleOfInterest.model}</span>
                           </span>
                         )}
                         {conv.temperature && getTemperatureBadge(conv.temperature)}
@@ -1357,7 +1357,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   type="button"
                   id="btn-voltar-atendimento"
                   onClick={() => setShowContactInfo(false)}
-                  className="p-1.5 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 text-[#A1A1AA] hover:text-[#8B5CF6] border border-white/10 hover:border-[#8B5CF6]/40 transition-all cursor-pointer shadow-sm shrink-0 group"
+                  className="btn-retorno-action p-1.5 rounded-lg bg-[#27272A] hover:bg-[#8B5CF6]/20 text-[#A1A1AA] hover:text-[#8B5CF6] border border-white/10 hover:border-[#8B5CF6]/40 transition-all cursor-pointer shadow-sm shrink-0 group"
                   title="Voltar ao atendimento"
                 >
                   <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
