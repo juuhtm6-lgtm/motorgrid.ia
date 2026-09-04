@@ -114,7 +114,18 @@ export const EstoqueView: React.FC = () => {
       if (maxPrice !== '' && v.price > Number(maxPrice)) return false;
       if (minYear !== '' && v.fabYear < Number(minYear)) return false;
       if (maxYear !== '' && v.fabYear > Number(maxYear)) return false;
-      if (fuelFilter !== 'ALL' && v.fuel.toLowerCase() !== fuelFilter.toLowerCase()) return false;
+      if (fuelFilter !== 'ALL') {
+        const vFuel = (v.fuel || '').toLowerCase();
+        const f = fuelFilter.toLowerCase();
+        const match =
+          vFuel === f ||
+          (f === 'gasolina' && (vFuel === 'gasolina' || vFuel === 'gasoline')) ||
+          (f === 'elétrico' && (vFuel === 'elétrico' || vFuel === 'eletrico' || vFuel === 'electric')) ||
+          (f === 'híbrido' && (vFuel === 'híbrido' || vFuel === 'hibrido' || vFuel === 'hybrid')) ||
+          (f === 'diesel' && vFuel === 'diesel') ||
+          (f === 'flex' && vFuel === 'flex');
+        if (!match) return false;
+      }
 
       return true;
     });
@@ -147,27 +158,40 @@ export const EstoqueView: React.FC = () => {
   const startIndex = (currentPage - 1) * pageSize + 1;
   const endIndex = Math.min(currentPage * pageSize, filteredVehicles.length);
 
-  // Status badge styling helper (Matching exact design from screenshot)
+  // Helpers de formatação brasileira (PT-BR)
+  const formatPriceBRL = (val: number): string => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      maximumFractionDigits: 0,
+    }).format(val);
+  };
+
+  const formatNumberBRL = (val: number): string => {
+    return val.toLocaleString('pt-BR');
+  };
+
+  // Status badge styling helper (DISPONÍVEL, RESERVADO, VENDIDO)
   const renderStatusBadge = (status: VehicleStatus) => {
-    const st = status.toUpperCase();
+    const st = (status || '').toUpperCase();
     if (st === 'AVAILABLE' || st === 'DISPONÍVEL') {
       return (
         <span className="inline-block px-3 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-[#241738] text-[#C4B5FD] border border-[#8B5CF6]/30">
-          AVAILABLE
+          DISPONÍVEL
         </span>
       );
     }
     if (st === 'RESERVED' || st === 'RESERVADO') {
       return (
         <span className="inline-block px-3 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-[#2C1C16] text-[#FDBA74] border border-[#C2410C]/40">
-          RESERVED
+          RESERVADO
         </span>
       );
     }
     if (st === 'SOLD' || st === 'VENDIDO') {
       return (
         <span className="inline-block px-3 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-[#18181B] text-zinc-400 border border-zinc-700/60">
-          SOLD
+          VENDIDO
         </span>
       );
     }
@@ -183,28 +207,46 @@ export const EstoqueView: React.FC = () => {
     setVehicles((prev) =>
       prev.map((v) => (v.id === vehicleId ? { ...v, status: newStatus } : v))
     );
-    showToast(`Status do veículo atualizado para "${newStatus}".`);
+    const upper = String(newStatus).toUpperCase();
+    const labelStatus =
+      upper === 'AVAILABLE' || upper === 'DISPONÍVEL'
+        ? 'DISPONÍVEL'
+        : upper === 'RESERVED' || upper === 'RESERVADO'
+        ? 'RESERVADO'
+        : 'VENDIDO';
+    showToast(`Status do veículo atualizado para "${labelStatus}".`);
   };
 
   // Export CSV Handler
   const handleExportCSV = () => {
-    const headers = ['VIN', 'Brand', 'Model', 'Year', 'Mileage_KM', 'Price_USD', 'Status', 'Location'];
-    const rows = filteredVehicles.map((v) => [
-      `"${v.vin || v.chassis}"`,
-      `"${v.brand}"`,
-      `"${v.model}"`,
-      v.fabYear,
-      v.km,
-      v.price,
-      `"${v.status}"`,
-      `"${v.location || v.storeUnit}"`,
-    ]);
+    const headers = ['Chassi', 'Marca', 'Modelo', 'Ano', 'Quilometragem_KM', 'Preco_BRL', 'Status', 'Unidade'];
+    const rows = filteredVehicles.map((v) => {
+      const st = (v.status || '').toUpperCase();
+      const statusLabel =
+        st === 'AVAILABLE' || st === 'DISPONÍVEL'
+          ? 'DISPONÍVEL'
+          : st === 'RESERVED' || st === 'RESERVADO'
+          ? 'RESERVADO'
+          : st === 'SOLD' || st === 'VENDIDO'
+          ? 'VENDIDO'
+          : v.status;
+      return [
+        `"${v.vin || v.chassis}"`,
+        `"${v.brand}"`,
+        `"${v.model}"`,
+        v.fabYear,
+        v.km,
+        v.price,
+        `"${statusLabel}"`,
+        `"${v.location || v.storeUnit || 'Matriz Sorocaba'}"`,
+      ];
+    });
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `motorgrid_stock_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `motorgrid_estoque_export_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -222,14 +264,14 @@ export const EstoqueView: React.FC = () => {
         </div>
       )}
 
-      {/* Header Section (Exact typography & layout from user screenshot) */}
+      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            Stock Management
+            Gestão de Estoque
           </h1>
           <p className="text-sm sm:text-base text-zinc-400 max-w-3xl leading-relaxed">
-            Real-time inventory control across all store locations.
+            Controle de estoque em tempo real de todas as unidades.
           </p>
         </div>
 
@@ -242,30 +284,30 @@ export const EstoqueView: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#141416] hover:bg-zinc-800 border border-zinc-800 text-zinc-200 hover:text-white text-xs font-semibold shadow-sm transition-all cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
           >
             <Download className="w-3.5 h-3.5 text-zinc-300" />
-            <span>Export CSV</span>
+            <span>Exportar CSV</span>
           </button>
 
-          {/* + New Vehicle Button (Lilac Pill from Screenshot) */}
+          {/* + Novo Veículo */}
           <button
             id="new-vehicle-btn"
             onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] active:scale-[0.98] text-[#2E1065] text-xs font-bold shadow-lg shadow-[#8B5CF6]/20 transition-all cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>New Vehicle</span>
+            <span>Novo Veículo</span>
           </button>
         </div>
       </div>
 
-      {/* Filter / Search Bar (Exact Pill Box from user screenshot) */}
+      {/* Filter / Search Bar */}
       <div className="p-3 sm:p-3.5 rounded-2xl bg-[#141416] border border-zinc-800/80 shadow-lg flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
-        {/* Search VIN, Model, or Brand... */}
+        {/* Buscar por chassi, modelo ou marca... */}
         <div className="relative flex-1 min-w-[240px]">
           <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             id="stock-search-input"
             type="text"
-            placeholder="Search VIN, Model, or Brand..."
+            placeholder="Buscar por chassi, modelo ou marca..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -283,7 +325,7 @@ export const EstoqueView: React.FC = () => {
           )}
         </div>
 
-        {/* Brand: All dropdown */}
+        {/* Marca: Todas dropdown */}
         <div className="relative shrink-0">
           <select
             id="stock-brand-filter"
@@ -294,17 +336,17 @@ export const EstoqueView: React.FC = () => {
             }}
             className="appearance-none w-full sm:w-auto px-4 py-2.5 pr-8 text-xs font-medium rounded-xl bg-[#0A0A0B] hover:bg-zinc-900 border border-zinc-800 text-zinc-300 focus:border-[#8B5CF6] outline-none cursor-pointer transition-colors"
           >
-            <option value="ALL">Brand: All</option>
+            <option value="ALL">Marca: Todas</option>
             {availableBrands.map((b) => (
               <option key={b} value={b}>
-                Brand: {b}
+                Marca: {b}
               </option>
             ))}
           </select>
           <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
-        {/* Status: All dropdown */}
+        {/* Status: Todos dropdown */}
         <div className="relative shrink-0">
           <select
             id="stock-status-filter"
@@ -315,15 +357,15 @@ export const EstoqueView: React.FC = () => {
             }}
             className="appearance-none w-full sm:w-auto px-4 py-2.5 pr-8 text-xs font-medium rounded-xl bg-[#0A0A0B] hover:bg-zinc-900 border border-zinc-800 text-zinc-300 focus:border-[#8B5CF6] outline-none cursor-pointer transition-colors"
           >
-            <option value="ALL">Status: All</option>
-            <option value="AVAILABLE">Status: Available</option>
-            <option value="RESERVED">Status: Reserved</option>
-            <option value="SOLD">Status: Sold</option>
+            <option value="ALL">Status: Todos</option>
+            <option value="AVAILABLE">Status: Disponível</option>
+            <option value="RESERVED">Status: Reservado</option>
+            <option value="SOLD">Status: Vendido</option>
           </select>
           <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
-        {/* Store: All dropdown */}
+        {/* Loja: Todas dropdown */}
         <div className="relative shrink-0">
           <select
             id="stock-store-filter"
@@ -334,17 +376,17 @@ export const EstoqueView: React.FC = () => {
             }}
             className="appearance-none w-full sm:w-auto px-4 py-2.5 pr-8 text-xs font-medium rounded-xl bg-[#0A0A0B] hover:bg-zinc-900 border border-zinc-800 text-zinc-300 focus:border-[#8B5CF6] outline-none cursor-pointer transition-colors"
           >
-            <option value="ALL">Store: All</option>
+            <option value="ALL">Loja: Todas</option>
             {availableStores.map((s) => (
               <option key={s} value={s}>
-                Store: {s.length > 20 ? s.slice(0, 18) + '...' : s}
+                Loja: {s.length > 20 ? s.slice(0, 18) + '...' : s}
               </option>
             ))}
           </select>
           <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
-        {/* ADVANCED Button */}
+        {/* FILTROS AVANÇADOS Button */}
         <button
           id="stock-advanced-filter-btn"
           onClick={() => setIsAdvancedFilterOpen(!isAdvancedFilterOpen)}
@@ -355,7 +397,7 @@ export const EstoqueView: React.FC = () => {
           }`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5 text-zinc-300" />
-          <span>ADVANCED</span>
+          <span>FILTROS AVANÇADOS</span>
           {(minPrice !== '' || maxPrice !== '' || minYear !== '' || fuelFilter !== 'ALL') && (
             <span className="w-1.5 h-1.5 rounded-full bg-[#C4B5FD] animate-pulse" />
           )}
@@ -368,7 +410,7 @@ export const EstoqueView: React.FC = () => {
           <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
             <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <SlidersHorizontal className="w-3.5 h-3.5 text-[#C4B5FD]" />
-              Filtros Avançados de Inventário
+              Filtros Avançados de Estoque
             </span>
             <button
               onClick={() => {
@@ -387,11 +429,11 @@ export const EstoqueView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
             {/* Price Range */}
             <div className="space-y-1.5">
-              <label className="text-zinc-400 block font-semibold">Faixa de Preço ($ / R$):</label>
+              <label className="text-zinc-400 block font-semibold">Faixa de Preço (R$):</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
-                  placeholder="Mín ($)"
+                  placeholder="Mín (R$)"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : '')}
                   className="w-full px-3 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-800 text-white outline-none"
@@ -399,7 +441,7 @@ export const EstoqueView: React.FC = () => {
                 <span className="text-zinc-600">-</span>
                 <input
                   type="number"
-                  placeholder="Máx ($)"
+                  placeholder="Máx (R$)"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : '')}
                   className="w-full px-3 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-800 text-white outline-none"
@@ -438,9 +480,9 @@ export const EstoqueView: React.FC = () => {
                 className="w-full px-3 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-800 text-white outline-none cursor-pointer"
               >
                 <option value="ALL">Todos os Tipos</option>
-                <option value="Gasoline">Gasolina</option>
-                <option value="Electric">Elétrico</option>
-                <option value="Hybrid">Híbrido</option>
+                <option value="Gasolina">Gasolina</option>
+                <option value="Elétrico">Elétrico</option>
+                <option value="Híbrido">Híbrido</option>
                 <option value="Diesel">Diesel</option>
                 <option value="Flex">Flex</option>
               </select>
@@ -459,18 +501,18 @@ export const EstoqueView: React.FC = () => {
         </div>
       )}
 
-      {/* Main Stock Data Table (Exact Layout & Typography from Image) */}
+      {/* Main Stock Data Table (Exact Layout & Typography) */}
       <div className="rounded-2xl bg-[#141416] border border-zinc-800/80 overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-zinc-800/80 bg-[#141416] text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-                <th className="py-4 px-6 min-w-[280px]">VEHICLE</th>
-                <th className="py-4 px-6 min-w-[140px]">YEAR / KM</th>
-                <th className="py-4 px-6 min-w-[130px]">PRICE</th>
+                <th className="py-4 px-6 min-w-[280px]">VEÍCULO</th>
+                <th className="py-4 px-6 min-w-[140px]">ANO / KM</th>
+                <th className="py-4 px-6 min-w-[130px]">PREÇO</th>
                 <th className="py-4 px-6 min-w-[130px]">STATUS</th>
-                <th className="py-4 px-6 min-w-[150px]">LOCATION</th>
-                <th className="py-4 px-6 text-right min-w-[110px]">ACTIONS</th>
+                <th className="py-4 px-6 min-w-[150px]">UNIDADE</th>
+                <th className="py-4 px-6 text-right min-w-[110px]">AÇÕES</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/60 text-xs">
@@ -488,7 +530,7 @@ export const EstoqueView: React.FC = () => {
                       key={vehicle.id}
                       className="hover:bg-zinc-900/50 transition-colors group"
                     >
-                      {/* VEHICLE: Thumbnail + Name + VIN */}
+                      {/* VEÍCULO: Foto + Nome + Chassi */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3.5">
                           <img
@@ -503,28 +545,28 @@ export const EstoqueView: React.FC = () => {
                               {vehicle.brand === 'Mercedes-Benz' && vehicle.model.startsWith('Mercedes-Benz') ? vehicle.model : `${vehicle.brand} ${vehicle.model}`}
                             </div>
                             <div className="font-mono text-[11px] text-zinc-400">
-                              VIN: {vehicle.vin || vehicle.chassis || 'WPOZZZ99ZLS12345'}
+                              Chassi: {vehicle.vin || vehicle.chassis || 'WPOZZZ99ZLS12345'}
                             </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* YEAR / KM */}
+                      {/* ANO / KM */}
                       <td className="py-4 px-6">
                         <div className="space-y-0.5">
                           <div className="text-sm font-semibold text-zinc-200">
                             {vehicle.fabYear}
                           </div>
                           <div className="text-xs text-zinc-400">
-                            {vehicle.km.toLocaleString('en-US')} km
+                            {formatNumberBRL(vehicle.km)} km
                           </div>
                         </div>
                       </td>
 
-                      {/* PRICE */}
+                      {/* PREÇO */}
                       <td className="py-4 px-6">
                         <div className="text-sm font-bold text-white font-mono">
-                          ${vehicle.price.toLocaleString('en-US')}
+                          {formatPriceBRL(vehicle.price)}
                         </div>
                       </td>
 
@@ -533,14 +575,14 @@ export const EstoqueView: React.FC = () => {
                         {renderStatusBadge(vehicle.status)}
                       </td>
 
-                      {/* LOCATION */}
+                      {/* UNIDADE */}
                       <td className="py-4 px-6">
                         <span className="text-xs text-zinc-300 font-medium">
-                          {vehicle.location || vehicle.storeUnit || 'HQ Matrix'}
+                          {vehicle.location || vehicle.storeUnit || 'Matriz Sorocaba'}
                         </span>
                       </td>
 
-                      {/* ACTIONS */}
+                      {/* AÇÕES */}
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
@@ -554,7 +596,7 @@ export const EstoqueView: React.FC = () => {
                           <button
                             id={`share-link-${vehicle.id}`}
                             onClick={() => {
-                              const shareText = `Confira o ${vehicle.brand} ${vehicle.model} (${vehicle.fabYear}) por $${vehicle.price.toLocaleString('en-US')} na MotorGrid: https://motorgrid.io/stock/${vehicle.id}`;
+                              const shareText = `Confira o ${vehicle.brand} ${vehicle.model} (${vehicle.fabYear}) por ${formatPriceBRL(vehicle.price)} na MotorGrid: https://motorgrid.io/estoque/${vehicle.id}`;
                               navigator.clipboard.writeText(shareText);
                               showToast('Link do veículo copiado para a área de transferência!');
                             }}
@@ -573,27 +615,27 @@ export const EstoqueView: React.FC = () => {
           </table>
         </div>
 
-        {/* Table Footer: Exact pagination and entry count from user screenshot */}
+        {/* Table Footer: Paginação e contagem de itens em PT-BR */}
         <div className="px-6 py-4 border-t border-zinc-800/80 bg-[#141416] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-          {/* Left: Showing 1 to 3 of 156 entries */}
+          {/* Left: Exibindo 1 a 3 de 156 veículos */}
           <div className="text-zinc-400 font-medium">
-            Showing {filteredVehicles.length === 0 ? 0 : startIndex} to {endIndex} of{' '}
-            <span className="text-zinc-300 font-bold">{displayTotalCount}</span> entries
+            Exibindo {filteredVehicles.length === 0 ? 0 : startIndex} a {endIndex} de{' '}
+            <span className="text-zinc-300 font-bold">{displayTotalCount}</span> veículos
           </div>
 
-          {/* Right: Pagination Controls (< 1 2 3 ... >) */}
+          {/* Right: Controles de paginação (< 1 2 3 ... >) */}
           <div className="flex items-center gap-1.5 select-none">
             {/* Previous Button */}
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
               className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-zinc-500 transition-colors cursor-pointer"
-              title="Previous Page"
+              title="Página Anterior"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            {/* Page 1 (Active square from screenshot) */}
+            {/* Page 1 */}
             <button
               onClick={() => setCurrentPage(1)}
               className={`w-7 h-7 rounded-md font-bold flex items-center justify-center transition-all cursor-pointer text-xs ${
@@ -637,7 +679,7 @@ export const EstoqueView: React.FC = () => {
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-zinc-500 transition-colors cursor-pointer"
-              title="Next Page"
+              title="Próxima Página"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -690,13 +732,13 @@ export const EstoqueView: React.FC = () => {
                     {selectedVehicleForDetails.brand} {selectedVehicleForDetails.model}
                   </h2>
                   <p className="text-xs text-zinc-300 font-mono mt-0.5">
-                    VIN: {selectedVehicleForDetails.vin || selectedVehicleForDetails.chassis}
+                    Chassi: {selectedVehicleForDetails.vin || selectedVehicleForDetails.chassis}
                   </p>
                 </div>
                 <div className="text-right">
                   <div className="text-xs text-zinc-400">Preço de Venda</div>
                   <div className="text-xl font-black text-white font-mono">
-                    ${selectedVehicleForDetails.price.toLocaleString('en-US')}
+                    {formatPriceBRL(selectedVehicleForDetails.price)}
                   </div>
                 </div>
               </div>
@@ -708,22 +750,32 @@ export const EstoqueView: React.FC = () => {
               <div className="p-3 rounded-2xl bg-[#0A0A0B] border border-zinc-800 flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-zinc-400 font-semibold">Alterar Status:</span>
                 <div className="flex items-center gap-2">
-                  {(['AVAILABLE', 'RESERVED', 'SOLD'] as const).map((st) => (
-                    <button
-                      key={st}
-                      onClick={() => {
-                        handleQuickStatusChange(selectedVehicleForDetails.id, st);
-                        setSelectedVehicleForDetails((prev) => (prev ? { ...prev, status: st } : null));
-                      }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        selectedVehicleForDetails.status.toUpperCase() === st
-                          ? 'bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/30'
-                          : 'bg-[#18181B] hover:bg-zinc-800 text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      {st}
-                    </button>
-                  ))}
+                  {(['DISPONÍVEL', 'RESERVADO', 'VENDIDO'] as const).map((st) => {
+                    const activeSt = (selectedVehicleForDetails.status || '').toUpperCase();
+                    const isSelected =
+                      (st === 'DISPONÍVEL' && (activeSt === 'AVAILABLE' || activeSt === 'DISPONÍVEL')) ||
+                      (st === 'RESERVADO' && (activeSt === 'RESERVED' || activeSt === 'RESERVADO')) ||
+                      (st === 'VENDIDO' && (activeSt === 'SOLD' || activeSt === 'VENDIDO'));
+
+                    return (
+                      <button
+                        key={st}
+                        onClick={() => {
+                          const internalStatus =
+                            st === 'DISPONÍVEL' ? 'AVAILABLE' : st === 'RESERVADO' ? 'RESERVED' : 'SOLD';
+                          handleQuickStatusChange(selectedVehicleForDetails.id, internalStatus);
+                          setSelectedVehicleForDetails((prev) => (prev ? { ...prev, status: internalStatus } : null));
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/30'
+                            : 'bg-[#18181B] hover:bg-zinc-800 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {st}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -735,15 +787,15 @@ export const EstoqueView: React.FC = () => {
                 </div>
                 <div className="p-3 rounded-xl bg-[#0A0A0B] border border-zinc-800 space-y-1">
                   <div className="text-[10px] text-zinc-500 uppercase font-semibold">Quilometragem</div>
-                  <div className="font-bold text-sm text-white">{selectedVehicleForDetails.km.toLocaleString('en-US')} km</div>
+                  <div className="font-bold text-sm text-white">{formatNumberBRL(selectedVehicleForDetails.km)} km</div>
                 </div>
                 <div className="p-3 rounded-xl bg-[#0A0A0B] border border-zinc-800 space-y-1">
                   <div className="text-[10px] text-zinc-500 uppercase font-semibold">Câmbio</div>
                   <div className="font-bold text-sm text-white">{selectedVehicleForDetails.gearbox}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-[#0A0A0B] border border-zinc-800 space-y-1">
-                  <div className="text-[10px] text-zinc-500 uppercase font-semibold">Localização</div>
-                  <div className="font-bold text-sm text-white truncate">{selectedVehicleForDetails.location || selectedVehicleForDetails.storeUnit}</div>
+                  <div className="text-[10px] text-zinc-500 uppercase font-semibold">Unidade</div>
+                  <div className="font-bold text-sm text-white truncate">{selectedVehicleForDetails.location || selectedVehicleForDetails.storeUnit || 'Matriz Sorocaba'}</div>
                 </div>
               </div>
 

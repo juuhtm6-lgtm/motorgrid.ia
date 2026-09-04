@@ -26,8 +26,8 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
   const [chassis, setChassis] = useState('WP0ZZZ99ZPS109234');
   const [price, setPrice] = useState(890000);
   const [costPrice, setCostPrice] = useState(790000);
-  const [storeUnit, setStoreUnit] = useState('Matriz Alphaville - Showroom Premium');
-  const [status, setStatus] = useState<Vehicle['status']>('Disponível');
+  const [storeUnit, setStoreUnit] = useState('Matriz Sorocaba');
+  const [status, setStatus] = useState<Vehicle['status']>('AVAILABLE');
   const [photoUrl, setPhotoUrl] = useState(
     'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&auto=format&fit=crop&q=80'
   );
@@ -123,7 +123,7 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1">Ano Fab.</label>
               <input
@@ -153,12 +153,23 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">Placa (Mercosul)</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Placa</label>
               <input
                 type="text"
                 value={licensePlate}
                 onChange={(e) => setLicensePlate(e.target.value)}
                 className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white outline-none font-mono"
+              />
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Chassi *</label>
+              <input
+                required
+                type="text"
+                value={chassis}
+                onChange={(e) => setChassis(e.target.value)}
+                placeholder="Ex: WP0ZZZ..."
+                className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white outline-none font-mono text-[11px]"
               />
             </div>
           </div>
@@ -246,9 +257,9 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
                 onChange={(e) => setStoreUnit(e.target.value)}
                 className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700/80 text-white outline-none"
               >
-                <option value="Matriz Alphaville - Showroom Premium">Matriz Alphaville - Showroom Premium</option>
-                <option value="Filial Jardins - Seminovos Selecionados">Filial Jardins - Seminovos Selecionados</option>
-                <option value="Filial Barra da Tijuca - Autos & Pickups">Filial Barra da Tijuca - Autos & Pickups</option>
+                <option value="Matriz Sorocaba">Matriz Sorocaba</option>
+                <option value="Filial Campinas">Filial Campinas</option>
+                <option value="Filial Ribeirão Preto">Filial Ribeirão Preto</option>
               </select>
             </div>
             <div>
@@ -258,10 +269,9 @@ export const AddVehicleModal: React.FC<AddVehicleModalProps> = ({
                 onChange={(e) => setStatus(e.target.value as Vehicle['status'])}
                 className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700/80 text-white outline-none"
               >
-                <option value="Disponível">Disponível no Showroom</option>
-                <option value="Reservado">Reservado / Em Negociação</option>
-                <option value="Preparação">Em Preparação / Estética</option>
-                <option value="Vendido">Vendido</option>
+                <option value="AVAILABLE">Disponível no Estoque</option>
+                <option value="RESERVED">Reservado / Em Negociação</option>
+                <option value="SOLD">Vendido</option>
               </select>
             </div>
           </div>
