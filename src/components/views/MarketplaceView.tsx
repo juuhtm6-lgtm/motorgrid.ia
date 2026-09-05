@@ -74,7 +74,7 @@ const initialModules: MarketplaceModule[] = [
     versionOrRequirement: 'v2.4.1',
     functionalColors: {
       iconLight: 'text-[#7C3AED]',
-      containerLight: 'bg-[#F5F3FF]',
+      containerLight: 'bg-[#F3E8FF]',
       borderLight: 'border-[#DDD6FE]',
       iconDark: 'dark:text-[#C4B5FD]',
       containerDark: 'dark:bg-[#2A1B4E]',
@@ -95,9 +95,9 @@ const initialModules: MarketplaceModule[] = [
     description: 'Distribuição inteligente de leads por round-robin, equipe, desempenho e regras comerciais.',
     versionOrRequirement: 'v1.8.0',
     functionalColors: {
-      iconLight: 'text-[#8B5CF6]',
-      containerLight: 'bg-[#FAF5FF]',
-      borderLight: 'border-[#E9D5FF]',
+      iconLight: 'text-[#7C3AED]',
+      containerLight: 'bg-[#F3E8FF]',
+      borderLight: 'border-[#DDD6FE]',
       iconDark: 'dark:text-[#DDD6FE]',
       containerDark: 'dark:bg-[#261B3D]',
       borderDark: 'dark:border-[#A78BFA]/40',
@@ -141,8 +141,8 @@ const initialModules: MarketplaceModule[] = [
     description: 'Score preditivo de leads, análise de intenção e automações inteligentes com IA.',
     versionOrRequirement: 'v0.9.4-beta',
     functionalColors: {
-      iconLight: 'text-[#6D28D9]',
-      containerLight: 'bg-[#EDE9FE]',
+      iconLight: 'text-[#7C3AED]',
+      containerLight: 'bg-[#F3E8FF]',
       borderLight: 'border-[#C4B5FD]',
       iconDark: 'dark:text-[#E9D5FF]',
       containerDark: 'dark:bg-[#3B1C71]',
@@ -163,9 +163,9 @@ const initialModules: MarketplaceModule[] = [
     description: 'Sincronização em tempo real do estoque com DMS, portais e plataformas externas.',
     versionOrRequirement: 'Requer Conexão DMS',
     functionalColors: {
-      iconLight: 'text-[#0D9488]',
-      containerLight: 'bg-[#F0FDFA]',
-      borderLight: 'border-[#99F6E4]',
+      iconLight: 'text-[#059669]',
+      containerLight: 'bg-[#ECFDF5]',
+      borderLight: 'border-[#A7F3D0]',
       iconDark: 'dark:text-[#5EEAD4]',
       containerDark: 'dark:bg-[#134E4A]',
       borderDark: 'dark:border-[#14B8A6]/40',
@@ -202,12 +202,51 @@ const initialModules: MarketplaceModule[] = [
 
 interface MarketplaceViewProps {
   onNavigateTab?: (tab: any) => void;
+  theme?: 'dark' | 'light';
 }
 
-export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab }) => {
+export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab, theme }) => {
   const toast = useToast();
+  const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>(() => {
+    if (theme) return theme;
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('light') ? 'light' : 'dark';
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    if (theme) {
+      setCurrentTheme(theme);
+      return;
+    }
+    const updateThemeFromDoc = () => {
+      if (typeof document !== 'undefined') {
+        setCurrentTheme(document.documentElement.classList.contains('light') ? 'light' : 'dark');
+      }
+    };
+    updateThemeFromDoc();
+    const observer = new MutationObserver(updateThemeFromDoc);
+    if (typeof document !== 'undefined') {
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    }
+    return () => observer.disconnect();
+  }, [theme]);
+
+  const isLight = currentTheme === 'light';
   const [modules, setModules] = useState<MarketplaceModule[]>(() => {
-    return storageService.getMarketplaceModules<MarketplaceModule>(initialModules);
+    const saved = storageService.getMarketplaceModules<MarketplaceModule>(initialModules);
+    return initialModules.map((init) => {
+      const match = saved.find((s) => s.id === init.id);
+      if (match) {
+        return {
+          ...init,
+          status: match.status,
+          settings: match.settings || init.settings,
+        };
+      }
+      return init;
+    });
   });
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -450,27 +489,67 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
           return (
             <div
               key={item.id}
-              className={`p-6 sm:p-7 rounded-[20px] bg-white dark:bg-[#141416] border transition-all duration-200 flex flex-col justify-between space-y-6 group ${
+              className={`marketplace-module-card px-6 py-5 rounded-[20px] transition-all duration-[180ms] ease-out flex flex-col justify-between space-y-4 group ${
                 item.isProprietaryAi
-                  ? 'border-[#C4B5FD] dark:border-[#8B5CF6]/50 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] shadow-[0_0_24px_rgba(139,92,246,0.12)] dark:shadow-[0_0_24px_rgba(139,92,246,0.18)] hover:-translate-y-0.5 hover:border-[#8B5CF6]'
-                  : 'border-[#E2E8F0] dark:border-zinc-800/90 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(15,23,42,0.1)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.45)] hover:border-[#C4B5FD] dark:hover:border-[#8B5CF6]/40'
+                  ? 'border-[#C4B5FD] dark:border-[#8B5CF6]/50 shadow-[0_8px_24px_rgba(15,23,42,0.07)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] dark:shadow-[0_0_24px_rgba(139,92,246,0.18)] hover:-translate-y-0.5 hover:border-[#8B5CF6] hover:shadow-[0_12px_30px_rgba(15,23,42,0.10)] dark:hover:-translate-y-0.5 dark:hover:border-[#8B5CF6]'
+                  : 'border-[#E2E8F0] dark:border-zinc-800/90 shadow-[0_8px_24px_rgba(15,23,42,0.07)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 hover:border-[#C4B5FD] hover:shadow-[0_12px_30px_rgba(15,23,42,0.10)] dark:hover:-translate-y-0.5 dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.45)] dark:hover:border-[#8B5CF6]/40'
               }`}
+              style={{
+                backgroundColor: 'var(--marketplace-card-bg)',
+                borderColor: item.isProprietaryAi ? (isLight ? '#C4B5FD' : undefined) : 'var(--marketplace-card-border)',
+                boxShadow: isLight ? '0 8px 24px rgba(15,23,42,0.07)' : undefined,
+              }}
             >
-              <div className="space-y-4">
-                {/* Top Row: Icon Container & Status Badge */}
-                <div className="flex items-center justify-between">
-                  {/* Functional Color Icon Box (48px - 56px) */}
+              <div className="space-y-3">
+                {/* Header: [Icon + Category/Title] on Left, Status Badge on Right */}
+                <div className="flex items-start justify-between gap-3">
+                  {/* Icon and Category/Title side by side (display: flex; align-items: center; gap: 14px) */}
                   <div
-                    className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 border ${item.functionalColors.containerLight} ${item.functionalColors.iconLight} ${item.functionalColors.borderLight} ${item.functionalColors.containerDark} ${item.functionalColors.iconDark} ${item.functionalColors.borderDark}`}
+                    className="min-w-0"
+                    style={{ display: 'flex', alignItems: 'center', gap: '14px' }}
                   >
-                    {renderModuleIcon(item.icon)}
+                    {/* Functional Color Icon Box */}
+                    <div
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 border ${item.functionalColors.containerLight} ${item.functionalColors.iconLight} ${item.functionalColors.borderLight} ${item.functionalColors.containerDark} ${item.functionalColors.iconDark} ${item.functionalColors.borderDark}`}
+                    >
+                      {renderModuleIcon(item.icon)}
+                    </div>
+
+                    {/* Category and Module Title */}
+                    <div className="min-w-0">
+                      <span
+                        className="marketplace-card-category text-[10px] font-semibold uppercase tracking-wider block leading-tight text-[#64748B] dark:text-zinc-400 dark:font-bold"
+                        style={{
+                          color: isLight ? '#64748B' : undefined,
+                          fontWeight: isLight ? 600 : undefined,
+                        }}
+                      >
+                        {item.categoryLabel}
+                      </span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <h3
+                          className="marketplace-card-title text-base sm:text-lg font-bold tracking-tight truncate text-[#0F172A] dark:text-white"
+                          style={{
+                            color: 'var(--marketplace-card-title)',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {item.name}
+                        </h3>
+                        {item.badge && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#F3E8FF] text-[#7C3AED] border border-[#C4B5FD] dark:bg-[#2A1B4E] dark:text-[#DDD6FE] dark:border-[#8B5CF6]/40 shrink-0">
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Status Badge: Active vs Inactive */}
-                  <div className="flex items-center gap-1.5">
+                  {/* Status Badge: Active vs Inactive (top-right corner) */}
+                  <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
                     {isActive ? (
                       <div className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide flex items-center gap-1.5 bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] dark:bg-[#064E3B]/40 dark:text-[#34D399] dark:border-[#059669]/50">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#059669] dark:bg-[#34D399] animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] dark:bg-[#34D399] animate-pulse" />
                         <span>ATIVO</span>
                       </div>
                     ) : (
@@ -481,35 +560,31 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
                   </div>
                 </div>
 
-                {/* Category & Module Title */}
-                <div className="space-y-1.5">
-                  {/* Subtle Category Pill/Label */}
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
-                    {item.categoryLabel}
-                  </span>
-
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-                      {item.name}
-                    </h3>
-                    {item.badge && (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#F3E8FF] text-[#7C3AED] border border-[#C4B5FD] dark:bg-[#2A1B4E] dark:text-[#DDD6FE] dark:border-[#8B5CF6]/40">
-                        {item.badge}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 leading-relaxed min-h-[42px]">
-                    {item.description}
-                  </p>
-                </div>
+                {/* Description (2 or 3 lines) */}
+                <p
+                  className="marketplace-card-desc text-xs sm:text-sm leading-relaxed line-clamp-2 sm:line-clamp-3 text-[#475569] dark:text-zinc-400"
+                  style={{
+                    color: 'var(--marketplace-card-text)',
+                  }}
+                >
+                  {item.description}
+                </p>
               </div>
 
               {/* Card Footer: Version/Requirement on Left, Action on Right */}
-              <div className="pt-4 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between gap-3 text-xs">
+              <div
+                className="marketplace-card-divider pt-3 border-t border-[#E2E8F0] dark:border-zinc-800/80 flex items-center justify-between gap-3 text-xs"
+                style={{
+                  borderColor: isLight ? '#E2E8F0' : undefined,
+                }}
+              >
                 {/* Left Info: Version, Requirement or Usage */}
-                <div className="text-slate-500 dark:text-zinc-400 font-mono text-[11px] truncate">
+                <div
+                  className="marketplace-card-footer-meta font-mono text-[11px] truncate text-[#64748B] dark:text-zinc-400"
+                  style={{
+                    color: isLight ? '#64748B' : undefined,
+                  }}
+                >
                   {item.usageText || item.versionOrRequirement}
                 </div>
 
@@ -526,7 +601,7 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
                   <button
                     id={`enable-${item.id}-btn`}
                     onClick={() => handleToggleModuleStatus(item.id)}
-                    className="px-4 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-bold text-xs shadow-sm shadow-[#8B5CF6]/30 transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-bold text-xs shadow-sm shadow-[#8B5CF6]/30 hover:shadow-[#8B5CF6]/45 transition-all duration-150 cursor-pointer"
                   >
                     Ativar Módulo
                   </button>

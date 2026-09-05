@@ -17,11 +17,15 @@ import {
   X,
 } from 'lucide-react';
 import { initialAuthUsers, initialTenants } from '../../data/mockData';
-import { AuthUser, TenantUnit } from '../../types';
+import { AuthUser, TenantUnit, ThemeMode } from '../../types';
 import { MarketplaceView } from './MarketplaceView';
 import { useToast } from '../../context/ToastContext';
 
-export const AjustesView: React.FC = () => {
+interface AjustesViewProps {
+  theme?: ThemeMode;
+}
+
+export const AjustesView: React.FC<AjustesViewProps> = ({ theme = 'dark' }) => {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<'marketplace' | 'empresa' | 'unidades' | 'usuarios' | 'sla' | 'auditoria'>('marketplace');
   const [users, setUsers] = useState<AuthUser[]>(initialAuthUsers);
@@ -111,13 +115,13 @@ export const AjustesView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Sub-Tabs Selector */}
-      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#141416] border border-zinc-800 text-xs overflow-x-auto w-fit">
+      <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white dark:bg-[#141416] border border-slate-200 dark:border-zinc-800 text-xs overflow-x-auto w-fit shadow-sm">
         <button
           onClick={() => setActiveTab('marketplace')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'marketplace'
               ? 'bg-[#C4B5FD] text-[#2E1065] shadow-lg shadow-[#8B5CF6]/20 font-["Plus_Jakarta_Sans",sans-serif]'
-              : 'text-zinc-400 hover:text-white'
+              : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <Store className="w-3.5 h-3.5" />
@@ -126,7 +130,7 @@ export const AjustesView: React.FC = () => {
         <button
           onClick={() => setActiveTab('empresa')}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'empresa' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+            activeTab === 'empresa' ? 'bg-purple-100 text-[#7C3AED] dark:bg-[#25193A] dark:text-white border border-[#8B5CF6]/50' : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <Building className="w-3.5 h-3.5" />
@@ -135,7 +139,7 @@ export const AjustesView: React.FC = () => {
         <button
           onClick={() => setActiveTab('unidades')}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'unidades' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+            activeTab === 'unidades' ? 'bg-purple-100 text-[#7C3AED] dark:bg-[#25193A] dark:text-white border border-[#8B5CF6]/50' : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <MapPin className="w-3.5 h-3.5" />
@@ -144,7 +148,7 @@ export const AjustesView: React.FC = () => {
         <button
           onClick={() => setActiveTab('usuarios')}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'usuarios' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+            activeTab === 'usuarios' ? 'bg-purple-100 text-[#7C3AED] dark:bg-[#25193A] dark:text-white border border-[#8B5CF6]/50' : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
@@ -153,7 +157,7 @@ export const AjustesView: React.FC = () => {
         <button
           onClick={() => setActiveTab('sla')}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'sla' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+            activeTab === 'sla' ? 'bg-purple-100 text-[#7C3AED] dark:bg-[#25193A] dark:text-white border border-[#8B5CF6]/50' : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
@@ -162,7 +166,7 @@ export const AjustesView: React.FC = () => {
         <button
           onClick={() => setActiveTab('auditoria')}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap ${
-            activeTab === 'auditoria' ? 'bg-[#25193A] text-white border border-[#8B5CF6]/50' : 'text-zinc-400 hover:text-white'
+            activeTab === 'auditoria' ? 'bg-purple-100 text-[#7C3AED] dark:bg-[#25193A] dark:text-white border border-[#8B5CF6]/50' : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <ShieldCheck className="w-3.5 h-3.5" />
@@ -173,7 +177,7 @@ export const AjustesView: React.FC = () => {
       {/* ========================================================================= */}
       {/* 0. APP MARKETPLACE (DEFAULT VIEW) */}
       {/* ========================================================================= */}
-      {activeTab === 'marketplace' && <MarketplaceView />}
+      {activeTab === 'marketplace' && <MarketplaceView theme={theme} />}
 
       {/* ========================================================================= */}
       {/* 1. EMPRESA */}

@@ -484,7 +484,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen bg-[#0A0A0B] text-zinc-100 font-sans antialiased overflow-hidden selection:bg-[#8B5CF6] selection:text-white">
+    <div className="flex h-screen bg-[#F7F8FC] dark:bg-[#0A0A0B] text-slate-900 dark:text-zinc-100 font-sans antialiased overflow-hidden selection:bg-[#8B5CF6] selection:text-white">
       {/* Global Command Palette */}
       <CommandPalette
         isOpen={isCommandOpen}
@@ -595,7 +595,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#0A0A0B] bg-motorgrid-pattern">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#F7F8FC] dark:bg-[#0A0A0B] bg-motorgrid-pattern">
         {/* Top Navbar */}
         <Navbar
           activeTab={activeTab}
@@ -900,6 +900,7 @@ export default function App() {
 
           {(activeTab === 'administracao' || activeTab === 'settings') && (
             <SettingsView
+              theme={theme}
               teamMembers={teamMembers}
               webhooks={webhooks}
               onAddTeamMember={handleAddTeamMember}

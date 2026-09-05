@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --color-primary: #8B5CF6;
@@ -70,11 +72,30 @@
     --text-secondary: #A1A1AA;
     --border: #27272A;
 
+    /* Marketplace Card Tokens (Dark Mode Baseline) */
+    --marketplace-card-bg: #141416;
+    --marketplace-card-title: #FFFFFF;
+    --marketplace-card-text: #A1A1AA;
+    --marketplace-card-muted: #71717A;
+    --marketplace-card-border: rgba(39, 39, 42, 0.9);
+
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
+  html.dark,
+  body.dark,
+  .dark {
+    /* Marketplace Card Tokens (Dark Mode Baseline) */
+    --marketplace-card-bg: #141416;
+    --marketplace-card-title: #FFFFFF;
+    --marketplace-card-text: #A1A1AA;
+    --marketplace-card-muted: #71717A;
+    --marketplace-card-border: rgba(39, 39, 42, 0.9);
+  }
+
   html.light,
-  body.light {
+  body.light,
+  .light {
     --background: #F6F7FB;
     --background-secondary: #F8FAFC;
     --surface: #FFFFFF;
@@ -86,6 +107,13 @@
     --border: #DCE3EC;
     --border-highlight: rgba(139, 92, 246, 0.45);
     --border-subtle: #EDF2F7;
+
+    /* Marketplace Card Tokens (Light Mode Explicit) */
+    --marketplace-card-bg: #FFFFFF;
+    --marketplace-card-title: #0F172A;
+    --marketplace-card-text: #475569;
+    --marketplace-card-muted: #64748B;
+    --marketplace-card-border: #E2E8F0;
 
     /* MotorGrid Official Design Tokens (Light Mode Standard) */
     --bg-primary: #F6F7FB;
