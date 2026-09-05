@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   UserPlus,
   Search,
@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Eye,
   Edit3,
+  MoreVertical,
   Trash2,
   Download,
   Kanban,
@@ -145,13 +146,17 @@ const getLeadChannelInfo = (lead: LeadItem) => {
 };
 
 const formatRelativeTime = (timeStr?: string) => {
-  if (!timeStr) return 'Último contato há 3 min';
-  const lower = timeStr.toLowerCase().trim();
-  if (lower.startsWith('último contato')) return timeStr;
-  if (lower.startsWith('há ') || lower === 'ontem' || lower === 'hoje' || lower.startsWith('hoje ')) {
-    return `Último contato ${lower}`;
+  if (!timeStr) return 'Último contato: Há 3 min';
+  const trimmed = timeStr.trim();
+  const clean = trimmed.replace(/^(último\s+contato:?\s*)/i, '').trim();
+  if (clean.toLowerCase().startsWith('há ') || clean.toLowerCase().startsWith('ha ')) {
+    const capitalized = clean.charAt(0).toUpperCase() + clean.slice(1);
+    return `Último contato: ${capitalized}`;
   }
-  return `Último contato: ${timeStr}`;
+  if (clean.toLowerCase().startsWith('hoje') || clean.toLowerCase().startsWith('ontem')) {
+    return `Último contato: ${clean}`;
+  }
+  return `Último contato: Há ${clean}`;
 };
 
 const getStatusStyle = (status: LeadStatus) => {
@@ -196,6 +201,18 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const [selectedLeadForDetail, setSelectedLeadForDetail] = useState<LeadItem | null>(null);
   const [selectedLeadForEdit, setSelectedLeadForEdit] = useState<LeadItem | null>(null);
   const [leadToDelete, setLeadToDelete] = useState<LeadItem | null>(null);
+  const [activeMoreMenuId, setActiveMoreMenuId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.more-options-menu-container')) {
+        setActiveMoreMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const filteredLeads = leads.filter((lead) => {
     const { origin, vehicleText } = getLeadOriginAndInterest(lead);
@@ -492,173 +509,198 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
       {/* Leads Table Container */}
       <div className="rounded-2xl border border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-[#141416] overflow-hidden shadow-sm dark:shadow-xl">
-        {/* Desktop & Tablet Table (Grid/Table with Fixed Proportions) */}
+        {/* Desktop & Tablet Table (CSS Grid with Dedicated Independent Columns) */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse table-fixed min-w-[980px]">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-[#1C1C1E]/90 text-slate-500 dark:text-zinc-400 text-[11px] uppercase tracking-wider font-semibold">
-                <th className="py-3 px-4 w-[24%]">LEAD / CONTATO</th>
-                <th className="py-3 px-4 w-[19%]">ORIGEM / INTERESSE</th>
-                <th className="py-3 px-4 w-[11%]">VALOR</th>
-                <th className="py-3 px-4 w-[11%]">CANAL</th>
-                <th className="py-3 px-4 w-[13%]">STATUS</th>
-                <th className="py-3 px-4 w-[11%]">RESPONSÁVEL</th>
-                <th className="py-3 px-4 w-[11%] text-right">AÇÕES</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 text-sm">
-              {filteredLeads.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400 dark:text-zinc-500">
-                    Nenhum lead encontrado com os filtros selecionados.
-                  </td>
-                </tr>
-              ) : (
-                filteredLeads.map((lead) => {
-                  const { origin, vehicleText } = getLeadOriginAndInterest(lead);
-                  const channelInfo = getLeadChannelInfo(lead);
-                  const estimatedVal = lead.estimatedValue || 289900;
+          <div className="min-w-[1320px] divide-y divide-slate-100 dark:divide-zinc-800/60">
+            {/* Header */}
+            <div className="grid grid-cols-[minmax(270px,2fr)_minmax(180px,1.3fr)_minmax(120px,0.8fr)_minmax(110px,0.8fr)_minmax(150px,1fr)_minmax(180px,1.1fr)_minmax(240px,max-content)] items-center px-4 py-3 bg-slate-50/80 dark:bg-[#1C1C1E]/90 border-b border-slate-200 dark:border-zinc-800 text-slate-500 dark:text-zinc-400 text-[11px] uppercase tracking-wider font-semibold gap-4">
+              <div>LEAD / CONTATO</div>
+              <div>ORIGEM / INTERESSE</div>
+              <div>VALOR</div>
+              <div>CANAL</div>
+              <div>STATUS</div>
+              <div>RESPONSÁVEL</div>
+              <div>AÇÕES</div>
+            </div>
 
-                  return (
-                    <tr
-                      key={lead.id}
-                      className="hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors group"
-                    >
-                      {/* 1. LEAD / CONTATO */}
-                      <td className="py-3.5 px-4 align-middle">
-                        <div className="font-bold text-slate-900 dark:text-white truncate block text-sm">
-                          {lead.name}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 dark:text-zinc-400">
-                          <div className="flex items-center gap-1 shrink-0 font-mono text-[11px] text-slate-600 dark:text-zinc-400 whitespace-nowrap">
-                            <Phone className="w-3 h-3 text-[#8B5CF6] shrink-0" />
-                            <span>{lead.phone}</span>
-                          </div>
-                          <span className="text-slate-300 dark:text-zinc-600 select-none">•</span>
-                          <div
-                            className="flex items-center gap-1 min-w-0 max-w-[140px] lg:max-w-[170px] truncate text-[11px] text-slate-500 dark:text-zinc-400 cursor-pointer"
-                            title={lead.email}
-                          >
-                            <Mail className="w-3 h-3 text-slate-400 dark:text-zinc-500 shrink-0" />
-                            <span className="truncate">{lead.email}</span>
-                          </div>
-                        </div>
-                      </td>
+            {/* Rows */}
+            {filteredLeads.length === 0 ? (
+              <div className="py-12 text-center text-slate-400 dark:text-zinc-500 text-sm">
+                Nenhum lead encontrado com os filtros selecionados.
+              </div>
+            ) : (
+              filteredLeads.map((lead) => {
+                const { origin, vehicleText } = getLeadOriginAndInterest(lead);
+                const channelInfo = getLeadChannelInfo(lead);
+                const estimatedVal = lead.estimatedValue || 289900;
 
-                      {/* 2. ORIGEM / INTERESSE */}
-                      <td className="py-3.5 px-4 align-middle">
-                        <div className="font-semibold text-slate-900 dark:text-zinc-200 text-xs sm:text-sm truncate block">
-                          {origin}
+                return (
+                  <div
+                    key={lead.id}
+                    className="grid grid-cols-[minmax(270px,2fr)_minmax(180px,1.3fr)_minmax(120px,0.8fr)_minmax(110px,0.8fr)_minmax(150px,1fr)_minmax(180px,1.1fr)_minmax(240px,max-content)] items-center px-4 py-3.5 hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors gap-4 group"
+                  >
+                    {/* 1. LEAD / CONTATO */}
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-900 dark:text-white truncate block text-sm">
+                        {lead.name}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 dark:text-zinc-400">
+                        <div className="flex items-center gap-1 shrink-0 font-mono text-[11px] text-slate-600 dark:text-zinc-400 whitespace-nowrap">
+                          <Phone className="w-3 h-3 text-[#8B5CF6] shrink-0" />
+                          <span>{lead.phone}</span>
                         </div>
-                        <div className="text-xs text-[#7C3AED] dark:text-[#C4B5FD] flex items-center gap-1 mt-0.5 truncate font-medium">
-                          <Car className="w-3 h-3 text-[#8B5CF6] shrink-0" />
-                          <span className="truncate">{vehicleText}</span>
-                        </div>
-                      </td>
-
-                      {/* 3. VALOR */}
-                      <td className="py-3.5 px-4 align-middle whitespace-nowrap">
-                        <div className="font-bold text-slate-900 dark:text-white font-mono text-sm">
-                          R$ {estimatedVal.toLocaleString('pt-BR')}
-                        </div>
-                        <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
-                          Valor estimado
-                        </div>
-                      </td>
-
-                      {/* 4. CANAL */}
-                      <td className="py-3.5 px-4 align-middle">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${channelInfo.badgeClass}`}
+                        <span className="text-slate-300 dark:text-zinc-600 select-none">•</span>
+                        <div
+                          className="flex items-center gap-1 min-w-0 max-w-[150px] truncate text-[11px] text-slate-500 dark:text-zinc-400 cursor-pointer"
+                          title={lead.email}
                         >
-                          {channelInfo.channelName}
-                        </span>
-                        <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 truncate">
-                          {channelInfo.subType}
+                          <Mail className="w-3 h-3 text-slate-400 dark:text-zinc-500 shrink-0" />
+                          <span className="truncate">{lead.email}</span>
                         </div>
-                      </td>
+                      </div>
+                    </div>
 
-                      {/* 5. STATUS */}
-                      <td className="py-3.5 px-4 align-middle">
-                        <select
-                          value={lead.status}
-                          onChange={(e) => handleStatusChange(lead.id, e.target.value as LeadStatus)}
-                          className={`w-[136px] max-w-[136px] text-xs px-2.5 py-1 rounded-full font-semibold border outline-none cursor-pointer transition-all ${getStatusStyle(
-                            lead.status
-                          )}`}
+                    {/* 2. ORIGEM / INTERESSE */}
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-900 dark:text-zinc-200 text-xs sm:text-sm truncate block">
+                        {origin}
+                      </div>
+                      <div className="text-xs text-[#7C3AED] dark:text-[#C4B5FD] flex items-center gap-1 mt-0.5 truncate font-medium">
+                        <Car className="w-3 h-3 text-[#8B5CF6] shrink-0" />
+                        <span className="truncate">{vehicleText}</span>
+                      </div>
+                    </div>
+
+                    {/* 3. VALOR */}
+                    <div className="whitespace-nowrap">
+                      <div className="font-bold text-slate-900 dark:text-white font-mono text-sm">
+                        R$ {estimatedVal.toLocaleString('pt-BR')}
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
+                        Valor estimado
+                      </div>
+                    </div>
+
+                    {/* 4. CANAL */}
+                    <div className="min-w-0">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${channelInfo.badgeClass}`}
+                      >
+                        {channelInfo.channelName}
+                      </span>
+                      <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 truncate">
+                        {channelInfo.subType}
+                      </div>
+                    </div>
+
+                    {/* 5. STATUS */}
+                    <div>
+                      <select
+                        value={lead.status}
+                        onChange={(e) => handleStatusChange(lead.id, e.target.value as LeadStatus)}
+                        className={`w-[136px] max-w-[136px] text-xs px-2.5 py-1 rounded-full font-semibold border outline-none cursor-pointer transition-all ${getStatusStyle(
+                          lead.status
+                        )}`}
+                      >
+                        <option value="Novo">Novo</option>
+                        <option value="Em Contato">Em Contato</option>
+                        <option value="Qualificado">Qualificado</option>
+                        <option value="Agendado">Agendado</option>
+                        <option value="Proposta Enviada">Proposta</option>
+                        <option value="Negociação">Negociação</option>
+                        <option value="Ganho">Venda (Ganho)</option>
+                        <option value="Perdido">Perdido</option>
+                      </select>
+                    </div>
+
+                    {/* 6. RESPONSÁVEL (Espaço Exclusivo, min-width 170px) */}
+                    <div className="min-w-[170px] pr-2">
+                      <div
+                        className="font-semibold text-slate-900 dark:text-zinc-200 text-sm whitespace-nowrap overflow-hidden text-ellipsis block"
+                        title={lead.assignedTo || 'Rodrigo Mendes'}
+                      >
+                        {lead.assignedTo || 'Rodrigo Mendes'}
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 whitespace-nowrap block">
+                        {formatRelativeTime(lead.lastContact)}
+                      </div>
+                    </div>
+
+                    {/* 7. AÇÕES (Coluna Independente, flex start, gap 6px) */}
+                    <div className="flex items-center justify-start gap-1.5 shrink-0 whitespace-nowrap">
+                      {/* [ 👁 ] Visualizar */}
+                      <button
+                        onClick={() => setSelectedLeadForDetail(lead)}
+                        className="w-[38px] h-[38px] min-w-[38px] rounded-xl flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#18181B] dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer shrink-0"
+                        title="Visualizar Detalhes do Lead"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+
+                      {/* [ ✎ ] Editar */}
+                      <button
+                        onClick={() => setSelectedLeadForEdit(lead)}
+                        className="w-[38px] h-[38px] min-w-[38px] rounded-xl flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#18181B] dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer shrink-0"
+                        title="Editar Lead"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+
+                      {/* [ ⋮ ] Mais opções */}
+                      <div className="relative more-options-menu-container">
+                        <button
+                          onClick={() => setActiveMoreMenuId(activeMoreMenuId === lead.id ? null : lead.id)}
+                          className={`w-[38px] h-[38px] min-w-[38px] rounded-xl flex items-center justify-center border transition-colors cursor-pointer shrink-0 ${
+                            activeMoreMenuId === lead.id
+                              ? 'bg-[#8B5CF6]/15 border-[#8B5CF6]/50 text-[#7C3AED] dark:text-[#C4B5FD]'
+                              : 'bg-slate-100 hover:bg-slate-200 dark:bg-[#18181B] dark:hover:bg-zinc-800 border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white'
+                          }`}
+                          title="Mais opções"
                         >
-                          <option value="Novo">Novo</option>
-                          <option value="Em Contato">Em Contato</option>
-                          <option value="Qualificado">Qualificado</option>
-                          <option value="Agendado">Agendado</option>
-                          <option value="Proposta Enviada">Proposta</option>
-                          <option value="Negociação">Negociação</option>
-                          <option value="Ganho">Venda (Ganho)</option>
-                          <option value="Perdido">Perdido</option>
-                        </select>
-                      </td>
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
 
-                      {/* 6. RESPONSÁVEL */}
-                      <td className="py-3.5 px-4 align-middle">
-                        <div className="font-semibold text-slate-900 dark:text-zinc-200 text-xs sm:text-sm truncate block">
-                          {lead.assignedTo || 'Rodrigo Mendes'}
-                        </div>
-                        <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 truncate block">
-                          {formatRelativeTime(lead.lastContact)}
-                        </div>
-                      </td>
+                        {activeMoreMenuId === lead.id && (
+                          <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl bg-white dark:bg-[#1C1C1E] border border-slate-200 dark:border-zinc-700 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95">
+                            <button
+                              onClick={() => {
+                                setActiveMoreMenuId(null);
+                                handleMoveLeadToPipeline(lead);
+                              }}
+                              className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-800 flex items-center gap-2 cursor-pointer"
+                            >
+                              <Kanban className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                              <span>Mover para Funil</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setActiveMoreMenuId(null);
+                                setLeadToDelete(lead);
+                              }}
+                              className="w-full px-3 py-2 text-left text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Excluir Lead</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
 
-                      {/* 7. AÇÕES */}
-                      <td className="py-3.5 px-4 align-middle text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => setSelectedLeadForDetail(lead)}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#18181B] dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-                            title="Visualizar Detalhes do Lead"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-
-                          <button
-                            onClick={() => setSelectedLeadForEdit(lead)}
-                            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-[#18181B] dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
-                            title="Editar Lead"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                          </button>
-
-                          <button
-                            onClick={() => handleMoveLeadToPipeline(lead)}
-                            className="p-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 dark:bg-[#25193A] dark:hover:bg-[#381c64] border border-purple-200 dark:border-[#8B5CF6]/50 text-[#7C3AED] dark:text-[#DDD6FE] transition-colors cursor-pointer"
-                            title="Mover para Funil / Pipeline"
-                          >
-                            <Kanban className="w-3.5 h-3.5" />
-                          </button>
-
-                          <button
-                            onClick={() => onOpenChat(lead)}
-                            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shadow-sm whitespace-nowrap ${channelInfo.actionBtnClass}`}
-                            title={`Abrir conversa de ${lead.name} no Atendimento`}
-                          >
-                            <MessageSquare className="w-3.5 h-3.5 shrink-0" />
-                            <span>Conversa</span>
-                          </button>
-
-                          <button
-                            onClick={() => setLeadToDelete(lead)}
-                            className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
-                            title="Excluir Lead"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                      {/* [ 💬 Conversa ] */}
+                      <button
+                        onClick={() => onOpenChat(lead)}
+                        className={`h-[38px] px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm whitespace-nowrap shrink-0 ${channelInfo.actionBtnClass}`}
+                        title={`Abrir conversa de ${lead.name} no Atendimento`}
+                      >
+                        <MessageSquare className="w-4 h-4 shrink-0" />
+                        <span>Conversa</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
 
         {/* Mobile View: Clean Card Layout for Screens < 768px */}
@@ -752,27 +794,27 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         onClick={() => setSelectedLeadForDetail(lead)}
-                        className="p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300"
+                        className="w-[38px] h-[38px] min-w-[38px] rounded-xl flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#18181B] dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300"
                         title="Ver Detalhes"
                       >
-                        <Eye className="w-3.5 h-3.5" />
+                        <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setSelectedLeadForEdit(lead)}
-                        className="p-1.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300"
+                        className="w-[38px] h-[38px] min-w-[38px] rounded-xl flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#18181B] dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-700/80 text-slate-600 dark:text-zinc-300"
                         title="Editar"
                       >
-                        <Edit3 className="w-3.5 h-3.5" />
+                        <Edit3 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onOpenChat(lead)}
-                        className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 ${channelInfo.actionBtnClass}`}
+                        className={`h-[38px] px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 whitespace-nowrap ${channelInfo.actionBtnClass}`}
                         title="Abrir Conversa"
                       >
-                        <MessageSquare className="w-3.5 h-3.5" />
+                        <MessageSquare className="w-4 h-4 shrink-0" />
                         <span>Conversa</span>
                       </button>
                     </div>
