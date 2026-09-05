@@ -55,6 +55,21 @@
     --mg-hot: #EF4444;
     --mg-hot-soft: rgba(239, 68, 68, 0.15);
 
+    /* Brand Panel Tokens (Permanently Dark across all themes) */
+    --brand-panel-bg: #0D0B1F;
+    --brand-panel-title: #FFFFFF;
+    --brand-panel-text: #CBD5E1;
+    --brand-panel-muted: #94A3B8;
+    --brand-panel-border: rgba(255, 255, 255, 0.12);
+    --brand-accent: #8B5CF6;
+
+    /* Theme Context Tokens - Dark Baseline */
+    --page-bg: #09090B;
+    --surface: #18181B;
+    --text-primary: #FFFFFF;
+    --text-secondary: #A1A1AA;
+    --border: #27272A;
+
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
@@ -131,6 +146,13 @@
     --light-disabled-bg: #F1F5F9;
     --light-disabled-border: #CBD5E1;
     --light-disabled-text: #94A3B8;
+
+    /* Theme Context Tokens - Light Mode */
+    --page-bg: #F8FAFC;
+    --surface: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --border: #E2E8F0;
   }
 
   body {
@@ -2209,6 +2231,101 @@ html.light [role="dialog"] .border-white\/10,
 html.light [role="dialog"] .border-zinc-800,
 html.light [role="dialog"] .border-zinc-800\/80 {
   border-color: #E2E8F0 !important;
+}
+
+/* ==========================================================================
+   MOTORGRID BRAND PANEL - PERMANENTLY DARK IN BOTH LIGHT & DARK MODES
+   O painel institucional esquerdo representa a identidade visual MotorGrid
+   e deve manter visual dark com tipografia clara no Light Mode e no Dark Mode.
+   ========================================================================== */
+html.light #motorgrid-brand-panel,
+html.dark #motorgrid-brand-panel,
+#motorgrid-brand-panel {
+  background: linear-gradient(135deg, rgba(18, 15, 36, 0.95) 0%, rgba(14, 12, 27, 0.98) 50%, rgba(8, 7, 15, 0.98) 100%) !important;
+  border-color: rgba(139, 92, 246, 0.25) !important;
+  color: #FFFFFF !important;
+}
+
+html.light #motorgrid-brand-panel .brand-logo-text,
+html.dark #motorgrid-brand-panel .brand-logo-text,
+#motorgrid-brand-panel .brand-logo-text {
+  color: #FFFFFF !important;
+}
+
+html.light #motorgrid-brand-panel .brand-subtitle,
+html.dark #motorgrid-brand-panel .brand-subtitle,
+#motorgrid-brand-panel .brand-subtitle {
+  color: #A78BFA !important;
+}
+
+html.light #motorgrid-brand-panel h1,
+html.dark #motorgrid-brand-panel h1,
+#motorgrid-brand-panel h1 {
+  color: #FFFFFF !important;
+}
+
+html.light #motorgrid-brand-panel .brand-headline-accent,
+html.dark #motorgrid-brand-panel .brand-headline-accent,
+#motorgrid-brand-panel .brand-headline-accent {
+  color: #A78BFA !important;
+}
+
+html.light #motorgrid-brand-panel .brand-desc,
+html.dark #motorgrid-brand-panel .brand-desc,
+#motorgrid-brand-panel .brand-desc {
+  color: #CBD5E1 !important;
+}
+
+html.light #motorgrid-brand-panel .brand-badge-ai,
+html.dark #motorgrid-brand-panel .brand-badge-ai,
+#motorgrid-brand-panel .brand-badge-ai {
+  background-color: rgba(139, 92, 246, 0.20) !important;
+  border-color: rgba(139, 92, 246, 0.40) !important;
+  color: #DDD6FE !important;
+}
+
+html.light #motorgrid-brand-panel .brand-badge-version,
+html.dark #motorgrid-brand-panel .brand-badge-version,
+#motorgrid-brand-panel .brand-badge-version {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  color: #CBD5E1 !important;
+}
+
+html.light #motorgrid-brand-panel .brand-card,
+html.dark #motorgrid-brand-panel .brand-card,
+#motorgrid-brand-panel .brand-card {
+  background-color: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+html.light #motorgrid-brand-panel .brand-card:hover,
+html.dark #motorgrid-brand-panel .brand-card:hover,
+#motorgrid-brand-panel .brand-card:hover {
+  border-color: #8B5CF6 !important;
+  background-color: rgba(139, 92, 246, 0.08) !important;
+  transform: translateY(-2px) !important;
+}
+
+html.light #motorgrid-brand-panel .brand-card-icon-box,
+html.dark #motorgrid-brand-panel .brand-card-icon-box,
+#motorgrid-brand-panel .brand-card-icon-box {
+  background-color: rgba(139, 92, 246, 0.20) !important;
+  border: 1px solid rgba(139, 92, 246, 0.30) !important;
+  color: #A78BFA !important;
+}
+
+html.light #motorgrid-brand-panel .brand-card-title,
+html.dark #motorgrid-brand-panel .brand-card-title,
+#motorgrid-brand-panel .brand-card-title {
+  color: #FFFFFF !important;
+}
+
+html.light #motorgrid-brand-panel .brand-card-desc,
+html.dark #motorgrid-brand-panel .brand-card-desc,
+#motorgrid-brand-panel .brand-card-desc {
+  color: #94A3B8 !important;
 }
 
 

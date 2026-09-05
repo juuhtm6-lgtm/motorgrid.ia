@@ -13,20 +13,46 @@ import {
 } from 'lucide-react';
 import { IntegrationItem } from '../../types';
 import { initialIntegrations } from '../../data/mockData';
+import { useToast } from '../../context/ToastContext';
+import { IntegrationConfigModal } from '../modals/IntegrationConfigModal';
 
 export const IntegracoesView: React.FC = () => {
+  const toast = useToast();
   const [integrations, setIntegrations] = useState<IntegrationItem[]>(initialIntegrations);
   const [selectedCategory, setSelectedCategory] = useState<
     'all' | 'mensageria' | 'portais' | 'financiamento' | 'ia'
   >('all');
+  const [configModalItem, setConfigModalItem] = useState<IntegrationItem | null>(null);
 
   const handleToggleStatus = (id: string) => {
+    setIntegrations((prev) =>
+      prev.map((item) => {
+        if (item.id === id) {
+          const newStatus = item.status === 'Conectado' ? 'Desconectado' : 'Conectado';
+          if (newStatus === 'Conectado') {
+            toast.success(`${item.name} conectado com sucesso! Sincronização em tempo real ativada.`);
+          } else {
+            toast.info(`${item.name} foi desconectado.`);
+          }
+          return {
+            ...item,
+            status: newStatus,
+            lastSync: newStatus === 'Conectado' ? 'Agora mesmo' : item.lastSync,
+          };
+        }
+        return item;
+      })
+    );
+  };
+
+  const handleSaveConfig = (id: string, updatedData: { apiKey?: string; webhookUrl?: string; autoSync: boolean }) => {
     setIntegrations((prev) =>
       prev.map((item) =>
         item.id === id
           ? {
               ...item,
-              status: item.status === 'Conectado' ? 'Desconectado' : 'Conectado',
+              status: 'Conectado',
+              lastSync: 'Agora mesmo',
             }
           : item
       )
@@ -172,7 +198,7 @@ export const IntegracoesView: React.FC = () => {
                   </button>
 
                   <button
-                    onClick={() => alert(`Configurações avançadas da integração ${item.name}`)}
+                    onClick={() => setConfigModalItem(item)}
                     className="p-2 rounded-xl bg-[#0A0A0B] hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700 transition-colors cursor-pointer"
                     title="Configurações e Mapeamento de Campos"
                   >
@@ -184,6 +210,14 @@ export const IntegracoesView: React.FC = () => {
           );
         })}
       </div>
+
+      {/* Integration Config Modal */}
+      <IntegrationConfigModal
+        isOpen={!!configModalItem}
+        onClose={() => setConfigModalItem(null)}
+        integration={configModalItem}
+        onSaveConfig={handleSaveConfig}
+      />
     </div>
   );
 };

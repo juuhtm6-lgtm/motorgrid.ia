@@ -24,12 +24,14 @@ import {
   Legend,
 } from 'recharts';
 import { MetricSummary } from '../../types';
+import { useToast } from '../../context/ToastContext';
 
 interface ReportsViewProps {
   metrics: MetricSummary;
 }
 
 export const ReportsView: React.FC<ReportsViewProps> = ({ metrics }) => {
+  const toast = useToast();
   const [selectedPeriod, setSelectedPeriod] = useState('2026-Q2');
 
   const waterfallData = [
@@ -74,7 +76,20 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ metrics }) => {
           </select>
 
           <button
-            onClick={() => alert('Download do Relatório Completo em formato XLSX iniciado!')}
+            onClick={() => {
+              const headers = "Mes,Novo,Expansao,Churn,Liquido\n";
+              const rows = waterfallData.map(d => `${d.month},${d.Novo},${d.Expansao},${d.Churn},${d.Liquido}`).join("\n");
+              const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.setAttribute('download', `relatorio_financeiro_${selectedPeriod.toLowerCase()}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(url);
+              toast.success(`Relatório (${selectedPeriod}) exportado com sucesso!`);
+            }}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold shadow-lg shadow-[#8B5CF6]/25 transition-all cursor-pointer"
           >
             <Download className="w-4 h-4" />

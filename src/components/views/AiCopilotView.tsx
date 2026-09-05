@@ -18,6 +18,7 @@ import {
   Car,
 } from 'lucide-react';
 import { Customer, MetricSummary } from '../../types';
+import { useToast } from '../../context/ToastContext';
 
 interface AiCopilotViewProps {
   metrics: MetricSummary;
@@ -32,6 +33,7 @@ interface ChatMessage {
 }
 
 export const AiCopilotView: React.FC<AiCopilotViewProps> = ({ metrics, customers }) => {
+  const toast = useToast();
   const [activeModule, setActiveModule] = useState<'chat' | 'diagnostic' | 'drafter' | 'churn'>('chat');
 
   // Chat State
@@ -343,7 +345,7 @@ export const AiCopilotView: React.FC<AiCopilotViewProps> = ({ metrics, customers
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(diagnosticResult);
-                    alert('Relatório copiado!');
+                    toast.success('Relatório copiado para a área de transferência!');
                   }}
                   className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 cursor-pointer"
                 >

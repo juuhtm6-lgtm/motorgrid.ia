@@ -1,0 +1,607 @@
+import {
+  LeadItem,
+  LeadStatus,
+  Vehicle,
+  VehicleStatus,
+  CrmCard,
+  Contact,
+  CrmTask,
+  Appointment,
+  Conversation,
+  AttendanceSummary,
+  AutomationRule,
+} from '../types';
+import { ExecutiveLeadRecord } from '../types/dashboard';
+import {
+  initialLeads,
+  initialVehicles,
+  initialCrmCards,
+  initialContacts,
+  initialCrmTasks,
+  initialAppointments,
+  initialConversations,
+  initialAutomations,
+} from '../data/mockData';
+import { initialExecutiveRecords } from '../data/executiveRecordsData';
+
+const STORAGE_KEYS = {
+  LEADS: 'motorgrid_leads_v2',
+  VEHICLES: 'motorgrid_vehicles_v2',
+  CRM_CARDS: 'motorgrid_crm_cards_v2',
+  CONTACTS: 'motorgrid_contacts_v2',
+  TASKS: 'motorgrid_crm_tasks_v2',
+  APPOINTMENTS: 'motorgrid_appointments_v2',
+  CONVERSATIONS: 'motorgrid_conversations_v2',
+  AUTOMATIONS: 'motorgrid_automations_v2',
+  SCHEDULED_MESSAGES: 'motorgrid_scheduled_messages_v2',
+  DASHBOARD_RECORDS: 'motorgrid_dashboard_records_v2',
+  BROADCASTS: 'motorgrid_broadcasts_v2',
+  MARKETPLACE_MODULES: 'motorgrid_marketplace_modules_v2',
+};
+
+export interface BroadcastCampaignItem {
+  id: string;
+  title: string;
+  sent: number;
+  delivered: string;
+  read: string;
+  leadsGenerated: number;
+  sales: number;
+  status: 'Concluída' | 'Em Andamento' | 'Agendada';
+}
+
+const initialBroadcasts: BroadcastCampaignItem[] = [
+  {
+    id: 'bc-1',
+    title: 'Feirão de Taxa Zero - Linha SUV Premium',
+    sent: 450,
+    delivered: '99.2%',
+    read: '88.4%',
+    leadsGenerated: 38,
+    sales: 4,
+    status: 'Concluída',
+  },
+  {
+    id: 'bc-2',
+    title: 'Resgate de Propostas Antigas (Últimos 60 Dias)',
+    sent: 280,
+    delivered: '98.5%',
+    read: '82.1%',
+    leadsGenerated: 24,
+    sales: 2,
+    status: 'Concluída',
+  },
+];
+
+export interface ScheduledMessageItem {
+  id: string;
+  to: string;
+  time: string;
+  msg: string;
+  car: string;
+  status: 'Pendente' | 'Enviada' | 'Cancelada';
+}
+
+const initialScheduledMessages: ScheduledMessageItem[] = [
+  {
+    id: 'sch-1',
+    to: 'Dr. Roberto Silveira (+55 11 98841-1122)',
+    time: 'Hoje às 17:30 (em 45 min)',
+    msg: 'Olá Dr. Roberto! Lembrando que seu Porsche Macan estará polido e pronto para o Test Drive amanhã às 10:00.',
+    car: 'Porsche Macan GTS',
+    status: 'Pendente',
+  },
+  {
+    id: 'sch-2',
+    to: 'Eduardo Martins (+55 11 97711-2233)',
+    time: 'Amanhã às 09:00',
+    msg: 'Bom dia Eduardo! A aprovação do financiamento BV da sua Toyota Hilux foi concluída com taxa de 1.19% a.m.',
+    car: 'Toyota Hilux GR-Sport',
+    status: 'Pendente',
+  },
+  {
+    id: 'sch-3',
+    to: 'Fernanda Lima (+55 21 99881-4455)',
+    time: 'Sexta-feira às 14:00',
+    msg: 'Olá Fernanda! Chegou uma Mercedes C300 exatamente na cor Branco Polar que você estava procurando.',
+    car: 'Mercedes-Benz C300',
+    status: 'Pendente',
+  },
+];
+
+type StorageListener = () => void;
+
+class StorageService {
+  private listeners: Set<StorageListener> = new Set();
+
+  private getStored<T>(key: string, fallback: T): T {
+    try {
+      const item = localStorage.getItem(key);
+      if (item) {
+        return JSON.parse(item);
+      }
+    } catch (e) {
+      console.error(`Error reading ${key} from storage:`, e);
+    }
+    return fallback;
+  }
+
+  private setStored<T>(key: string, value: T): void {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      this.notify();
+    } catch (e) {
+      console.error(`Error writing ${key} to storage:`, e);
+    }
+  }
+
+  public subscribe(listener: StorageListener): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private notify(): void {
+    this.listeners.forEach((listener) => {
+      try {
+        listener();
+      } catch (err) {
+        console.error('Error in storage listener:', err);
+      }
+    });
+  }
+
+  // ==========================================
+  // 1. LEADS
+  // ==========================================
+  public getLeads(): LeadItem[] {
+    return this.getStored<LeadItem[]>(STORAGE_KEYS.LEADS, initialLeads);
+  }
+
+  public addLead(leadData: Omit<LeadItem, 'id' | 'createdAt' | 'lastContact'>): LeadItem {
+    const leads = this.getLeads();
+    const newLead: LeadItem = {
+      ...leadData,
+      id: `lead-${Date.now()}`,
+      createdAt: 'Hoje',
+      lastContact: 'Criado agora',
+    };
+
+    const updated = [newLead, ...leads];
+    this.setStored(STORAGE_KEYS.LEADS, updated);
+
+    // Also register in Dashboard Records
+    const newRecord: ExecutiveLeadRecord = {
+      id: `rec-${Date.now()}`,
+      contactName: newLead.name,
+      contactPhone: newLead.phone,
+      contactEmail: newLead.email,
+      vehicleId: 'veh-fleet',
+      vehicleName: `${newLead.company} (${newLead.fleetSize} un)`,
+      vehiclePhoto: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=300&auto=format&fit=crop&q=80',
+      vehiclePrice: newLead.estimatedValue,
+      origin: newLead.source || 'WhatsApp',
+      channelType: 'online',
+      assignedTo: newLead.assignedTo || 'Rodrigo Mendes',
+      unitId: 'unit-matriz',
+      storeName: 'Matriz Sorocaba',
+      team: 'Comercial',
+      createdAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      dateOnly: new Date().toISOString().slice(0, 10),
+      firstResponseTimeMinutes: 1.2,
+      isAttended: true,
+      isQualified: true,
+      isScheduled: false,
+      isVisited: false,
+      isProposal: false,
+      status: 'novo',
+      lastInteractionMinutesAgo: 2,
+      daysInFunnel: 0,
+    };
+    this.addDashboardRecord(newRecord);
+
+    return newLead;
+  }
+
+  public updateLead(id: string, partial: Partial<LeadItem>): LeadItem | null {
+    const leads = this.getLeads();
+    let updatedLead: LeadItem | null = null;
+    const updated = leads.map((l) => {
+      if (l.id === id) {
+        updatedLead = { ...l, ...partial };
+        return updatedLead;
+      }
+      return l;
+    });
+
+    if (updatedLead) {
+      this.setStored(STORAGE_KEYS.LEADS, updated);
+    }
+    return updatedLead;
+  }
+
+  public updateLeadStatus(id: string, status: LeadStatus): void {
+    this.updateLead(id, { status });
+  }
+
+  public deleteLead(id: string): void {
+    const leads = this.getLeads();
+    const updated = leads.filter((l) => l.id !== id);
+    this.setStored(STORAGE_KEYS.LEADS, updated);
+  }
+
+  // ==========================================
+  // 2. VEÍCULOS (ESTOQUE)
+  // ==========================================
+  public getVehicles(): Vehicle[] {
+    return this.getStored<Vehicle[]>(STORAGE_KEYS.VEHICLES, initialVehicles);
+  }
+
+  public addVehicle(vehicleData: Omit<Vehicle, 'id'>): Vehicle {
+    const vehicles = this.getVehicles();
+    const newVehicle: Vehicle = {
+      ...vehicleData,
+      id: `veh-${Date.now()}`,
+    };
+    const updated = [newVehicle, ...vehicles];
+    this.setStored(STORAGE_KEYS.VEHICLES, updated);
+    return newVehicle;
+  }
+
+  public updateVehicle(id: string, partial: Partial<Vehicle>): Vehicle | null {
+    const vehicles = this.getVehicles();
+    let updatedVehicle: Vehicle | null = null;
+    const updated = vehicles.map((v) => {
+      if (v.id === id) {
+        updatedVehicle = { ...v, ...partial };
+        return updatedVehicle;
+      }
+      return v;
+    });
+
+    if (updatedVehicle) {
+      this.setStored(STORAGE_KEYS.VEHICLES, updated);
+    }
+    return updatedVehicle;
+  }
+
+  public updateVehicleStatus(id: string, status: VehicleStatus): void {
+    this.updateVehicle(id, { status });
+  }
+
+  public deleteVehicle(id: string): void {
+    const vehicles = this.getVehicles();
+    const updated = vehicles.filter((v) => v.id !== id);
+    this.setStored(STORAGE_KEYS.VEHICLES, updated);
+  }
+
+  // ==========================================
+  // 3. CRM CARDS / PIPELINE DEALS
+  // ==========================================
+  public getCrmCards(): CrmCard[] {
+    return this.getStored<CrmCard[]>(STORAGE_KEYS.CRM_CARDS, initialCrmCards);
+  }
+
+  public addCrmCard(cardData: Omit<CrmCard, 'id' | 'createdAt'>): CrmCard {
+    const cards = this.getCrmCards();
+    const newCard: CrmCard = {
+      ...cardData,
+      id: `crm-${Date.now()}`,
+      createdAt: 'Hoje',
+    };
+    const updated = [newCard, ...cards];
+    this.setStored(STORAGE_KEYS.CRM_CARDS, updated);
+    return newCard;
+  }
+
+  public updateCrmCard(id: string, partial: Partial<CrmCard>): CrmCard | null {
+    const cards = this.getCrmCards();
+    let updatedCard: CrmCard | null = null;
+    const updated = cards.map((c) => {
+      if (c.id === id) {
+        updatedCard = { ...c, ...partial };
+        return updatedCard;
+      }
+      return c;
+    });
+
+    if (updatedCard) {
+      this.setStored(STORAGE_KEYS.CRM_CARDS, updated);
+    }
+    return updatedCard;
+  }
+
+  public moveCardStage(id: string, targetStageId: string): void {
+    this.updateCrmCard(id, { stageId: targetStageId });
+  }
+
+  public markCardWon(id: string, finalPrice?: number): void {
+    this.updateCrmCard(id, {
+      stageId: 'fechamento',
+      vehiclePrice: finalPrice || undefined,
+    });
+  }
+
+  public markCardLost(id: string, lossReason: string): void {
+    this.updateCrmCard(id, {
+      stageId: 'perdido',
+      lossReason,
+    });
+  }
+
+  public deleteCrmCard(id: string): void {
+    const cards = this.getCrmCards();
+    const updated = cards.filter((c) => c.id !== id);
+    this.setStored(STORAGE_KEYS.CRM_CARDS, updated);
+  }
+
+  public getCards(): CrmCard[] {
+    return this.getCrmCards();
+  }
+
+  public saveCards(cards: CrmCard[]): void {
+    this.setStored(STORAGE_KEYS.CRM_CARDS, cards);
+  }
+
+  // ==========================================
+  // 4. CONTATOS 360º
+  // ==========================================
+  public getContacts(): Contact[] {
+    return this.getStored<Contact[]>(STORAGE_KEYS.CONTACTS, initialContacts);
+  }
+
+  public addContact(contactData: Omit<Contact, 'id' | 'createdAt' | 'status' | 'totalPurchases' | 'vehiclesConsulted'>): Contact {
+    const contacts = this.getContacts();
+    const newContact: Contact = {
+      ...contactData,
+      id: `ct-${Date.now()}`,
+      createdAt: 'Hoje',
+      status: 'Ativo',
+      totalPurchases: 0,
+      vehiclesConsulted: [],
+    };
+    const updated = [newContact, ...contacts];
+    this.setStored(STORAGE_KEYS.CONTACTS, updated);
+    return newContact;
+  }
+
+  public updateContact(id: string, partial: Partial<Contact>): Contact | null {
+    const contacts = this.getContacts();
+    let updatedContact: Contact | null = null;
+    const updated = contacts.map((c) => {
+      if (c.id === id) {
+        updatedContact = { ...c, ...partial };
+        return updatedContact;
+      }
+      return c;
+    });
+
+    if (updatedContact) {
+      this.setStored(STORAGE_KEYS.CONTACTS, updated);
+    }
+    return updatedContact;
+  }
+
+  public deleteContact(id: string): void {
+    const contacts = this.getContacts();
+    const updated = contacts.filter((c) => c.id !== id);
+    this.setStored(STORAGE_KEYS.CONTACTS, updated);
+  }
+
+  // ==========================================
+  // 5. TAREFAS COMERCIAIS
+  // ==========================================
+  public getCrmTasks(): CrmTask[] {
+    return this.getStored<CrmTask[]>(STORAGE_KEYS.TASKS, initialCrmTasks);
+  }
+
+  public addCrmTask(taskData: Omit<CrmTask, 'id'>): CrmTask {
+    const tasks = this.getCrmTasks();
+    const newTask: CrmTask = {
+      ...taskData,
+      id: `task-${Date.now()}`,
+    };
+    const updated = [newTask, ...tasks];
+    this.setStored(STORAGE_KEYS.TASKS, updated);
+    return newTask;
+  }
+
+  public toggleCrmTaskStatus(id: string): void {
+    const tasks = this.getCrmTasks();
+    const updated = tasks.map((t) =>
+      t.id === id
+        ? { ...t, status: (t.status === 'Concluída' ? 'Hoje' : 'Concluída') as CrmTask['status'] }
+        : t
+    );
+    this.setStored(STORAGE_KEYS.TASKS, updated);
+  }
+
+  public deleteCrmTask(id: string): void {
+    const tasks = this.getCrmTasks();
+    const updated = tasks.filter((t) => t.id !== id);
+    this.setStored(STORAGE_KEYS.TASKS, updated);
+  }
+
+  // ==========================================
+  // 6. AGENDAMENTOS VIP
+  // ==========================================
+  public getAppointments(): Appointment[] {
+    return this.getStored<Appointment[]>(STORAGE_KEYS.APPOINTMENTS, initialAppointments);
+  }
+
+  public addAppointment(aptData: Omit<Appointment, 'id'>): Appointment {
+    const appointments = this.getAppointments();
+    const newApt: Appointment = {
+      ...aptData,
+      id: `apt-${Date.now()}`,
+    };
+    const updated = [newApt, ...appointments];
+    this.setStored(STORAGE_KEYS.APPOINTMENTS, updated);
+    return newApt;
+  }
+
+  public deleteAppointment(id: string): void {
+    const appointments = this.getAppointments();
+    const updated = appointments.filter((a) => a.id !== id);
+    this.setStored(STORAGE_KEYS.APPOINTMENTS, updated);
+  }
+
+  // ==========================================
+  // 7. CONVERSAS & ATENDIMENTO
+  // ==========================================
+  public getConversations(): Conversation[] {
+    return this.getStored<Conversation[]>(STORAGE_KEYS.CONVERSATIONS, initialConversations);
+  }
+
+  public updateConversations(conversations: Conversation[]): void {
+    this.setStored(STORAGE_KEYS.CONVERSATIONS, conversations);
+  }
+
+  public addMessageToConversation(convId: string, message: any): void {
+    const convs = this.getConversations();
+    const updated = convs.map((c) => {
+      if (c.id === convId) {
+        return {
+          ...c,
+          lastMessage: message.text,
+          lastMessageTime: 'Agora',
+          unreadCount: 0,
+          messages: [...c.messages, message],
+        };
+      }
+      return c;
+    });
+    this.setStored(STORAGE_KEYS.CONVERSATIONS, updated);
+  }
+
+  public updateConversation(convId: string, partial: Partial<Conversation>): void {
+    const convs = this.getConversations();
+    const updated = convs.map((c) => (c.id === convId ? { ...c, ...partial } : c));
+    this.setStored(STORAGE_KEYS.CONVERSATIONS, updated);
+  }
+
+  public sendMessage(convId: string, textOrMsg: any, sender: string = 'agent', senderName?: string, extra?: any): void {
+    const msgObj = typeof textOrMsg === 'string'
+      ? {
+          id: `msg-${Date.now()}`,
+          sender: sender || 'agent',
+          senderName: senderName || 'Você',
+          text: textOrMsg,
+          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          status: 'sent',
+          ...(extra || {}),
+        }
+      : {
+          id: `msg-${Date.now()}`,
+          sender: sender || 'agent',
+          senderName: senderName || 'Você',
+          timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          status: 'sent',
+          ...textOrMsg,
+          ...(extra || {}),
+        };
+    this.addMessageToConversation(convId, msgObj);
+  }
+
+  // ==========================================
+  // 8. AUTOMAÇÕES
+  // ==========================================
+  public getAutomations(): AutomationRule[] {
+    return this.getStored<AutomationRule[]>(STORAGE_KEYS.AUTOMATIONS, initialAutomations);
+  }
+
+  public addAutomation(ruleData: Omit<AutomationRule, 'id' | 'executionsCount' | 'lastExecuted'>): AutomationRule {
+    const rules = this.getAutomations();
+    const newRule: AutomationRule = {
+      ...ruleData,
+      id: `auto-${Date.now()}`,
+      executionsCount: 0,
+      lastExecuted: 'Criado agora',
+    };
+    const updated = [newRule, ...rules];
+    this.setStored(STORAGE_KEYS.AUTOMATIONS, updated);
+    return newRule;
+  }
+
+  public toggleAutomation(id: string): boolean {
+    const rules = this.getAutomations();
+    let newState = false;
+    const updated = rules.map((r) => {
+      if (r.id === id) {
+        newState = !r.enabled;
+        return { ...r, enabled: newState };
+      }
+      return r;
+    });
+    this.setStored(STORAGE_KEYS.AUTOMATIONS, updated);
+    return newState;
+  }
+
+  public deleteAutomation(id: string): void {
+    const rules = this.getAutomations();
+    const updated = rules.filter((r) => r.id !== id);
+    this.setStored(STORAGE_KEYS.AUTOMATIONS, updated);
+  }
+
+  // ==========================================
+  // 9. MENSAGENS AGENDADAS
+  // ==========================================
+  public getScheduledMessages(): ScheduledMessageItem[] {
+    return this.getStored<ScheduledMessageItem[]>(STORAGE_KEYS.SCHEDULED_MESSAGES, initialScheduledMessages);
+  }
+
+  public cancelScheduledMessage(id: string): void {
+    const msgs = this.getScheduledMessages();
+    const updated = msgs.filter((m) => m.id !== id);
+    this.setStored(STORAGE_KEYS.SCHEDULED_MESSAGES, updated);
+  }
+
+  // ==========================================
+  // 10. DASHBOARD EXECUTIVE RECORDS
+  // ==========================================
+  public getDashboardRecords(): ExecutiveLeadRecord[] {
+    return this.getStored<ExecutiveLeadRecord[]>(STORAGE_KEYS.DASHBOARD_RECORDS, initialExecutiveRecords);
+  }
+
+  public addDashboardRecord(record: ExecutiveLeadRecord): void {
+    const records = this.getDashboardRecords();
+    const updated = [record, ...records];
+    this.setStored(STORAGE_KEYS.DASHBOARD_RECORDS, updated);
+  }
+
+  // ==========================================
+  // 11. CAMPANHAS DE TRANSMISSÃO
+  // ==========================================
+  public getBroadcastCampaigns(): BroadcastCampaignItem[] {
+    return this.getStored<BroadcastCampaignItem[]>(STORAGE_KEYS.BROADCASTS, initialBroadcasts);
+  }
+
+  public addBroadcastCampaign(title: string): BroadcastCampaignItem {
+    const broadcasts = this.getBroadcastCampaigns();
+    const newBc: BroadcastCampaignItem = {
+      id: `bc-${Date.now()}`,
+      title,
+      sent: 120,
+      delivered: '100%',
+      read: '92.5%',
+      leadsGenerated: 14,
+      sales: 1,
+      status: 'Concluída',
+    };
+    const updated = [newBc, ...broadcasts];
+    this.setStored(STORAGE_KEYS.BROADCASTS, updated);
+    return newBc;
+  }
+
+  // ==========================================
+  // 12. MARKETPLACE DE MÓDULOS
+  // ==========================================
+  public getMarketplaceModules<T>(defaultModules: T[]): T[] {
+    return this.getStored<T[]>(STORAGE_KEYS.MARKETPLACE_MODULES, defaultModules);
+  }
+
+  public saveMarketplaceModules<T>(modules: T[]): void {
+    this.setStored(STORAGE_KEYS.MARKETPLACE_MODULES, modules);
+  }
+}
+
+export const storageService = new StorageService();

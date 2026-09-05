@@ -20,6 +20,7 @@ import {
 import confetti from 'canvas-confetti';
 import { AuthUser, UserRole, PlanTier } from '../../types';
 import { MotorGridLogo } from '../MotorGridLogo';
+import { useToast } from '../../context/ToastContext';
 
 interface AuthPortalProps {
   onLogin: (user: AuthUser) => void;
@@ -32,6 +33,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
   onRegister,
   availableUsers,
 }) => {
+  const toast = useToast();
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
   // Login Form States
@@ -307,7 +309,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
                       <label className="text-zinc-300 font-semibold">Senha de Acesso</label>
                       <button
                         type="button"
-                        onClick={() => alert('Instruções de recuperação de senha enviadas para o e-mail corporativo.')}
+                        onClick={() => toast.info('Instruções de recuperação de senha enviadas para o e-mail corporativo.')}
                         className="text-[11px] text-[#A78BFA] hover:text-[#C4B5FD] font-semibold cursor-pointer"
                       >
                         Esqueceu a senha?

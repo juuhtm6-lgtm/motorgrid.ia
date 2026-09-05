@@ -45,6 +45,8 @@ import { TransferChatModal } from '../modals/TransferChatModal';
 import { ScheduleAppointmentModal } from '../modals/ScheduleAppointmentModal';
 import { AIFinancingSimulatorModal } from '../modals/AIFinancingSimulatorModal';
 import { LeadAttendanceSummaryCard } from '../atendimento/LeadAttendanceSummaryCard';
+import { storageService } from '../../services/storageService';
+import { useToast } from '../../context/ToastContext';
 
 interface ChannelConfigItem {
   id: string;
@@ -228,7 +230,16 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
   initialConversationId,
   initialLeadPhone,
 }) => {
-  const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
+  const toast = useToast();
+  const [conversations, setConversations] = useState<Conversation[]>(() => storageService.getConversations());
+
+  // Keep conversations synced with central storageService
+  useEffect(() => {
+    const unsub = storageService.subscribe(() => {
+      setConversations(storageService.getConversations());
+    });
+    return unsub;
+  }, []);
   const [selectedConvId, setSelectedConvId] = useState<string>(() => {
     if (initialConversationId) {
       const match = initialConversations.find(
@@ -399,29 +410,7 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
     const text = textToSend || inputText;
     if (!text.trim()) return;
 
-    const newMsg = {
-      id: `msg-${Date.now()}`,
-      sender: 'agent' as const,
-      senderName: 'Você (Operador MotorGrid)',
-      text: text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setConversations((prev) =>
-      prev.map((c) => {
-        if (c.id === selectedConvId) {
-          return {
-            ...c,
-            status: 'Em Atendimento',
-            lastMessage: text,
-            lastMessageTime: 'Agora',
-            unreadCount: 0,
-            messages: [...c.messages, newMsg],
-          };
-        }
-        return c;
-      })
-    );
+    storageService.sendMessage(selectedConvId, text, 'agent', 'Você (Operador MotorGrid)');
 
     if (!textToSend) {
       setInputText('');
@@ -431,66 +420,40 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
   };
 
   const handleUpdateSummary = (convId: string, updatedSummary: AttendanceSummary) => {
-    setConversations((prev) =>
-      prev.map((c) => (c.id === convId ? { ...c, summary: updatedSummary } : c))
-    );
+    storageService.updateConversation(convId, { summary: updatedSummary });
+    toast.success('Resumo do atendimento atualizado com sucesso!');
   };
 
   const handleSimulateVoiceRecording = () => {
     if (isRecordingAudio) {
       setIsRecordingAudio(false);
-      const voiceMsg = {
-        id: `msg-${Date.now()}`,
-        sender: 'agent' as const,
-        senderName: 'Você (Operador MotorGrid)',
-        text: '🔊 [Mensagem de Voz - 0:18]',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        audioUrl: 'https://actions.google.com/sounds/v1/speech/greeting.ogg',
-        audioDuration: '0:18',
-        audioTranscription: 'Olá! Enviei a ficha técnica da BMW 320i M Sport e a simulação de financiamento no seu WhatsApp.',
-      };
-
-      setConversations((prev) =>
-        prev.map((c) => {
-          if (c.id === selectedConvId) {
-            return {
-              ...c,
-              lastMessage: '🔊 Áudio (0:18)',
-              lastMessageTime: 'Agora',
-              messages: [...c.messages, voiceMsg],
-            };
-          }
-          return c;
-        })
+      storageService.sendMessage(
+        selectedConvId,
+        '🔊 [Mensagem de Voz - 0:18]',
+        'agent',
+        'Você (Operador MotorGrid)',
+        {
+          audioUrl: 'https://actions.google.com/sounds/v1/speech/greeting.ogg',
+          audioDuration: '0:18',
+          audioTranscription: 'Olá! Enviei a ficha técnica da BMW 320i M Sport e a simulação de financiamento no seu WhatsApp.',
+        }
       );
+      toast.success('Mensagem de voz enviada com sucesso!');
     } else {
       setIsRecordingAudio(true);
+      toast.info('Gravando áudio... Clique novamente no ícone de microfone para enviar.');
     }
   };
 
   const handleSendAttachment = (type: string, name: string) => {
     setShowAttachMenu(false);
-    const newMsg = {
-      id: `msg-${Date.now()}`,
-      sender: 'agent' as const,
-      senderName: 'Você (Operador MotorGrid)',
-      text: `📎 [Documento Enviado]: ${name}`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setConversations((prev) =>
-      prev.map((c) => {
-        if (c.id === selectedConvId) {
-          return {
-            ...c,
-            lastMessage: `📎 ${name}`,
-            lastMessageTime: 'Agora',
-            messages: [...c.messages, newMsg],
-          };
-        }
-        return c;
-      })
+    storageService.sendMessage(
+      selectedConvId,
+      `📎 [Documento Enviado]: ${name}`,
+      'agent',
+      'Você (Operador MotorGrid)'
     );
+    toast.success(`Anexo enviado: ${name}`);
   };
 
   const getTemperatureBadge = (temp?: LeadTemperature) => {
@@ -564,28 +527,25 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
         leadName={selectedConv?.contactName}
         currentAssignedTo={selectedConv?.assignedTo}
         onTransfer={(targetUser, reason) => {
-          setConversations((prev) =>
-            prev.map((c) =>
-              c.id === selectedConvId
-                ? {
-                    ...c,
-                    assignedTo: targetUser.name,
-                    assignedUserRole: targetUser.role,
-                    events: [
-                      ...c.events,
-                      {
-                        id: `ev-${Date.now()}`,
-                        type: 'transferred',
-                        title: `Atendimento Transferido para ${targetUser.name}`,
-                        description: `Motivo: ${reason}`,
-                        timestamp: 'Agora mesmo',
-                        authorName: 'Você (Operador)',
-                      },
-                    ],
-                  }
-                : c
-            )
-          );
+          const conv = storageService.getConversations().find((c) => c.id === selectedConvId);
+          if (conv) {
+            storageService.updateConversation(selectedConvId, {
+              assignedTo: targetUser.name,
+              assignedUserRole: targetUser.role,
+              events: [
+                ...conv.events,
+                {
+                  id: `ev-${Date.now()}`,
+                  type: 'transferred',
+                  title: `Atendimento Transferido para ${targetUser.name}`,
+                  description: `Motivo: ${reason}`,
+                  timestamp: 'Agora mesmo',
+                  authorName: 'Você (Operador)',
+                },
+              ],
+            });
+            toast.success(`Atendimento transferido com sucesso para ${targetUser.name}!`);
+          }
         }}
       />
 
@@ -616,38 +576,39 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
 
 🚗 *Recepção Exclusiva:* Estacionamento e manobrista liberados. Aguardamos sua visita!`;
 
-          setConversations((prev) =>
-            prev.map((c) => {
-              if (c.id === selectedConvId) {
-                const newMsg = {
-                  id: `msg-${Date.now()}`,
-                  sender: 'agent' as const,
-                  senderName: 'Você (Operador)',
-                  text: confirmMsg,
-                  timestamp: apt.time,
-                };
+          // Add to central appointments
+          storageService.addAppointment(apt);
 
-                return {
-                  ...c,
-                  messages: [...c.messages, newMsg],
-                  lastMessage: `📅 ${apt.type} agendado para ${formattedDateBr} às ${apt.time}`,
-                  lastMessageTime: 'Agora',
-                  events: [
-                    ...c.events,
-                    {
-                      id: `ev-${Date.now()}`,
-                      type: 'appointment_created',
-                      title: `${apt.type} Agendado para ${formattedDateBr} às ${apt.time}`,
-                      description: `Showroom: ${apt.storeUnit}. Vendedor: ${apt.sellerName}`,
-                      timestamp: 'Agora mesmo',
-                      authorName: 'Você (Operador)',
-                    },
-                  ],
-                };
-              }
-              return c;
-            })
-          );
+          // Update conversation
+          const conv = storageService.getConversations().find((c) => c.id === selectedConvId);
+          if (conv) {
+            const newMsg = {
+              id: `msg-${Date.now()}`,
+              sender: 'agent' as const,
+              senderName: 'Você (Operador)',
+              text: confirmMsg,
+              timestamp: apt.time,
+            };
+
+            storageService.updateConversation(selectedConvId, {
+              messages: [...conv.messages, newMsg],
+              lastMessage: `📅 ${apt.type} agendado para ${formattedDateBr} às ${apt.time}`,
+              lastMessageTime: 'Agora',
+              events: [
+                ...conv.events,
+                {
+                  id: `ev-${Date.now()}`,
+                  type: 'appointment_created',
+                  title: `${apt.type} Agendado para ${formattedDateBr} às ${apt.time}`,
+                  description: `Showroom: ${apt.storeUnit}. Vendedor: ${apt.sellerName}`,
+                  timestamp: 'Agora mesmo',
+                  authorName: 'Você (Operador)',
+                },
+              ],
+            });
+          }
+
+          toast.success(`Visita/Test Drive para ${apt.contactName} agendada com sucesso!`);
         }}
       />
 

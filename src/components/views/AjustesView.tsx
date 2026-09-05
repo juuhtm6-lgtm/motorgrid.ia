@@ -14,20 +14,99 @@ import {
   MapPin,
   Store,
   Sparkles,
+  X,
 } from 'lucide-react';
 import { initialAuthUsers, initialTenants } from '../../data/mockData';
 import { AuthUser, TenantUnit } from '../../types';
 import { MarketplaceView } from './MarketplaceView';
+import { useToast } from '../../context/ToastContext';
 
 export const AjustesView: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'marketplace' | 'empresa' | 'unidades' | 'usuarios' | 'sla' | 'auditoria'>('marketplace');
   const [users, setUsers] = useState<AuthUser[]>(initialAuthUsers);
+  const [units, setUnits] = useState<TenantUnit[]>(initialTenants[0].units);
   const [tenantName, setTenantName] = useState('MotorGrid Motors Premium');
   const [cnpj, setCnpj] = useState('12.345.678/0001-90');
   const [phone, setPhone] = useState('+55 (11) 3090-9900');
   const [email, setEmail] = useState('contato@motorgridmotors.com.br');
   const [slaTargetMin, setSlaTargetMin] = useState(3);
   const [plan, setPlan] = useState('Enterprise Multi-Store');
+
+  // New Unit Modal
+  const [isNewUnitModalOpen, setIsNewUnitModalOpen] = useState(false);
+  const [newUnitName, setNewUnitName] = useState('');
+  const [newUnitAddress, setNewUnitAddress] = useState('');
+  const [newUnitPhone, setNewUnitPhone] = useState('');
+
+  // Invite User Modal
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'Gestor Geral' | 'Vendedor Sênior' | 'SDR de Pré-Vendas'>('Vendedor Sênior');
+
+  const handleSaveEmpresa = () => {
+    toast.success('Dados da concessionária atualizados com sucesso!');
+  };
+
+  const handleAddUnit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUnitName) return;
+    const newUnit: TenantUnit = {
+      id: `unit-${Date.now()}`,
+      name: newUnitName,
+      city: 'São Paulo',
+      state: 'SP',
+      address: newUnitAddress || 'Endereço Comercial',
+      phone: newUnitPhone || '+55 (11) 3000-0000',
+      vehicleCount: 0,
+      sellersCount: 1,
+    };
+    setUnits((prev) => [...prev, newUnit]);
+    setNewUnitName('');
+    setNewUnitAddress('');
+    setNewUnitPhone('');
+    setIsNewUnitModalOpen(false);
+    toast.success(`Unidade "${newUnit.name}" cadastrada com sucesso!`);
+  };
+
+  const handleInviteUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteName || !inviteEmail) return;
+    const newUser: AuthUser = {
+      id: `usr-${Date.now()}`,
+      name: inviteName,
+      email: inviteEmail,
+      role: inviteRole,
+      team: 'Showroom Principal',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      company: 'MotorGrid Auto',
+      plan: 'Enterprise',
+      lastLogin: 'Nunca',
+      createdAt: 'Hoje',
+      status: 'Ativo',
+    };
+    setUsers((prev) => [...prev, newUser]);
+    setInviteName('');
+    setInviteEmail('');
+    setIsInviteModalOpen(false);
+    toast.success(`Convite enviado para ${newUser.email} com o perfil ${newUser.role}!`);
+  };
+
+  const handleToggleUserRole = (userId: string, currentRole: string) => {
+    const roles: ('Gestor Geral' | 'Vendedor Sênior' | 'SDR de Pré-Vendas')[] = [
+      'Gestor Geral',
+      'Vendedor Sênior',
+      'SDR de Pré-Vendas',
+    ];
+    const currentIndex = roles.indexOf(currentRole as any);
+    const nextRole = roles[(currentIndex + 1) % roles.length];
+
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, role: nextRole } : u))
+    );
+    toast.success(`Permissões atualizadas para "${nextRole}".`);
+  };
 
   return (
     <div className="space-y-6">
@@ -42,7 +121,7 @@ export const AjustesView: React.FC = () => {
           }`}
         >
           <Store className="w-3.5 h-3.5" />
-          <span>App Marketplace</span>
+          <span>Marketplace de Módulos</span>
         </button>
         <button
           onClick={() => setActiveTab('empresa')}
@@ -153,7 +232,7 @@ export const AjustesView: React.FC = () => {
 
           <div className="pt-4 border-t border-zinc-800 flex justify-end">
             <button
-              onClick={() => alert('Dados da concessionária atualizados com sucesso!')}
+              onClick={handleSaveEmpresa}
               className="px-5 py-2.5 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
             >
               <Save className="w-4 h-4" />
@@ -171,7 +250,7 @@ export const AjustesView: React.FC = () => {
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-base">Showrooms &amp; Lojas Conectadas</h3>
             <button
-              onClick={() => alert('Cadastrar nova unidade')}
+              onClick={() => setIsNewUnitModalOpen(true)}
               className="px-3.5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -180,7 +259,7 @@ export const AjustesView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {initialTenants[0].units.map((unit) => (
+            {units.map((unit) => (
               <div
                 key={unit.id}
                 className="p-5 rounded-2xl bg-[#1C1C1E] border border-zinc-800 space-y-3 text-xs"
@@ -214,7 +293,7 @@ export const AjustesView: React.FC = () => {
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-base">Controle de Acesso &amp; Papéis (RBAC)</h3>
             <button
-              onClick={() => alert('Convidar novo usuário para a equipe')}
+              onClick={() => setIsInviteModalOpen(true)}
               className="px-3.5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -260,10 +339,11 @@ export const AjustesView: React.FC = () => {
                     </td>
                     <td className="p-3 text-right">
                       <button
-                        onClick={() => alert(`Editar permissões de ${u.name}`)}
+                        onClick={() => handleToggleUserRole(u.id, u.role)}
                         className="px-2.5 py-1 rounded-lg bg-[#0A0A0B] hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-[11px] transition-colors cursor-pointer"
+                        title="Clique para alternar papel de acesso"
                       >
-                        Editar
+                        Alternar Papel
                       </button>
                     </td>
                   </tr>
@@ -327,6 +407,139 @@ export const AjustesView: React.FC = () => {
                 <span className="text-[10px] text-zinc-500 font-mono">{log.time}</span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Nova Unidade */}
+      {isNewUnitModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[#1C1C1E] border border-zinc-800 p-5 space-y-4 text-xs shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <h3 className="font-bold text-white text-sm">Cadastrar Nova Unidade</h3>
+              <button
+                onClick={() => setIsNewUnitModalOpen(false)}
+                className="text-zinc-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleAddUnit} className="space-y-3">
+              <div>
+                <label className="block text-zinc-300 font-semibold mb-1">Nome da Unidade *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: MotorGrid Alphaville"
+                  value={newUnitName}
+                  onChange={(e) => setNewUnitName(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-300 font-semibold mb-1">Endereço</label>
+                <input
+                  type="text"
+                  placeholder="Av. das Américas, 5000"
+                  value={newUnitAddress}
+                  onChange={(e) => setNewUnitAddress(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-300 font-semibold mb-1">Telefone da Loja</label>
+                <input
+                  type="text"
+                  placeholder="+55 (11) 3333-4444"
+                  value={newUnitPhone}
+                  onChange={(e) => setNewUnitPhone(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+                <button
+                  type="button"
+                  onClick={() => setIsNewUnitModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold cursor-pointer"
+                >
+                  Salvar Unidade
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Convidar Usuário */}
+      {isInviteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl bg-[#1C1C1E] border border-zinc-800 p-5 space-y-4 text-xs shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <h3 className="font-bold text-white text-sm">Convidar Membro da Equipe</h3>
+              <button
+                onClick={() => setIsInviteModalOpen(false)}
+                className="text-zinc-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleInviteUser} className="space-y-3">
+              <div>
+                <label className="block text-zinc-300 font-semibold mb-1">Nome Completo *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Lucas Ferreira"
+                  value={inviteName}
+                  onChange={(e) => setInviteName(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-300 font-semibold mb-1">E-mail Corporativo *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="lucas@motorgrid.com.br"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-300 font-semibold mb-1">Perfil de Acesso (Papel)</label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value as any)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white outline-none"
+                >
+                  <option value="Gestor Geral">Gestor Geral</option>
+                  <option value="Vendedor Sênior">Vendedor Sênior</option>
+                  <option value="SDR de Pré-Vendas">SDR de Pré-Vendas</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+                <button
+                  type="button"
+                  onClick={() => setIsInviteModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold cursor-pointer"
+                >
+                  Enviar Convite
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

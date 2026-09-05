@@ -15,8 +15,10 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { initialAuthUsers } from '../../data/mockData';
+import { useToast } from '../../context/ToastContext';
 
 export const RelatoriosView: React.FC = () => {
+  const toast = useToast();
   const [period, setPeriod] = useState<'Hoje' | 'Esta Semana' | 'Este Mês' | 'Ano 2026'>('Este Mês');
 
   const funnelData = [
@@ -34,6 +36,21 @@ export const RelatoriosView: React.FC = () => {
     { source: 'iCarros & OLX', leads: 19, sales: 2, revenue: 640000, cpl: 'R$ 38,00', roas: '7.8x' },
     { source: 'Indicação / Showroom', leads: 8, sales: 0, revenue: 0, cpl: 'R$ 0,00', roas: '-' },
   ];
+
+  const handleExportReport = () => {
+    const headers = "Origem,Leads,Vendas,Faturamento,CPL,ROAS\n";
+    const rows = sourceData.map(s => `"${s.source}",${s.leads},${s.sales},${s.revenue},"${s.cpl}","${s.roas}"`).join("\n");
+    const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `relatorio_comercial_motorgrid_${period.toLowerCase().replace(/\s+/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`Relatório (${period}) exportado com sucesso em formato CSV!`);
+  };
 
   return (
     <div className="space-y-6">
@@ -62,7 +79,7 @@ export const RelatoriosView: React.FC = () => {
           </div>
 
           <button
-            onClick={() => alert('Exportando relatório em PDF e Excel...')}
+            onClick={handleExportReport}
             className="px-3 py-2 rounded-xl bg-[#1C1C1E] hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-[#C4B5FD]" />

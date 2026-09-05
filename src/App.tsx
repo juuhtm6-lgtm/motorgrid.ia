@@ -79,7 +79,7 @@ export default function App() {
     } catch (e) {
       console.error('Error reading current user:', e);
     }
-    return null;
+    return initialAuthUsers[0] || null;
   });
 
   // Modal States

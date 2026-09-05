@@ -150,7 +150,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
     <div
       id="motorgrid-login-root"
       className={`min-h-screen w-full flex flex-col justify-between overflow-x-hidden transition-colors duration-300 ${
-        theme === 'dark' ? 'bg-[#0A0A0B] text-zinc-100' : 'bg-[#F6F7FB] text-[#111827]'
+        theme === 'dark' ? 'bg-[#0A0A0B] text-zinc-100' : 'bg-[#F8FAFC] text-[#0F172A]'
       }`}
     >
       {/* Top Header Bar with Theme Toggle */}
@@ -161,7 +161,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
             <MotorGridIcon className="w-6 h-6" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-sm tracking-tight">MotorGrid</span>
+            <span className="font-bold text-sm tracking-tight text-white dark:text-white">MotorGrid</span>
             <span className="text-[8px] font-semibold tracking-widest uppercase opacity-70 text-[#8B5CF6]">
               Automotive Command
             </span>
@@ -177,10 +177,10 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
               type="button"
               id="btn-login-header-plans"
               onClick={onNavigateToPlans}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+              className={`text-xs font-semibold px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
                 theme === 'dark'
                   ? 'text-zinc-300 hover:text-white bg-[#1C1C1E] hover:bg-[#27272A] border border-white/10'
-                  : 'text-[#475569] hover:text-[#111827] bg-white hover:bg-[#F1F5F9] border border-[#DCE3EC]'
+                  : 'text-[#475569] hover:text-[#0F172A] bg-white hover:bg-[#F8FAFC] border border-[#E2E8F0] shadow-sm'
               }`}
             >
               Conhecer Planos & ROI
@@ -195,7 +195,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
             className={`p-2.5 rounded-xl border transition-all cursor-pointer group flex items-center justify-center shadow-sm ${
               theme === 'dark'
                 ? 'bg-[#1C1C1E] hover:bg-[#27272A] border-white/10 hover:border-[#8B5CF6] text-[#A1A1AA] hover:text-white'
-                : 'bg-white hover:bg-[#F1F5F9] border-[#DCE3EC] hover:border-[#8B5CF6] text-[#64748B] hover:text-[#111827]'
+                : 'bg-white hover:bg-[#F8FAFC] border-[#E2E8F0] hover:border-[#8B5CF6] text-[#64748B] hover:text-[#0F172A]'
             }`}
             title={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
             aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
@@ -214,7 +214,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
           {/* ============================================================ */}
-          {/* LADO ESQUERDO (55%) — IDENTIDADE MOTORGRID                   */}
+          {/* LADO ESQUERDO (55%) — IDENTIDADE MOTORGRID (DARK PERMANENTE) */}
           {/* ============================================================ */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -226,9 +226,15 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
             <div className="absolute -top-16 -left-16 w-96 h-96 bg-[#8B5CF6]/15 rounded-full blur-3xl pointer-events-none -z-10" />
             <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#6D28D9]/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
-            {/* Emblem Card Container with Subtle Lighting */}
-            <div className="relative p-6 sm:p-10 rounded-3xl overflow-hidden border border-[rgba(139,92,246,0.25)] bg-gradient-to-br from-[#120F24]/90 via-[#0E0C1B]/95 to-[#08070F]/95 shadow-2xl backdrop-blur-xl text-white">
-              
+            {/* Emblem Card Container with Subtle Lighting - Permanent Dark Brand Panel */}
+            <div
+              id="motorgrid-brand-panel"
+              className="relative p-6 sm:p-10 rounded-3xl overflow-hidden border border-[rgba(139,92,246,0.25)] shadow-2xl backdrop-blur-xl"
+              style={{
+                background: 'linear-gradient(135deg, rgba(18, 15, 36, 0.95) 0%, rgba(14, 12, 27, 0.98) 50%, rgba(8, 7, 15, 0.98) 100%)',
+                color: '#FFFFFF',
+              }}
+            >
               {/* Subtle Tech Grid Overlay */}
               <div
                 className="absolute inset-0 opacity-[0.07] pointer-events-none"
@@ -239,18 +245,32 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
               />
 
               {/* Top Discreet Tag */}
-              <div className="flex items-center gap-2 mb-8">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#8B5CF6]/20 border border-[#8B5CF6]/40 text-[#DDD6FE] text-xs font-semibold tracking-wide shadow-sm">
+              <div className="flex items-center gap-2 mb-8 relative z-10">
+                <span
+                  className="brand-badge-ai inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide shadow-sm"
+                  style={{
+                    backgroundColor: 'rgba(139, 92, 246, 0.20)',
+                    border: '1px solid rgba(139, 92, 246, 0.40)',
+                    color: '#DDD6FE',
+                  }}
+                >
                   <Sparkles className="w-3.5 h-3.5 text-[#A78BFA] animate-pulse" />
                   ✦ Powered by Grid AI
                 </span>
-                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-zinc-400 border border-white/10">
+                <span
+                  className="brand-badge-version hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-mono border"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(255, 255, 255, 0.10)',
+                    color: '#CBD5E1',
+                  }}
+                >
                   v2.8 Automotive OS
                 </span>
               </div>
 
               {/* [EMBLEMA MOTORGRID] Official Emblem Hero */}
-              <div className="flex items-center gap-5 mb-6">
+              <div className="flex items-center gap-5 mb-6 relative z-10">
                 <div className="relative flex items-center justify-center p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#1C1533] to-[#0D0A1A] border border-[#8B5CF6]/50 shadow-xl shadow-[#8B5CF6]/25 group">
                   {/* Subtle pulsing glow ring */}
                   <div className="absolute -inset-0.5 bg-[#8B5CF6]/30 rounded-2xl blur-sm -z-10 animate-pulse" />
@@ -259,61 +279,151 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
 
                 <div className="flex flex-col justify-center">
                   <div className="flex items-baseline">
-                    <span className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-['Inter',sans-serif]">
+                    <span
+                      className="brand-logo-text text-3xl sm:text-4xl font-extrabold tracking-tight font-['Inter',sans-serif]"
+                      style={{ color: '#FFFFFF' }}
+                    >
                       MotorGrid
                     </span>
                   </div>
-                  <span className="font-bold uppercase text-[#A78BFA] text-xs sm:text-sm tracking-[0.28em] mt-1 font-['Inter',sans-serif]">
+                  <span
+                    className="brand-subtitle font-bold uppercase text-xs sm:text-sm tracking-[0.28em] mt-1 font-['Inter',sans-serif]"
+                    style={{ color: '#A78BFA' }}
+                  >
                     AUTOMOTIVE COMMAND
                   </span>
                 </div>
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-snug mb-4">
+              <h1
+                className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight leading-snug mb-4 relative z-10"
+                style={{ color: '#FFFFFF' }}
+              >
                 Inteligência que move{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C4B5FD] via-[#A78BFA] to-[#8B5CF6]">
+                <span
+                  className="brand-headline-accent text-transparent bg-clip-text bg-gradient-to-r from-[#C4B5FD] via-[#A78BFA] to-[#8B5CF6]"
+                  style={{ color: '#A78BFA' }}
+                >
                   sua operação.
                 </span>
               </h1>
 
               {/* Complementary Description */}
-              <p className="text-sm sm:text-base text-zinc-300 leading-relaxed mb-8 max-w-xl">
+              <p
+                className="brand-desc text-sm sm:text-base leading-relaxed mb-8 max-w-xl relative z-10"
+                style={{ color: '#CBD5E1' }}
+              >
                 Centralize atendimento, leads, estoque, vendas e performance em um único ecossistema automotivo inteligente.
               </p>
 
               {/* Operational Capabilities Feature Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-white/10">
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#8B5CF6]/30 transition-colors">
-                  <div className="w-7 h-7 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center mb-2">
+              <div
+                className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t relative z-10"
+                style={{ borderColor: 'rgba(255, 255, 255, 0.12)' }}
+              >
+                {/* Card 1: Atendimento */}
+                <div
+                  className="brand-card p-3 rounded-xl transition-all duration-200 cursor-default group/card"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.035)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                  }}
+                >
+                  <div
+                    className="brand-card-icon-box w-7 h-7 rounded-lg flex items-center justify-center mb-2"
+                    style={{
+                      backgroundColor: 'rgba(139, 92, 246, 0.20)',
+                      border: '1px solid rgba(139, 92, 246, 0.30)',
+                      color: '#A78BFA',
+                    }}
+                  >
                     <MessageSquare className="w-3.5 h-3.5" />
                   </div>
-                  <div className="text-xs font-bold text-white">Atendimento</div>
-                  <div className="text-[10px] text-zinc-400">WhatsApp & Multi</div>
+                  <div className="brand-card-title text-xs font-bold" style={{ color: '#FFFFFF' }}>
+                    Atendimento
+                  </div>
+                  <div className="brand-card-desc text-[10px]" style={{ color: '#94A3B8' }}>
+                    WhatsApp & Multi
+                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#8B5CF6]/30 transition-colors">
-                  <div className="w-7 h-7 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center mb-2">
+                {/* Card 2: Pipeline & CRM */}
+                <div
+                  className="brand-card p-3 rounded-xl transition-all duration-200 cursor-default group/card"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.035)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                  }}
+                >
+                  <div
+                    className="brand-card-icon-box w-7 h-7 rounded-lg flex items-center justify-center mb-2"
+                    style={{
+                      backgroundColor: 'rgba(139, 92, 246, 0.20)',
+                      border: '1px solid rgba(139, 92, 246, 0.30)',
+                      color: '#A78BFA',
+                    }}
+                  >
                     <TrendingUp className="w-3.5 h-3.5" />
                   </div>
-                  <div className="text-xs font-bold text-white">Pipeline & CRM</div>
-                  <div className="text-[10px] text-zinc-400">Funil Comercial</div>
+                  <div className="brand-card-title text-xs font-bold" style={{ color: '#FFFFFF' }}>
+                    Pipeline & CRM
+                  </div>
+                  <div className="brand-card-desc text-[10px]" style={{ color: '#94A3B8' }}>
+                    Funil Comercial
+                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#8B5CF6]/30 transition-colors">
-                  <div className="w-7 h-7 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center mb-2">
+                {/* Card 3: Estoque Vivo */}
+                <div
+                  className="brand-card p-3 rounded-xl transition-all duration-200 cursor-default group/card"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.035)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                  }}
+                >
+                  <div
+                    className="brand-card-icon-box w-7 h-7 rounded-lg flex items-center justify-center mb-2"
+                    style={{
+                      backgroundColor: 'rgba(139, 92, 246, 0.20)',
+                      border: '1px solid rgba(139, 92, 246, 0.30)',
+                      color: '#A78BFA',
+                    }}
+                  >
                     <Car className="w-3.5 h-3.5" />
                   </div>
-                  <div className="text-xs font-bold text-white">Estoque Vivo</div>
-                  <div className="text-[10px] text-zinc-400">0km & Seminovos</div>
+                  <div className="brand-card-title text-xs font-bold" style={{ color: '#FFFFFF' }}>
+                    Estoque Vivo
+                  </div>
+                  <div className="brand-card-desc text-[10px]" style={{ color: '#94A3B8' }}>
+                    0km & Seminovos
+                  </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#8B5CF6]/30 transition-colors">
-                  <div className="w-7 h-7 rounded-lg bg-[#8B5CF6]/20 text-[#C4B5FD] flex items-center justify-center mb-2">
+                {/* Card 4: Grid AI */}
+                <div
+                  className="brand-card p-3 rounded-xl transition-all duration-200 cursor-default group/card"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.035)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                  }}
+                >
+                  <div
+                    className="brand-card-icon-box w-7 h-7 rounded-lg flex items-center justify-center mb-2"
+                    style={{
+                      backgroundColor: 'rgba(139, 92, 246, 0.20)',
+                      border: '1px solid rgba(139, 92, 246, 0.30)',
+                      color: '#A78BFA',
+                    }}
+                  >
                     <Zap className="w-3.5 h-3.5" />
                   </div>
-                  <div className="text-xs font-bold text-white">Grid AI</div>
-                  <div className="text-[10px] text-zinc-400">Copilot 24/7</div>
+                  <div className="brand-card-title text-xs font-bold" style={{ color: '#FFFFFF' }}>
+                    Grid AI
+                  </div>
+                  <div className="brand-card-desc text-[10px]" style={{ color: '#94A3B8' }}>
+                    Copilot 24/7
+                  </div>
                 </div>
               </div>
             </div>
@@ -333,7 +443,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
               className={`w-full p-6 sm:p-8 rounded-3xl border shadow-xl transition-all ${
                 theme === 'dark'
                   ? 'bg-[#141417] border-white/10 shadow-black/60'
-                  : 'bg-white border-[#DCE3EC] shadow-slate-200/80'
+                  : 'bg-white border-[#E2E8F0] shadow-xl shadow-slate-200/80'
               }`}
             >
               {/* Header Titles */}
@@ -347,12 +457,12 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                   </span>
                 </div>
                 <h2 className={`text-2xl font-extrabold tracking-tight ${
-                  theme === 'dark' ? 'text-white' : 'text-[#111827]'
+                  theme === 'dark' ? 'text-white' : 'text-[#0F172A]'
                 }`}>
                   Bem-vindo ao MotorGrid
                 </h2>
                 <p className={`text-sm mt-1 ${
-                  theme === 'dark' ? 'text-zinc-400' : 'text-[#64748B]'
+                  theme === 'dark' ? 'text-zinc-400' : 'text-[#475569]'
                 }`}>
                   Acesse sua central de comando.
                 </p>
@@ -399,7 +509,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <Mail className={`w-4 h-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`} />
+                      <Mail className={`w-4 h-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-[#64748B]'}`} />
                     </div>
                     <input
                       id="login-email-input"
@@ -411,7 +521,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                       className={`w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border transition-all focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent ${
                         theme === 'dark'
                           ? 'bg-[#1C1C1E] border-white/10 text-white placeholder:text-zinc-600'
-                          : 'bg-white border-[#DCE3EC] text-[#111827] placeholder:text-slate-400 shadow-sm'
+                          : 'bg-white border-[#CBD5E1] text-[#0F172A] placeholder:text-[#94A3B8] shadow-sm'
                       }`}
                     />
                   </div>
@@ -429,7 +539,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                      <Lock className={`w-4 h-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-slate-400'}`} />
+                      <Lock className={`w-4 h-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-[#64748B]'}`} />
                     </div>
                     <input
                       id="login-password-input"
@@ -441,7 +551,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                       className={`w-full pl-10 pr-11 py-2.5 text-sm rounded-xl border transition-all focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent ${
                         theme === 'dark'
                           ? 'bg-[#1C1C1E] border-white/10 text-white placeholder:text-zinc-600'
-                          : 'bg-white border-[#DCE3EC] text-[#111827] placeholder:text-slate-400 shadow-sm'
+                          : 'bg-white border-[#CBD5E1] text-[#0F172A] placeholder:text-[#94A3B8] shadow-sm'
                       }`}
                     />
                     <button
@@ -451,7 +561,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                       className={`absolute inset-y-0 right-0 pr-3.5 flex items-center cursor-pointer transition-colors ${
                         theme === 'dark'
                           ? 'text-zinc-400 hover:text-white'
-                          : 'text-slate-400 hover:text-slate-700'
+                          : 'text-[#64748B] hover:text-[#0F172A]'
                       }`}
                       title={showPassword ? 'Ocultar senha' : 'Ver senha'}
                       aria-label={showPassword ? 'Ocultar senha' : 'Ver senha'}
@@ -491,12 +601,13 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                   </button>
                 </div>
 
-                {/* Submit Button: ENTRAR NO MOTORGRID → */}
+                {/* Submit Button: ENTRAR NO MOTORGRID */}
                 <button
                   id="btn-submit-login-main"
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 px-4 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] active:bg-[#6D28D9] text-white font-bold text-sm tracking-wide shadow-lg shadow-[#8B5CF6]/30 hover:shadow-[#8B5CF6]/40 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed group mt-2"
+                  style={{ background: 'linear-gradient(90deg, #7C3AED, #8B5CF6)' }}
+                  className="w-full py-3 px-4 rounded-xl text-white font-bold text-sm tracking-wide shadow-lg shadow-[#8B5CF6]/30 hover:brightness-105 hover:shadow-[0_0_24px_rgba(139,92,246,0.45)] active:brightness-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed group mt-2"
                 >
                   {isLoading ? (
                     <>
@@ -513,50 +624,73 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
               </form>
 
               {/* Quick Profile Selection for Fast Demo / Testing */}
-              <div className="mt-6 pt-5 border-t border-[rgba(255,255,255,0.08)] dark:border-white/10 border-slate-200">
+              <div className={`mt-6 pt-5 border-t ${
+                theme === 'dark' ? 'border-white/10' : 'border-[#E2E8F0]'
+              }`}>
                 <div className="flex items-center justify-between mb-2.5">
                   <span className={`text-[11px] font-semibold uppercase tracking-wider ${
-                    theme === 'dark' ? 'text-zinc-400' : 'text-slate-500'
+                    theme === 'dark' ? 'text-zinc-400' : 'text-[#64748B]'
                   }`}>
                     Acesso Rápido de Demonstração:
                   </span>
-                  <span className="text-[10px] text-[#8B5CF6] font-mono">1-clique</span>
+                  <span className="text-[10px] text-[#8B5CF6] font-mono font-bold">1-clique</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
-                  {availableUsers.slice(0, 4).map((usr) => (
-                    <button
-                      key={usr.id}
-                      type="button"
-                      onClick={() => handleSelectQuickAccount(usr)}
-                      className={`p-2 rounded-xl text-left border transition-all flex items-center gap-2 cursor-pointer group ${
-                        email.toLowerCase() === usr.email.toLowerCase()
-                          ? 'border-[#8B5CF6] bg-[#8B5CF6]/10 text-[#8B5CF6]'
-                          : theme === 'dark'
-                          ? 'bg-[#1C1C1E]/60 hover:bg-[#1C1C1E] border-white/5 text-zinc-300'
-                          : 'bg-[#F8FAFC] hover:bg-[#F1F5F9] border-[#DCE3EC] text-[#334155]'
-                      }`}
-                    >
-                      <img
-                        src={usr.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'}
-                        alt={usr.name}
-                        className="w-6 h-6 rounded-lg object-cover ring-1 ring-[#8B5CF6]/30 shrink-0"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs font-bold truncate group-hover:text-[#8B5CF6] transition-colors">
-                          {usr.name.split(' ')[0]}
+                  {availableUsers.slice(0, 4).map((usr) => {
+                    const isSelected = email.toLowerCase() === usr.email.toLowerCase();
+                    return (
+                      <button
+                        key={usr.id}
+                        type="button"
+                        onClick={() => handleSelectQuickAccount(usr)}
+                        className={`p-2.5 rounded-xl text-left border transition-all flex items-center gap-2.5 cursor-pointer group ${
+                          isSelected
+                            ? theme === 'dark'
+                              ? 'border-[#8B5CF6] bg-[#8B5CF6]/15 text-white shadow-sm'
+                              : 'border-[#8B5CF6] bg-[#F5F3FF] shadow-sm'
+                            : theme === 'dark'
+                            ? 'bg-[#1C1C1E]/60 hover:bg-[#1C1C1E] border-white/5'
+                            : 'bg-white hover:bg-[#F8FAFC] border-[#E2E8F0] shadow-sm'
+                        }`}
+                      >
+                        <img
+                          src={usr.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'}
+                          alt={usr.name}
+                          className="w-7 h-7 rounded-lg object-cover ring-1 ring-[#8B5CF6]/40 shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div
+                            className={`text-xs font-bold truncate transition-colors ${
+                              isSelected
+                                ? theme === 'dark' ? 'text-white' : 'text-[#7C3AED]'
+                                : theme === 'dark'
+                                ? 'text-zinc-200 group-hover:text-white'
+                                : 'text-[#334155] group-hover:text-[#0F172A]'
+                            }`}
+                          >
+                            {usr.name.split(' ')[0]}
+                          </div>
+                          <div
+                            className={`text-[10px] truncate font-mono ${
+                              isSelected
+                                ? theme === 'dark' ? 'text-[#C4B5FD]' : 'text-[#8B5CF6]'
+                                : theme === 'dark'
+                                ? 'text-zinc-400'
+                                : 'text-[#64748B]'
+                            }`}
+                          >
+                            {usr.role}
+                          </div>
                         </div>
-                        <div className="text-[10px] opacity-70 truncate font-mono">
-                          {usr.role}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Security Shield Tag */}
-              <div className="mt-5 flex items-center justify-center gap-1.5 text-[11px] text-[#8B5CF6]/90 font-medium">
+              <div className="mt-5 flex items-center justify-center gap-1.5 text-[11px] text-[#8B5CF6] font-medium">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#8B5CF6]" />
                 <span>Criptografia de ponta a ponta & Protocolo SSL 256-bit</span>
               </div>
@@ -574,7 +708,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
         className={`w-full py-6 px-6 border-t text-xs transition-colors z-20 ${
           theme === 'dark'
             ? 'bg-[#0A0A0B]/80 border-white/10 text-zinc-400'
-            : 'bg-white/80 border-[#DCE3EC] text-[#64748B]'
+            : 'bg-white/90 border-[#E2E8F0] text-[#64748B]'
         }`}
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
@@ -626,10 +760,12 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               className={`w-full max-w-md p-6 rounded-2xl border shadow-2xl ${
-                theme === 'dark' ? 'bg-[#1C1C1E] border-white/15 text-white' : 'bg-white border-[#DCE3EC] text-[#111827]'
+                theme === 'dark' ? 'bg-[#1C1C1E] border-white/15 text-white' : 'bg-white border-[#E2E8F0] text-[#0F172A]'
               }`}
             >
-              <div className="flex items-center justify-between pb-3 border-b border-white/10 dark:border-white/10 border-slate-200">
+              <div className={`flex items-center justify-between pb-3 border-b ${
+                theme === 'dark' ? 'border-white/10' : 'border-[#E2E8F0]'
+              }`}>
                 <div className="flex items-center gap-2">
                   <KeyRound className="w-5 h-5 text-[#8B5CF6]" />
                   <h3 className="font-bold text-base">Recuperação de Acesso</h3>
@@ -640,7 +776,11 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                     setIsForgotPasswordOpen(false);
                     setForgotSubmitted(false);
                   }}
-                  className="p-1 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white cursor-pointer"
+                  className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                    theme === 'dark'
+                      ? 'hover:bg-white/10 text-zinc-400 hover:text-white'
+                      : 'hover:bg-slate-100 text-[#64748B] hover:text-[#0F172A]'
+                  }`}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -653,14 +793,20 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                   </p>
 
                   <div>
-                    <label className="block text-xs font-semibold mb-1">E-mail Corporativo</label>
+                    <label className={`block text-xs font-semibold mb-1 ${
+                      theme === 'dark' ? 'text-zinc-200' : 'text-[#334155]'
+                    }`}>
+                      E-mail Corporativo
+                    </label>
                     <input
                       type="email"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
                       placeholder="seuemail@empresa.com.br"
                       className={`w-full px-3.5 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] ${
-                        theme === 'dark' ? 'bg-[#141417] border-white/10 text-white' : 'bg-[#F8FAFC] border-[#DCE3EC] text-[#111827]'
+                        theme === 'dark'
+                          ? 'bg-[#141417] border-white/10 text-white placeholder:text-zinc-600'
+                          : 'bg-white border-[#CBD5E1] text-[#0F172A] placeholder:text-[#94A3B8] shadow-sm'
                       }`}
                     />
                   </div>
@@ -669,7 +815,11 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                     <button
                       type="button"
                       onClick={() => setIsForgotPasswordOpen(false)}
-                      className="px-3.5 py-2 text-xs font-semibold rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+                      className={`px-3.5 py-2 text-xs font-semibold rounded-xl transition-colors cursor-pointer ${
+                        theme === 'dark'
+                          ? 'text-zinc-300 hover:bg-white/10'
+                          : 'text-[#475569] hover:bg-slate-100'
+                      }`}
                     >
                       Cancelar
                     </button>
@@ -721,10 +871,12 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               className={`w-full max-w-lg p-6 rounded-2xl border shadow-2xl ${
-                theme === 'dark' ? 'bg-[#1C1C1E] border-white/15 text-white' : 'bg-white border-[#DCE3EC] text-[#111827]'
+                theme === 'dark' ? 'bg-[#1C1C1E] border-white/15 text-white' : 'bg-white border-[#E2E8F0] text-[#0F172A]'
               }`}
             >
-              <div className="flex items-center justify-between pb-3 border-b border-white/10 dark:border-white/10 border-slate-200">
+              <div className={`flex items-center justify-between pb-3 border-b ${
+                theme === 'dark' ? 'border-white/10' : 'border-[#E2E8F0]'
+              }`}>
                 <div className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-[#8B5CF6]" />
                   <h3 className="font-bold text-base capitalize">
@@ -736,7 +888,11 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveLegalModal(null)}
-                  className="p-1 rounded-lg hover:bg-white/10 text-zinc-400 hover:text-white cursor-pointer"
+                  className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                    theme === 'dark'
+                      ? 'hover:bg-white/10 text-zinc-400 hover:text-white'
+                      : 'hover:bg-slate-100 text-[#64748B] hover:text-[#0F172A]'
+                  }`}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -788,7 +944,9 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                 )}
               </div>
 
-              <div className="pt-3 border-t border-white/10 dark:border-white/10 border-slate-200 flex justify-end">
+              <div className={`pt-3 border-t flex justify-end ${
+                theme === 'dark' ? 'border-white/10' : 'border-[#E2E8F0]'
+              }`}>
                 <button
                   type="button"
                   onClick={() => setActiveLegalModal(null)}

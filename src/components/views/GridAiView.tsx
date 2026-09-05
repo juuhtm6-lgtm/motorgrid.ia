@@ -20,8 +20,11 @@ import {
   Check,
 } from 'lucide-react';
 import { initialAiAudits } from '../../data/mockData';
+import { useToast } from '../../context/ToastContext';
+import { storageService } from '../../services/storageService';
 
 export const GridAiView: React.FC = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'scoring' | 'auditoria' | 'objecoes' | 'audio'>('scoring');
 
   // Simulator state
@@ -64,6 +67,7 @@ export const GridAiView: React.FC = () => {
   const handleCopyScript = (text: string, idx: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(idx);
+    toast.success('Script de objeção copiado para a área de transferência!');
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
@@ -272,7 +276,14 @@ export const GridAiView: React.FC = () => {
             </div>
 
             <button
-              onClick={() => alert('Aplicando Score no Card do Lead no CRM')}
+              onClick={() => {
+                const cards = storageService.getCards();
+                if (cards.length > 0) {
+                  const updated = cards.map((c, i) => i === 0 ? { ...c, gridScore: score } : c);
+                  storageService.saveCards(updated);
+                }
+                toast.success(`Grid Score de ${score} pts sincronizado com sucesso nos leads ativos!`);
+              }}
               className="w-full py-3 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-extrabold text-xs shadow-lg shadow-[#8B5CF6]/20 transition-all cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
             >
               Aplicar Score nos Atendimentos Ativos

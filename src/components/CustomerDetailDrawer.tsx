@@ -18,6 +18,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { Customer, Invoice } from '../types';
+import { useToast } from '../context/ToastContext';
 
 interface CustomerDetailDrawerProps {
   customer: Customer | null;
@@ -32,6 +33,7 @@ export const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({
   invoices,
   onUpdateNotes,
 }) => {
+  const toast = useToast();
   const [activeSubTab, setActiveSubTab] = useState<'overview' | 'ai' | 'invoices'>('overview');
   const [notes, setNotes] = useState(customer?.notes || '');
   const [copied, setCopied] = useState(false);
@@ -364,7 +366,7 @@ Forneça:
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(aiDraft);
-                        alert('E-mail copiado para a área de transferência!');
+                        toast.success('E-mail copiado para a área de transferência!');
                       }}
                       className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold"
                     >

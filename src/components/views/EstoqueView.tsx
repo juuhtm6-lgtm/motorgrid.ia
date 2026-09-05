@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   Plus,
@@ -29,11 +29,15 @@ import {
   Check,
 } from 'lucide-react';
 import { Vehicle, VehicleStatus } from '../../types';
-import { initialVehicles } from '../../data/mockData';
 import { AddVehicleModal } from '../modals/AddVehicleModal';
+import { EditVehicleModal } from '../modals/EditVehicleModal';
+import { ConfirmActionModal } from '../modals/ConfirmActionModal';
+import { storageService } from '../../services/storageService';
+import { useToast } from '../../context/ToastContext';
 
 export const EstoqueView: React.FC = () => {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(initialVehicles);
+  const toast = useToast();
+  const [vehicles, setVehicles] = useState<Vehicle[]>(() => storageService.getVehicles());
   const [searchQuery, setSearchQuery] = useState('');
   const [brandFilter, setBrandFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -44,19 +48,27 @@ export const EstoqueView: React.FC = () => {
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedVehicleForDetails, setSelectedVehicleForDetails] = useState<Vehicle | null>(null);
+  const [selectedVehicleForEdit, setSelectedVehicleForEdit] = useState<Vehicle | null>(null);
+  const [vehicleToDelete, setVehicleToDelete] = useState<Vehicle | null>(null);
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Advanced filters
+  // Advanced filter states
   const [minPrice, setMinPrice] = useState<number | ''>('');
   const [maxPrice, setMaxPrice] = useState<number | ''>('');
   const [minYear, setMinYear] = useState<number | ''>('');
   const [maxYear, setMaxYear] = useState<number | ''>('');
   const [fuelFilter, setFuelFilter] = useState('ALL');
 
+  // Sync with storageService
+  useEffect(() => {
+    const unsubscribe = storageService.subscribe(() => {
+      setVehicles(storageService.getVehicles());
+    });
+    return unsubscribe;
+  }, []);
+
   const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+    toast.success(msg);
   };
 
   // Unique lists for dropdowns
@@ -204,9 +216,7 @@ export const EstoqueView: React.FC = () => {
 
   // Status switcher
   const handleQuickStatusChange = (vehicleId: string, newStatus: VehicleStatus) => {
-    setVehicles((prev) =>
-      prev.map((v) => (v.id === vehicleId ? { ...v, status: newStatus } : v))
-    );
+    storageService.updateVehicleStatus(vehicleId, newStatus);
     const upper = String(newStatus).toUpperCase();
     const labelStatus =
       upper === 'AVAILABLE' || upper === 'DISPONÍVEL'
@@ -256,14 +266,6 @@ export const EstoqueView: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 font-['Plus_Jakarta_Sans',sans-serif] text-zinc-100">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 p-4 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6] text-white text-xs font-semibold shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
@@ -594,6 +596,14 @@ export const EstoqueView: React.FC = () => {
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button
+                            id={`edit-vehicle-${vehicle.id}`}
+                            onClick={() => setSelectedVehicleForEdit(vehicle)}
+                            className="p-1.5 rounded-lg bg-[#18181B] hover:bg-zinc-800 border border-zinc-700/80 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                            title="Editar Veículo"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
                             id={`share-link-${vehicle.id}`}
                             onClick={() => {
                               const shareText = `Confira o ${vehicle.brand} ${vehicle.model} (${vehicle.fabYear}) por ${formatPriceBRL(vehicle.price)} na MotorGrid: https://motorgrid.io/estoque/${vehicle.id}`;
@@ -604,6 +614,14 @@ export const EstoqueView: React.FC = () => {
                             title="Copiar Link / Compartilhar"
                           >
                             <Share2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            id={`delete-vehicle-${vehicle.id}`}
+                            onClick={() => setVehicleToDelete(vehicle)}
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 transition-colors cursor-pointer"
+                            title="Excluir Veículo"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -692,18 +710,50 @@ export const EstoqueView: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddVehicle={(newVeh) => {
-          const created: Vehicle = {
+          const created = storageService.addVehicle({
             ...newVeh,
-            id: `veh-${Date.now()}`,
             vin: newVeh.chassis,
             location: newVeh.storeUnit,
             viewsCount: 1,
             leadsCount: 0,
             createdAt: 'Hoje',
-          };
-          setVehicles((prev) => [created, ...prev]);
-          showToast(`Veículo "${created.brand} ${created.model}" cadastrado no estoque!`);
+          });
+          showToast(`Veículo "${created.brand} ${created.model}" cadastrado com sucesso no estoque!`);
         }}
+      />
+
+      {/* Edit Vehicle Modal */}
+      <EditVehicleModal
+        isOpen={!!selectedVehicleForEdit}
+        onClose={() => setSelectedVehicleForEdit(null)}
+        vehicle={selectedVehicleForEdit}
+        onSave={(updated) => {
+          storageService.updateVehicle(updated.id, updated);
+          showToast(`Veículo "${updated.brand} ${updated.model}" atualizado com sucesso!`);
+          if (selectedVehicleForDetails?.id === updated.id) {
+            setSelectedVehicleForDetails(updated);
+          }
+        }}
+      />
+
+      {/* Confirm Delete Vehicle Modal */}
+      <ConfirmActionModal
+        isOpen={!!vehicleToDelete}
+        onClose={() => setVehicleToDelete(null)}
+        onConfirm={() => {
+          if (!vehicleToDelete) return;
+          const name = `${vehicleToDelete.brand} ${vehicleToDelete.model}`;
+          storageService.deleteVehicle(vehicleToDelete.id);
+          showToast(`Veículo "${name}" excluído do estoque com sucesso.`);
+          setVehicleToDelete(null);
+          if (selectedVehicleForDetails?.id === vehicleToDelete.id) {
+            setSelectedVehicleForDetails(null);
+          }
+        }}
+        title="Excluir Veículo do Estoque"
+        description={`Tem certeza que deseja excluir ${vehicleToDelete?.brand} ${vehicleToDelete?.model} (Placa: ${vehicleToDelete?.plate || 'S/ Placa'})? Esta ação não pode ser revertida.`}
+        confirmText="Excluir Veículo"
+        variant="danger"
       />
 
       {/* Vehicle Details Modal */}
@@ -819,17 +869,30 @@ export const EstoqueView: React.FC = () => {
 
             {/* Footer */}
             <div className="p-4 border-t border-zinc-800 bg-[#121214] flex items-center justify-between">
-              <button
-                onClick={() => {
-                  setVehicles((prev) => prev.filter((v) => v.id !== selectedVehicleForDetails.id));
-                  setSelectedVehicleForDetails(null);
-                  showToast('Veículo removido do estoque.');
-                }}
-                className="px-3.5 py-2 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Excluir Veículo</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const veh = selectedVehicleForDetails;
+                    setSelectedVehicleForDetails(null);
+                    setSelectedVehicleForEdit(veh);
+                  }}
+                  className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Editar</span>
+                </button>
+                <button
+                  onClick={() => {
+                    const veh = selectedVehicleForDetails;
+                    setSelectedVehicleForDetails(null);
+                    setVehicleToDelete(veh);
+                  }}
+                  className="px-3.5 py-2 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Excluir</span>
+                </button>
+              </div>
 
               <button
                 onClick={() => setSelectedVehicleForDetails(null)}

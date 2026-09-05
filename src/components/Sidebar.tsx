@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { MotorGridIcon } from './MotorGridLogo';
 import { AuthUser, ActiveTab } from '../types';
+import { useToast } from '../context/ToastContext';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -55,6 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSwitchUser,
   onOpenNewLead,
 }) => {
+  const toast = useToast();
   const [relatoriosExpanded, setRelatoriosExpanded] = useState(true);
 
   // Main menu items with RELATÓRIOS > Meta Ads
@@ -320,7 +322,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Support Link */}
         <button
           id="sidebar-support-btn"
-          onClick={() => alert('Central de Ajuda MotorGrid: Suporte 24/7 via WhatsApp ou helpdesk@motorgrid.io')}
+          onClick={() => toast.info('Central de Ajuda MotorGrid: Suporte 24/7 via WhatsApp (+55 11 9999-8888) ou helpdesk@motorgrid.io')}
           className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#A1A1AA] hover:text-white hover:bg-[#1C1C1E] transition-colors cursor-pointer text-xs font-medium ${
             collapsed ? 'justify-center px-0' : ''
           }`}

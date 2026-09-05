@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   GitFork,
@@ -22,19 +22,33 @@ import {
   ShieldCheck,
   RefreshCw,
   Plus,
+  Power,
+  Info,
 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
+import { storageService } from '../../services/storageService';
 
 export interface MarketplaceModule {
   id: string;
   name: string;
-  badge?: string;
   category: 'crm' | 'routing' | 'automation' | 'ai' | 'inventory' | 'audio';
+  categoryLabel: string;
   status: 'ACTIVE' | 'INACTIVE';
+  badge?: string;
   icon: 'users' | 'routing' | 'sequences' | 'grid-ai' | 'inventory' | 'audio';
-  iconColor: string;
   description: string;
   versionOrRequirement: string;
   usageText?: string;
+  isProprietaryAi?: boolean;
+  functionalColors: {
+    iconLight: string;
+    containerLight: string;
+    borderLight: string;
+    iconDark: string;
+    containerDark: string;
+    borderDark: string;
+    accentGlow?: string;
+  };
   settings: {
     enabledChannels?: string[];
     routingMode?: string;
@@ -43,19 +57,29 @@ export interface MarketplaceModule {
     maxHours?: number;
     hoursUsed?: number;
     roundRobinTeams?: string[];
+    autoTranscribeAudio?: boolean;
+    slaMinutes?: number;
   };
 }
 
 const initialModules: MarketplaceModule[] = [
   {
     id: 'crm-core',
-    name: 'CRM Core',
+    name: 'CRM Principal',
     category: 'crm',
+    categoryLabel: 'CRM',
     status: 'ACTIVE',
     icon: 'users',
-    iconColor: 'bg-[#2A1B4E]/80 text-[#C4B5FD] border border-[#8B5CF6]/30',
-    description: 'Centralized customer relationship management tailored for high-volume automotive sales cycles.',
+    description: 'Gestão centralizada de relacionamento com clientes, preparada para operações automotivas de alto volume.',
     versionOrRequirement: 'v2.4.1',
+    functionalColors: {
+      iconLight: 'text-[#7C3AED]',
+      containerLight: 'bg-[#F5F3FF]',
+      borderLight: 'border-[#DDD6FE]',
+      iconDark: 'dark:text-[#C4B5FD]',
+      containerDark: 'dark:bg-[#2A1B4E]',
+      borderDark: 'dark:border-[#8B5CF6]/40',
+    },
     settings: {
       enabledChannels: ['WhatsApp Cloud API', 'Webmotors Pro', 'Instagram Direct', 'Showroom Presencial'],
       routingMode: 'Pipeline Multicanal Ativo',
@@ -65,25 +89,42 @@ const initialModules: MarketplaceModule[] = [
     id: 'distribuicao-atendimentos',
     name: 'Distribuição de Atendimentos',
     category: 'routing',
+    categoryLabel: 'Distribuição',
     status: 'ACTIVE',
     icon: 'routing',
-    iconColor: 'bg-[#2A1B4E]/80 text-[#C4B5FD] border border-[#8B5CF6]/30',
-    description: 'Intelligent round-robin and performance-based lead routing system for sales floors.',
+    description: 'Distribuição inteligente de leads por round-robin, equipe, desempenho e regras comerciais.',
     versionOrRequirement: 'v1.8.0',
+    functionalColors: {
+      iconLight: 'text-[#8B5CF6]',
+      containerLight: 'bg-[#FAF5FF]',
+      borderLight: 'border-[#E9D5FF]',
+      iconDark: 'dark:text-[#DDD6FE]',
+      containerDark: 'dark:bg-[#261B3D]',
+      borderDark: 'dark:border-[#A78BFA]/40',
+    },
     settings: {
-      routingMode: 'Roleta Ponderada por Performance de Vendas (Round-Robin)',
+      routingMode: 'Roleta Inteligente Ponderada (Round-Robin por Desempenho)',
       roundRobinTeams: ['Equipe Showroom Matriz', 'Equipe Digital / SDR', 'Equipe Seminovos VIP'],
+      slaMinutes: 3,
     },
   },
   {
     id: 'sequencias',
     name: 'Sequências',
     category: 'automation',
+    categoryLabel: 'Automação',
     status: 'INACTIVE',
     icon: 'sequences',
-    iconColor: 'bg-[#1C1C1E] text-zinc-400 border border-zinc-700/50',
-    description: 'Automated multi-channel follow-up cadences via WhatsApp, Email, and SMS.',
-    versionOrRequirement: 'Requires WhatsApp API',
+    description: 'Cadências automáticas de follow-up por WhatsApp, e-mail e SMS.',
+    versionOrRequirement: 'Requer API do WhatsApp',
+    functionalColors: {
+      iconLight: 'text-[#2563EB]',
+      containerLight: 'bg-[#EFF6FF]',
+      borderLight: 'border-[#BFDBFE]',
+      iconDark: 'dark:text-[#93C5FD]',
+      containerDark: 'dark:bg-[#172554]',
+      borderDark: 'dark:border-[#3B82F6]/40',
+    },
     settings: {
       enabledChannels: ['WhatsApp API', 'E-mail Comercial', 'SMS Transacional'],
     },
@@ -93,11 +134,21 @@ const initialModules: MarketplaceModule[] = [
     name: 'Grid AI',
     badge: 'BETA',
     category: 'ai',
+    categoryLabel: 'IA',
     status: 'ACTIVE',
     icon: 'grid-ai',
-    iconColor: 'bg-[#2A1B4E]/80 text-[#C4B5FD] border border-[#8B5CF6]/30',
-    description: 'Predictive lead scoring and automated sentiment analysis powered by advanced machine learning models.',
+    isProprietaryAi: true,
+    description: 'Score preditivo de leads, análise de intenção e automações inteligentes com IA.',
     versionOrRequirement: 'v0.9.4-beta',
+    functionalColors: {
+      iconLight: 'text-[#6D28D9]',
+      containerLight: 'bg-[#EDE9FE]',
+      borderLight: 'border-[#C4B5FD]',
+      iconDark: 'dark:text-[#E9D5FF]',
+      containerDark: 'dark:bg-[#3B1C71]',
+      borderDark: 'dark:border-[#8B5CF6]/60',
+      accentGlow: 'shadow-[0_0_24px_rgba(139,92,246,0.14)] dark:shadow-[0_0_24px_rgba(139,92,246,0.22)]',
+    },
     settings: {
       aiModel: 'Gemini 3.7 Pro + MotorGrid Automotive Engine',
     },
@@ -106,11 +157,19 @@ const initialModules: MarketplaceModule[] = [
     id: 'integracao-estoque',
     name: 'Integração de Estoque',
     category: 'inventory',
+    categoryLabel: 'Estoque',
     status: 'INACTIVE',
     icon: 'inventory',
-    iconColor: 'bg-[#1C1C1E] text-zinc-400 border border-zinc-700/50',
-    description: 'Real-time inventory synchronization with DMS and external marketplace platforms.',
-    versionOrRequirement: 'DMS Connection Req.',
+    description: 'Sincronização em tempo real do estoque com DMS, portais e plataformas externas.',
+    versionOrRequirement: 'Requer Conexão DMS',
+    functionalColors: {
+      iconLight: 'text-[#0D9488]',
+      containerLight: 'bg-[#F0FDFA]',
+      borderLight: 'border-[#99F6E4]',
+      iconDark: 'dark:text-[#5EEAD4]',
+      containerDark: 'dark:bg-[#134E4A]',
+      borderDark: 'dark:border-[#14B8A6]/40',
+    },
     settings: {
       dmsProvider: 'AutoConexão Webmotors + Linx DMS + NBS',
     },
@@ -119,15 +178,24 @@ const initialModules: MarketplaceModule[] = [
     id: 'transcricao-audio',
     name: 'Transcrição de Áudio',
     category: 'audio',
+    categoryLabel: 'Comunicação',
     status: 'ACTIVE',
     icon: 'audio',
-    iconColor: 'bg-[#042F2E]/90 text-teal-300 border border-teal-600/40',
-    description: 'Automatic transcription of sales calls and WhatsApp voice notes with keyword tagging.',
-    versionOrRequirement: '',
-    usageText: 'Usage: 45/100 hrs',
+    description: 'Transcrição automática de chamadas e áudios do WhatsApp com identificação de palavras-chave.',
+    versionOrRequirement: 'Consumo: 45/100 hrs',
+    usageText: 'Consumo: 45/100 hrs',
+    functionalColors: {
+      iconLight: 'text-[#059669]',
+      containerLight: 'bg-[#ECFDF5]',
+      borderLight: 'border-[#A7F3D0]',
+      iconDark: 'dark:text-[#6EE7B7]',
+      containerDark: 'dark:bg-[#064E3B]',
+      borderDark: 'dark:border-[#10B981]/40',
+    },
     settings: {
       maxHours: 100,
       hoursUsed: 45,
+      autoTranscribeAudio: true,
     },
   },
 ];
@@ -137,55 +205,91 @@ interface MarketplaceViewProps {
 }
 
 export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab }) => {
-  const [modules, setModules] = useState<MarketplaceModule[]>(initialModules);
+  const toast = useToast();
+  const [modules, setModules] = useState<MarketplaceModule[]>(() => {
+    return storageService.getMarketplaceModules<MarketplaceModule>(initialModules);
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
-  const [selectedModuleForConfig, setSelectedModuleForConfig] = useState<MarketplaceModule | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
+  // Modal State
+  const [selectedModuleForConfig, setSelectedModuleForConfig] = useState<MarketplaceModule | null>(null);
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+  const [editableSettings, setEditableSettings] = useState<any>({});
+
+  // Persist modules whenever changed
+  const updateModulesState = (newModules: MarketplaceModule[]) => {
+    setModules(newModules);
+    storageService.saveMarketplaceModules(newModules);
   };
 
   const handleToggleModuleStatus = (moduleId: string) => {
-    setModules((prev) =>
-      prev.map((mod) => {
-        if (mod.id === moduleId) {
-          const newStatus = mod.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-          showToast(
-            newStatus === 'ACTIVE'
-              ? `Módulo "${mod.name}" ativado com sucesso!`
-              : `Módulo "${mod.name}" desativado.`
-          );
-          return {
-            ...mod,
-            status: newStatus,
-            iconColor:
-              newStatus === 'ACTIVE'
-                ? mod.icon === 'audio'
-                  ? 'bg-[#042F2E]/90 text-teal-300 border border-teal-600/40'
-                  : 'bg-[#2A1B4E]/80 text-[#C4B5FD] border border-[#8B5CF6]/30'
-                : 'bg-[#1C1C1E] text-zinc-400 border border-zinc-700/50',
-          };
-        }
-        return mod;
-      })
-    );
+    const targetModule = modules.find((m) => m.id === moduleId);
+    if (!targetModule) return;
+
+    const newStatus = targetModule.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    const updated = modules.map((mod) => {
+      if (mod.id === moduleId) {
+        return {
+          ...mod,
+          status: newStatus,
+        };
+      }
+      return mod;
+    });
+
+    updateModulesState(updated);
+
+    if (newStatus === 'ACTIVE') {
+      toast.success(`Módulo "${targetModule.name}" ativado com sucesso!`, 'Módulo Ativado');
+    } else {
+      toast.info(`Módulo "${targetModule.name}" foi desativado.`, 'Módulo Desativado');
+    }
   };
 
-  const handleSaveConfig = (updatedModule: MarketplaceModule) => {
-    setModules((prev) => prev.map((m) => (m.id === updatedModule.id ? updatedModule : m)));
+  const handleOpenConfig = (module: MarketplaceModule) => {
+    setSelectedModuleForConfig(module);
+    setShowDeactivateConfirm(false);
+    setEditableSettings({ ...module.settings });
+  };
+
+  const handleSaveConfig = () => {
+    if (!selectedModuleForConfig) return;
+
+    const updated = modules.map((m) =>
+      m.id === selectedModuleForConfig.id
+        ? { ...m, settings: { ...editableSettings } }
+        : m
+    );
+
+    updateModulesState(updated);
+    toast.success(`Configurações de "${selectedModuleForConfig.name}" atualizadas!`, 'Salvo com Sucesso');
     setSelectedModuleForConfig(null);
-    showToast(`Configurações de "${updatedModule.name}" atualizadas!`);
+  };
+
+  const handleDeactivateFromModal = () => {
+    if (!selectedModuleForConfig) return;
+
+    const updated = modules.map((mod) =>
+      mod.id === selectedModuleForConfig.id
+        ? { ...mod, status: 'INACTIVE' as const }
+        : mod
+    );
+
+    updateModulesState(updated);
+    toast.info(`Módulo "${selectedModuleForConfig.name}" desativado com sucesso.`, 'Módulo Desativado');
+    setSelectedModuleForConfig(null);
+    setShowDeactivateConfirm(false);
   };
 
   const filteredModules = modules.filter((mod) => {
     const matchesSearch =
       mod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mod.description.toLowerCase().includes(searchQuery.toLowerCase());
+      mod.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mod.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || mod.status === statusFilter;
     const matchesCategory = categoryFilter === 'ALL' || mod.category === categoryFilter;
     return matchesSearch && matchesStatus && matchesCategory;
@@ -194,59 +298,52 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
   const renderModuleIcon = (iconType: string) => {
     switch (iconType) {
       case 'users':
-        return <Users className="w-5 h-5" />;
+        return <Users className="w-6 h-6 sm:w-7 sm:h-7" />;
       case 'routing':
-        return <GitFork className="w-5 h-5" />;
+        return <GitFork className="w-6 h-6 sm:w-7 sm:h-7" />;
       case 'sequences':
-        return <ListOrdered className="w-5 h-5" />;
+        return <ListOrdered className="w-6 h-6 sm:w-7 sm:h-7" />;
       case 'grid-ai':
-        return <Cpu className="w-5 h-5" />;
+        return <Cpu className="w-6 h-6 sm:w-7 sm:h-7" />;
       case 'inventory':
-        return <Warehouse className="w-5 h-5" />;
+        return <Warehouse className="w-6 h-6 sm:w-7 sm:h-7" />;
       case 'audio':
-        return <Waves className="w-5 h-5" />;
+        return <Waves className="w-6 h-6 sm:w-7 sm:h-7" />;
       default:
-        return <Users className="w-5 h-5" />;
+        return <Users className="w-6 h-6 sm:w-7 sm:h-7" />;
     }
   };
 
+  const hasActiveFilters = statusFilter !== 'ALL' || categoryFilter !== 'ALL' || searchQuery.trim().length > 0;
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16 font-['Plus_Jakarta_Sans',sans-serif]">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 p-4 rounded-2xl bg-[#1C1C1E] border border-[#8B5CF6] text-white text-xs font-semibold shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
-      {/* Header Section (Exact Layout & Typography from Image) */}
+      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            App Marketplace
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Marketplace de Módulos
           </h1>
-          <p className="text-sm sm:text-base text-zinc-400 max-w-3xl leading-relaxed">
-            Discover, integrate, and configure modular applications to command every aspect of your
-            dealership operations.
+          <p className="text-sm sm:text-base text-slate-600 dark:text-zinc-400 max-w-3xl leading-relaxed">
+            Descubra, integre e configure módulos para controlar todos os aspectos da sua operação automotiva.
           </p>
         </div>
 
-        {/* Filter Apps Button with Dropdown */}
+        {/* Filter Modules Button with Dropdown */}
         <div className="relative shrink-0">
           <button
-            id="filter-apps-btn"
+            id="filter-modules-btn"
             onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-            className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-              isFilterDropdownOpen || statusFilter !== 'ALL' || categoryFilter !== 'ALL' || searchQuery
-                ? 'bg-[#2A1B4E] border-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/20'
-                : 'bg-[#18181B] hover:bg-zinc-800 border-zinc-800 text-zinc-300 hover:text-white'
+            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+              isFilterDropdownOpen || hasActiveFilters
+                ? 'bg-purple-50 dark:bg-[#2A1B4E] border-[#8B5CF6] text-[#7C3AED] dark:text-white shadow-md shadow-[#8B5CF6]/15'
+                : 'bg-white dark:bg-[#18181B] hover:bg-slate-50 dark:hover:bg-zinc-800 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
             }`}
           >
-            <Filter className="w-3.5 h-3.5" />
-            <span>Filter Apps</span>
-            {(statusFilter !== 'ALL' || categoryFilter !== 'ALL' || searchQuery) && (
-              <span className="w-2 h-2 rounded-full bg-[#C4B5FD] animate-pulse" />
+            <Filter className="w-4 h-4 text-[#8B5CF6]" />
+            <span>Filtrar Módulos</span>
+            {hasActiveFilters && (
+              <span className="w-2 h-2 rounded-full bg-[#8B5CF6] animate-pulse" />
             )}
           </button>
 
@@ -257,38 +354,42 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
                 className="fixed inset-0 z-30"
                 onClick={() => setIsFilterDropdownOpen(false)}
               />
-              <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-[#1C1C1E] border border-zinc-800 shadow-2xl p-4 z-40 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-                <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">
-                    Filtrar Aplicativos
+              <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white dark:bg-[#1C1C1E] border border-slate-200 dark:border-zinc-800 shadow-2xl p-4 z-40 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Filtrar Módulos
                   </span>
-                  <button
-                    onClick={() => {
-                      setStatusFilter('ALL');
-                      setCategoryFilter('ALL');
-                      setSearchQuery('');
-                    }}
-                    className="text-[11px] text-zinc-400 hover:text-[#C4B5FD] cursor-pointer"
-                  >
-                    Limpar Filtros
-                  </button>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={() => {
+                        setStatusFilter('ALL');
+                        setCategoryFilter('ALL');
+                        setSearchQuery('');
+                      }}
+                      className="text-[11px] text-purple-600 dark:text-[#C4B5FD] hover:underline cursor-pointer font-medium"
+                    >
+                      Limpar Filtros
+                    </button>
+                  )}
                 </div>
 
                 {/* Search in filter */}
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+                  <Search className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute left-3 top-2.5" />
                   <input
                     type="text"
                     placeholder="Buscar módulo..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#0A0A0B] border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:border-[#8B5CF6] outline-none"
+                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] border border-slate-200 dark:border-zinc-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:border-[#8B5CF6] outline-none"
                   />
                 </div>
 
                 {/* Status Filter */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-zinc-400 block">Status do Módulo</label>
+                  <label className="text-[11px] font-semibold text-slate-600 dark:text-zinc-400 block">
+                    Status do Módulo
+                  </label>
                   <div className="grid grid-cols-3 gap-1.5">
                     {(['ALL', 'ACTIVE', 'INACTIVE'] as const).map((st) => (
                       <button
@@ -296,8 +397,8 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
                         onClick={() => setStatusFilter(st)}
                         className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                           statusFilter === st
-                            ? 'bg-[#8B5CF6] text-white'
-                            : 'bg-[#0A0A0B] hover:bg-zinc-800 text-zinc-400'
+                            ? 'bg-[#8B5CF6] text-white shadow-sm'
+                            : 'bg-slate-100 dark:bg-[#0A0A0B] hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400'
                         }`}
                       >
                         {st === 'ALL' ? 'Todos' : st === 'ACTIVE' ? 'Ativos' : 'Inativos'}
@@ -308,24 +409,26 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
 
                 {/* Category Filter */}
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-zinc-400 block">Categoria</label>
+                  <label className="text-[11px] font-semibold text-slate-600 dark:text-zinc-400 block">
+                    Categoria
+                  </label>
                   <div className="grid grid-cols-2 gap-1.5">
                     {[
                       { id: 'ALL', label: 'Todas' },
-                      { id: 'crm', label: 'CRM Core' },
+                      { id: 'crm', label: 'CRM' },
                       { id: 'routing', label: 'Distribuição' },
-                      { id: 'ai', label: 'Inteligência (IA)' },
                       { id: 'automation', label: 'Automação' },
+                      { id: 'ai', label: 'IA' },
                       { id: 'inventory', label: 'Estoque' },
-                      { id: 'audio', label: 'Voz & Áudio' },
+                      { id: 'audio', label: 'Comunicação' },
                     ].map((cat) => (
                       <button
                         key={cat.id}
                         onClick={() => setCategoryFilter(cat.id)}
-                        className={`py-1 px-2 rounded-lg text-[10px] font-medium transition-all text-left truncate cursor-pointer ${
+                        className={`py-1.5 px-2 rounded-lg text-[11px] font-medium transition-all text-left truncate cursor-pointer ${
                           categoryFilter === cat.id
-                            ? 'bg-[#8B5CF6]/30 text-[#DDD6FE] border border-[#8B5CF6]/50'
-                            : 'bg-[#0A0A0B] hover:bg-zinc-800 text-zinc-400'
+                            ? 'bg-purple-100 dark:bg-[#8B5CF6]/30 text-purple-900 dark:text-[#DDD6FE] border border-[#8B5CF6]/40'
+                            : 'bg-slate-100 dark:bg-[#0A0A0B] hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400'
                         }`}
                       >
                         {cat.label}
@@ -339,7 +442,7 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
         </div>
       </div>
 
-      {/* Grid of 6 Cards (Exact Design System & Layout) */}
+      {/* Grid of Modules */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredModules.map((item) => {
           const isActive = item.status === 'ACTIVE';
@@ -347,57 +450,66 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
           return (
             <div
               key={item.id}
-              className="p-6 rounded-2xl bg-[#141416] border border-zinc-800/80 hover:border-zinc-700/90 transition-all flex flex-col justify-between space-y-6 group shadow-lg"
+              className={`p-6 sm:p-7 rounded-[20px] bg-white dark:bg-[#141416] border transition-all duration-200 flex flex-col justify-between space-y-6 group ${
+                item.isProprietaryAi
+                  ? 'border-[#C4B5FD] dark:border-[#8B5CF6]/50 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] shadow-[0_0_24px_rgba(139,92,246,0.12)] dark:shadow-[0_0_24px_rgba(139,92,246,0.18)] hover:-translate-y-0.5 hover:border-[#8B5CF6]'
+                  : 'border-[#E2E8F0] dark:border-zinc-800/90 shadow-[0_8px_24px_rgba(15,23,42,0.06)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(15,23,42,0.1)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.45)] hover:border-[#C4B5FD] dark:hover:border-[#8B5CF6]/40'
+              }`}
             >
               <div className="space-y-4">
                 {/* Top Row: Icon Container & Status Badge */}
                 <div className="flex items-center justify-between">
-                  {/* Icon Box */}
+                  {/* Functional Color Icon Box (48px - 56px) */}
                   <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 ${item.iconColor}`}
+                    className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 border ${item.functionalColors.containerLight} ${item.functionalColors.iconLight} ${item.functionalColors.borderLight} ${item.functionalColors.containerDark} ${item.functionalColors.iconDark} ${item.functionalColors.borderDark}`}
                   >
                     {renderModuleIcon(item.icon)}
                   </div>
 
-                  {/* Status Badge (Exact active / inactive pill style) */}
-                  <div
-                    className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-wide flex items-center gap-1.5 uppercase ${
-                      isActive
-                        ? 'bg-[#1E1B2E] text-zinc-200 border border-zinc-700/60'
-                        : 'bg-[#18181B] text-zinc-400 border border-zinc-800'
-                    }`}
-                  >
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {/* Status Badge: Active vs Inactive */}
+                  <div className="flex items-center gap-1.5">
+                    {isActive ? (
+                      <div className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide flex items-center gap-1.5 bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] dark:bg-[#064E3B]/40 dark:text-[#34D399] dark:border-[#059669]/50">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#059669] dark:bg-[#34D399] animate-pulse" />
+                        <span>ATIVO</span>
+                      </div>
+                    ) : (
+                      <div className="px-3 py-1 rounded-full text-[11px] font-bold tracking-wide bg-[#F8FAFC] text-[#64748B] border border-[#CBD5E1] dark:bg-[#18181B] dark:text-[#A1A1AA] dark:border-zinc-800">
+                        <span>INATIVO</span>
+                      </div>
                     )}
-                    <span>{item.status}</span>
                   </div>
                 </div>
 
-                {/* Module Title with optional BETA badge */}
-                <div className="space-y-2">
+                {/* Category & Module Title */}
+                <div className="space-y-1.5">
+                  {/* Subtle Category Pill/Label */}
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
+                    {item.categoryLabel}
+                  </span>
+
                   <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-white tracking-tight">
+                    <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                       {item.name}
                     </h3>
                     {item.badge && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-[#2A1B4E] text-[#DDD6FE] border border-[#8B5CF6]/40 tracking-wider">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#F3E8FF] text-[#7C3AED] border border-[#C4B5FD] dark:bg-[#2A1B4E] dark:text-[#DDD6FE] dark:border-[#8B5CF6]/40">
                         {item.badge}
                       </span>
                     )}
                   </div>
 
                   {/* Description */}
-                  <p className="text-xs text-zinc-400 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 leading-relaxed min-h-[42px]">
                     {item.description}
                   </p>
                 </div>
               </div>
 
               {/* Card Footer: Version/Requirement on Left, Action on Right */}
-              <div className="pt-4 border-t border-zinc-800/80 flex items-center justify-between gap-3 text-xs">
+              <div className="pt-4 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between gap-3 text-xs">
                 {/* Left Info: Version, Requirement or Usage */}
-                <div className="text-zinc-500 font-mono text-[11px] truncate">
+                <div className="text-slate-500 dark:text-zinc-400 font-mono text-[11px] truncate">
                   {item.usageText || item.versionOrRequirement}
                 </div>
 
@@ -405,18 +517,18 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
                 {isActive ? (
                   <button
                     id={`configure-${item.id}-btn`}
-                    onClick={() => setSelectedModuleForConfig(item)}
-                    className="px-4 py-1.5 rounded-lg bg-[#18181B] hover:bg-zinc-800 border border-zinc-700/80 hover:border-zinc-600 text-zinc-200 hover:text-white font-semibold text-xs transition-all cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
+                    onClick={() => handleOpenConfig(item)}
+                    className="px-4 py-2 rounded-xl bg-white hover:bg-[#F5F3FF] border border-[#CBD5E1] hover:border-[#8B5CF6] text-[#334155] hover:text-[#7C3AED] dark:bg-[#18181B] dark:hover:bg-[#2A1B4E] dark:border-zinc-700 dark:hover:border-[#8B5CF6] dark:text-zinc-200 dark:hover:text-[#DDD6FE] font-semibold text-xs transition-all cursor-pointer shadow-sm"
                   >
-                    Configure
+                    Configurar
                   </button>
                 ) : (
                   <button
                     id={`enable-${item.id}-btn`}
                     onClick={() => handleToggleModuleStatus(item.id)}
-                    className="px-4 py-1.5 rounded-lg bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
+                    className="px-4 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-bold text-xs shadow-sm shadow-[#8B5CF6]/30 transition-all cursor-pointer"
                   >
-                    Enable Module
+                    Ativar Módulo
                   </button>
                 )}
               </div>
@@ -425,36 +537,56 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
         })}
       </div>
 
+      {filteredModules.length === 0 && (
+        <div className="p-12 text-center rounded-2xl bg-white dark:bg-[#141416] border border-slate-200 dark:border-zinc-800 space-y-3">
+          <Info className="w-8 h-8 text-slate-400 dark:text-zinc-500 mx-auto" />
+          <h4 className="text-sm font-bold text-slate-800 dark:text-white">Nenhum módulo encontrado</h4>
+          <p className="text-xs text-slate-500 dark:text-zinc-400">
+            Ajuste os filtros ou o termo de busca para visualizar os módulos do MotorGrid.
+          </p>
+          <button
+            onClick={() => {
+              setStatusFilter('ALL');
+              setCategoryFilter('ALL');
+              setSearchQuery('');
+            }}
+            className="px-4 py-2 rounded-xl bg-[#8B5CF6] text-white text-xs font-semibold hover:bg-[#7C3AED] cursor-pointer"
+          >
+            Restaurar Filtros
+          </button>
+        </div>
+      )}
+
       {/* Interactive Module Configuration Modal */}
       {selectedModuleForConfig && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-xl rounded-3xl bg-[#18181B] border border-[#8B5CF6]/40 shadow-2xl p-6 space-y-6 animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-xl rounded-3xl bg-white dark:bg-[#18181B] border border-slate-200 dark:border-[#8B5CF6]/40 shadow-2xl p-6 sm:p-7 space-y-6 animate-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedModuleForConfig.iconColor}`}
+                  className={`w-11 h-11 rounded-xl flex items-center justify-center border ${selectedModuleForConfig.functionalColors.containerLight} ${selectedModuleForConfig.functionalColors.iconLight} ${selectedModuleForConfig.functionalColors.borderLight} ${selectedModuleForConfig.functionalColors.containerDark} ${selectedModuleForConfig.functionalColors.iconDark} ${selectedModuleForConfig.functionalColors.borderDark}`}
                 >
                   {renderModuleIcon(selectedModuleForConfig.icon)}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                       Configurar {selectedModuleForConfig.name}
                     </h3>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      {selectedModuleForConfig.status}
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] dark:bg-[#064E3B]/40 dark:text-[#34D399] dark:border-[#059669]/50">
+                      ATIVO
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-400">
-                    Ajuste os parâmetros operacionais e permissões deste módulo
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    Ajuste os parâmetros operacionais e permissões deste módulo no MotorGrid.
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setSelectedModuleForConfig(null)}
-                className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-slate-400 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -462,11 +594,13 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
 
             {/* Modal Body with Contextual Settings */}
             <div className="space-y-4 text-xs">
-              {/* CRM Core Settings */}
+              {/* CRM Principal Settings */}
               {selectedModuleForConfig.id === 'crm-core' && (
                 <div className="space-y-3">
-                  <label className="font-semibold text-zinc-300 block">Canais Ativos Conectados:</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <label className="font-semibold text-slate-800 dark:text-zinc-300 block">
+                    Canais Ativos Conectados:
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {[
                       'WhatsApp Business Cloud API',
                       'Webmotors Pro Leads',
@@ -475,21 +609,21 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
                     ].map((chan, i) => (
                       <label
                         key={i}
-                        className="p-3 rounded-xl bg-[#0A0A0B] border border-zinc-800 flex items-center gap-2.5 text-zinc-300 cursor-pointer hover:border-[#8B5CF6]/40"
+                        className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] border border-slate-200 dark:border-zinc-800 flex items-center gap-2.5 text-slate-700 dark:text-zinc-300 cursor-pointer hover:border-[#8B5CF6]/50"
                       >
                         <input
                           type="checkbox"
                           defaultChecked
                           className="rounded text-[#8B5CF6] focus:ring-0"
                         />
-                        <span>{chan}</span>
+                        <span className="text-xs">{chan}</span>
                       </label>
                     ))}
                   </div>
 
-                  <div className="p-3 rounded-xl bg-purple-950/20 border border-[#8B5CF6]/30 text-zinc-300">
+                  <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-[#8B5CF6]/30 text-purple-900 dark:text-zinc-300">
                     💡 <strong>Sincronização Bidirecional:</strong> Mensagens enviadas pelos vendedores no
-                    WhatsApp são arquivadas no card do lead em menos de 500ms.
+                    WhatsApp são arquivadas no card do lead em menos de 500ms com rastreamento completo de SLA.
                   </div>
                 </div>
               )}
@@ -498,28 +632,63 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
               {selectedModuleForConfig.id === 'distribuicao-atendimentos' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="font-semibold text-zinc-300 block mb-1">
+                    <label className="font-semibold text-slate-800 dark:text-zinc-300 block mb-1">
                       Algoritmo de Roteamento de Leads:
                     </label>
-                    <select className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white outline-none">
-                      <option>Roleta Inteligente Ponderada (Round-Robin por Performance)</option>
+                    <select
+                      value={editableSettings.routingMode || 'Roleta Inteligente Ponderada (Round-Robin por Desempenho)'}
+                      onChange={(e) =>
+                        setEditableSettings({ ...editableSettings, routingMode: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white outline-none"
+                    >
+                      <option>Roleta Inteligente Ponderada (Round-Robin por Desempenho)</option>
                       <option>Roleta Pura Sequencial (Equitativa 1-por-1)</option>
                       <option>Distribuição por Especialidade de Marca (Ex: Porsche, BMW)</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="font-semibold text-zinc-300 block mb-1">
-                      SLA Máximo de Atendimento (Transbordo):
+                    <label className="font-semibold text-slate-800 dark:text-zinc-300 block mb-1">
+                      SLA Máximo de Atendimento (Transbordo em Minutos):
                     </label>
                     <input
                       type="number"
-                      defaultValue={3}
-                      className="w-full px-3.5 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white font-mono"
+                      value={editableSettings.slaMinutes || 3}
+                      onChange={(e) =>
+                        setEditableSettings({
+                          ...editableSettings,
+                          slaMinutes: parseInt(e.target.value) || 1,
+                        })
+                      }
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white font-mono"
                     />
-                    <span className="text-[11px] text-zinc-400 mt-1 block">
-                      Se o vendedor não responder em 3 minutos, o lead transborda para o próximo online.
+                    <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 block">
+                      Se o vendedor não responder no tempo estipulado, o atendimento é transferido para o próximo consultor disponível.
                     </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Sequências Settings */}
+              {selectedModuleForConfig.id === 'sequencias' && (
+                <div className="space-y-3">
+                  <label className="font-semibold text-slate-800 dark:text-zinc-300 block">
+                    Canais Habilitados para Follow-up:
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {['WhatsApp API', 'E-mail Comercial', 'SMS Transacional'].map((ch, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] border border-slate-200 dark:border-zinc-800 flex items-center gap-2 text-slate-700 dark:text-zinc-300"
+                      >
+                        <Check className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>{ch}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40 text-blue-900 dark:text-blue-200 text-xs">
+                    Gatilhos inteligentes disparam cadências pós-visita ou quando propostas ficam sem resposta por mais de 24 horas.
                   </div>
                 </div>
               )}
@@ -528,24 +697,52 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
               {selectedModuleForConfig.id === 'grid-ai' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="font-semibold text-zinc-300 block mb-1">Modelo de IA:</label>
+                    <label className="font-semibold text-slate-800 dark:text-zinc-300 block mb-1">
+                      Modelo de Inteligência Artificial:
+                    </label>
                     <input
                       type="text"
                       disabled
                       value="Gemini 3.7 Pro (Google DeepMind) + MotorGrid Copilot"
-                      className="w-full px-3.5 py-2 rounded-xl bg-[#0A0A0B] border border-zinc-800 text-[#C4B5FD] font-mono"
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-[#0A0A0B] border border-slate-200 dark:border-zinc-800 text-purple-700 dark:text-[#C4B5FD] font-mono font-medium"
                     />
                   </div>
 
-                  <div className="p-3 rounded-xl bg-purple-950/20 border border-[#8B5CF6]/30 space-y-2">
-                    <span className="font-bold text-[#DDD6FE] flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" /> Recursos Ativos:
+                  <div className="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-[#8B5CF6]/30 space-y-2">
+                    <span className="font-bold text-purple-900 dark:text-[#DDD6FE] flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-[#8B5CF6]" /> Capacidades Ativas da IA:
                     </span>
-                    <ul className="list-disc list-inside space-y-1 text-zinc-300 text-[11px]">
-                      <li>Lead Scoring Preditivo de 0 a 100 em tempo real</li>
-                      <li>Detecção de Objeções (Preço, Troca de Usado, Taxa de Financiamento)</li>
-                      <li>Briefing Matinal Executivo e Auditoria de Abordagem</li>
+                    <ul className="list-disc list-inside space-y-1 text-slate-700 dark:text-zinc-300 text-[11px]">
+                      <li>Lead Scoring Preditivo (0 a 100) calibrado para o mercado automotivo brasileiro</li>
+                      <li>Detecção de Objeções (Preço, Troca de Usado, Avaliação da FIPE, Taxas)</li>
+                      <li>Briefing Matinal Automático para Gerentes e Consultores</li>
                     </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Integração de Estoque Settings */}
+              {selectedModuleForConfig.id === 'integracao-estoque' && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="font-semibold text-slate-800 dark:text-zinc-300 block mb-1">
+                      Provedor DMS / ERP Conectado:
+                    </label>
+                    <select
+                      value={editableSettings.dmsProvider || 'AutoConexão Webmotors + Linx DMS + NBS'}
+                      onChange={(e) =>
+                        setEditableSettings({ ...editableSettings, dmsProvider: e.target.value })
+                      }
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white outline-none"
+                    >
+                      <option>AutoConexão Webmotors + Linx DMS + NBS</option>
+                      <option>Linx DMS Automotivo (API Oficial)</option>
+                      <option>NBS Informática ERP</option>
+                      <option>MegaDMS / Apollo</option>
+                    </select>
+                  </div>
+                  <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800/40 text-teal-900 dark:text-teal-200 text-xs">
+                    Sincronização bidirecional com atualização instantânea de status de reserva e venda.
                   </div>
                 </div>
               )}
@@ -553,46 +750,85 @@ export const MarketplaceView: React.FC<MarketplaceViewProps> = ({ onNavigateTab 
               {/* Transcrição de Áudio Settings */}
               {selectedModuleForConfig.id === 'transcricao-audio' && (
                 <div className="space-y-3">
-                  <div className="p-4 rounded-xl bg-[#0A0A0B] border border-zinc-800 space-y-2">
+                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] border border-slate-200 dark:border-zinc-800 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Consumo de Horas de Áudio (Mensal):</span>
-                      <span className="font-bold text-teal-400 font-mono">45 / 100 horas (45%)</span>
+                      <span className="text-slate-600 dark:text-zinc-400">Consumo de Horas de Áudio (Mensal):</span>
+                      <span className="font-bold text-teal-600 dark:text-teal-400 font-mono">45 / 100 horas (45%)</span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
-                      <div className="w-[45%] h-full bg-teal-400 rounded-full" />
+                    <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden">
+                      <div className="w-[45%] h-full bg-teal-500 rounded-full" />
                     </div>
                   </div>
 
-                  <label className="p-3 rounded-xl bg-[#0A0A0B] border border-zinc-800 flex items-center gap-2.5 text-zinc-300 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded text-teal-400" />
+                  <label className="p-3 rounded-xl bg-slate-50 dark:bg-[#0A0A0B] border border-slate-200 dark:border-zinc-800 flex items-center gap-2.5 text-slate-700 dark:text-zinc-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editableSettings.autoTranscribeAudio !== false}
+                      onChange={(e) =>
+                        setEditableSettings({
+                          ...editableSettings,
+                          autoTranscribeAudio: e.target.checked,
+                        })
+                      }
+                      className="rounded text-teal-500"
+                    />
                     <span>Transcrever automaticamente notas de voz de clientes no WhatsApp</span>
                   </label>
+                </div>
+              )}
+
+              {/* Confirmation view for deactivation */}
+              {showDeactivateConfirm && (
+                <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/60 space-y-2.5 animate-in fade-in duration-150">
+                  <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 font-bold">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>Confirmar desativação do módulo</span>
+                  </div>
+                  <p className="text-xs text-amber-700 dark:text-amber-300/90 leading-relaxed">
+                    Ao desativar este módulo, recursos automáticos associados serão pausados temporariamente até uma nova ativação. Deseja continuar?
+                  </p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={handleDeactivateFromModal}
+                      className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs cursor-pointer transition-colors"
+                    >
+                      Confirmar Desativação
+                    </button>
+                    <button
+                      onClick={() => setShowDeactivateConfirm(false)}
+                      className="px-3 py-1.5 rounded-lg bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-medium text-xs cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-4 border-t border-zinc-800 flex items-center justify-between">
-              <button
-                onClick={() => {
-                  handleToggleModuleStatus(selectedModuleForConfig.id);
-                  setSelectedModuleForConfig(null);
-                }}
-                className="px-4 py-2 rounded-xl bg-rose-950/30 hover:bg-rose-900/50 text-rose-300 border border-rose-800/40 text-xs font-semibold transition-colors cursor-pointer"
-              >
-                Desativar Módulo
-              </button>
-
-              <div className="flex items-center gap-2">
+            <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+              {!showDeactivateConfirm && (
                 <button
+                  type="button"
+                  onClick={() => setShowDeactivateConfirm(true)}
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-zinc-900 dark:hover:bg-rose-950/30 text-slate-600 hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-300 border border-slate-200 hover:border-rose-200 dark:border-zinc-800 dark:hover:border-rose-800/40 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  Desativar Módulo
+                </button>
+              )}
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
                   onClick={() => setSelectedModuleForConfig(null)}
-                  className="px-4 py-2 rounded-xl bg-[#0A0A0B] hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700 text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#0A0A0B] dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-zinc-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
-                  onClick={() => handleSaveConfig(selectedModuleForConfig)}
-                  className="px-5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] text-xs font-bold shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
+                  type="button"
+                  onClick={handleSaveConfig}
+                  className="px-5 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold shadow-md shadow-[#8B5CF6]/25 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>Salvar Configurações</span>

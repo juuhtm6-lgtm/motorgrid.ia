@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Invoice, PlanTier } from '../../types';
+import { useToast } from '../../context/ToastContext';
 
 interface BillingViewProps {
   invoices: Invoice[];
@@ -30,6 +31,7 @@ export const BillingView: React.FC<BillingViewProps> = ({
   activePlan,
   onUpgradePlan,
 }) => {
+  const toast = useToast();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [checkoutPlan, setCheckoutPlan] = useState<PlanTier | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix');
@@ -411,6 +413,7 @@ export const BillingView: React.FC<BillingViewProps> = ({
                     onClick={() => {
                       navigator.clipboard.writeText('00020126580014br.gov.bcb.pix0136motorgrid-telematics-upgrade-f921');
                       setCopiedPix(true);
+                      toast.success('Código PIX Copia e Cola copiado para a área de transferência!');
                       setTimeout(() => setCopiedPix(false), 2000);
                     }}
                     className="px-2 py-1 rounded bg-[#8B5CF6] text-white text-[10px] font-semibold shrink-0 cursor-pointer"
@@ -520,7 +523,7 @@ export const BillingView: React.FC<BillingViewProps> = ({
 
             <button
               onClick={() => {
-                alert(`Download do arquivo ${selectedInvoicePreview.invoiceNumber}.pdf iniciado!`);
+                toast.success(`Download do arquivo ${selectedInvoicePreview.invoiceNumber}.pdf iniciado!`);
                 setSelectedInvoicePreview(null);
               }}
               className="w-full py-2.5 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#8B5CF6]/25"

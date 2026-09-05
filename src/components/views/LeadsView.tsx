@@ -17,8 +17,19 @@ import {
   ArrowRight,
   TrendingUp,
   MessageSquare,
+  Eye,
+  Edit3,
+  Trash2,
+  Download,
+  Kanban,
+  Check,
 } from 'lucide-react';
 import { LeadItem, LeadStatus, LeadSource, Customer } from '../../types';
+import { LeadDetailModal } from '../modals/LeadDetailModal';
+import { EditLeadModal } from '../modals/EditLeadModal';
+import { ConfirmActionModal } from '../modals/ConfirmActionModal';
+import { useToast } from '../../context/ToastContext';
+import { storageService } from '../../services/storageService';
 
 interface LeadsViewProps {
   leads: LeadItem[];
@@ -26,6 +37,9 @@ interface LeadsViewProps {
   onOpenChat: (lead: LeadItem) => void;
   onConvertToCustomer?: (lead: LeadItem) => void;
   onUpdateLeadStatus: (id: string, status: LeadStatus) => void;
+  onUpdateLead?: (lead: LeadItem) => void;
+  onDeleteLead?: (id: string) => void;
+  onMoveToPipeline?: (lead: LeadItem) => void;
 }
 
 export const LeadsView: React.FC<LeadsViewProps> = ({
@@ -34,10 +48,19 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   onOpenChat,
   onConvertToCustomer,
   onUpdateLeadStatus,
+  onUpdateLead,
+  onDeleteLead,
+  onMoveToPipeline,
 }) => {
+  const toast = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
+
+  // Modal states
+  const [selectedLeadForDetail, setSelectedLeadForDetail] = useState<LeadItem | null>(null);
+  const [selectedLeadForEdit, setSelectedLeadForEdit] = useState<LeadItem | null>(null);
+  const [leadToDelete, setLeadToDelete] = useState<LeadItem | null>(null);
 
   const filteredLeads = leads.filter((lead) => {
     const matchesSearch =
@@ -56,8 +79,126 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
   const totalFleetPotential = leads.reduce((acc, curr) => acc + curr.fleetSize, 0);
   const newLeadsCount = leads.filter((l) => l.status === 'Novo').length;
 
+  const handleStatusChange = (id: string, newStatus: LeadStatus) => {
+    onUpdateLeadStatus(id, newStatus);
+    toast.success(`Status do lead alterado para "${newStatus}".`);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!leadToDelete) return;
+    const name = leadToDelete.name;
+    if (onDeleteLead) {
+      onDeleteLead(leadToDelete.id);
+    } else {
+      storageService.deleteLead(leadToDelete.id);
+    }
+    toast.success(`Lead ${name} excluído com sucesso.`);
+    setLeadToDelete(null);
+    if (selectedLeadForDetail?.id === leadToDelete.id) {
+      setSelectedLeadForDetail(null);
+    }
+  };
+
+  const handleSaveEdit = (updatedLead: LeadItem) => {
+    if (onUpdateLead) {
+      onUpdateLead(updatedLead);
+    } else {
+      storageService.updateLead(updatedLead.id, updatedLead);
+    }
+    toast.success(`Lead ${updatedLead.name} atualizado com sucesso!`);
+    setSelectedLeadForEdit(null);
+    if (selectedLeadForDetail?.id === updatedLead.id) {
+      setSelectedLeadForDetail(updatedLead);
+    }
+  };
+
+  const handleMoveLeadToPipeline = (lead: LeadItem) => {
+    // Generate CRM Card
+    storageService.addCrmCard({
+      pipelineId: 'vendas',
+      stageId: 'lead_novo',
+      contactName: lead.name,
+      contactPhone: lead.phone,
+      contactEmail: lead.email,
+      origin: lead.source || 'Website / Frotas',
+      unitId: 'unit-matriz',
+      timeInStage: '0d',
+      lastInteraction: 'Criado agora',
+      vehicleName: `Frota ${lead.company} (${lead.fleetSize} un)`,
+      vehiclePrice: lead.estimatedValue,
+      assignedTo: lead.assignedTo || 'Rodrigo Mendes',
+      temperature: 'Quente',
+      gridScore: 88,
+      notes: `Importado de Leads: ${lead.notes || ''}`,
+      nextTask: 'Realizar primeiro contato e qualificação',
+    });
+
+    if (onMoveToPipeline) {
+      onMoveToPipeline(lead);
+    }
+    toast.success(`Lead ${lead.name} movido para o Pipeline de Vendas!`);
+    setSelectedLeadForDetail(null);
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['ID', 'Nome', 'Telefone', 'Email', 'Empresa', 'Frota', 'Valor_Mensal', 'Origem', 'Status', 'Responsavel'];
+    const rows = filteredLeads.map((l) => [
+      `"${l.id}"`,
+      `"${l.name}"`,
+      `"${l.phone}"`,
+      `"${l.email}"`,
+      `"${l.company}"`,
+      l.fleetSize,
+      l.estimatedValue,
+      `"${l.source}"`,
+      `"${l.status}"`,
+      `"${l.assignedTo}"`,
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `motorgrid_leads_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success(`${filteredLeads.length} leads exportados em arquivo CSV com sucesso!`);
+  };
+
   return (
     <div className="space-y-6">
+      {/* Modals */}
+      <LeadDetailModal
+        isOpen={!!selectedLeadForDetail}
+        onClose={() => setSelectedLeadForDetail(null)}
+        lead={selectedLeadForDetail}
+        onEdit={(lead) => setSelectedLeadForEdit(lead)}
+        onDelete={(lead) => setLeadToDelete(lead)}
+        onOpenChat={(lead) => {
+          setSelectedLeadForDetail(null);
+          onOpenChat(lead);
+        }}
+        onMoveToPipeline={handleMoveLeadToPipeline}
+      />
+
+      <EditLeadModal
+        isOpen={!!selectedLeadForEdit}
+        onClose={() => setSelectedLeadForEdit(null)}
+        lead={selectedLeadForEdit}
+        onSave={handleSaveEdit}
+      />
+
+      <ConfirmActionModal
+        isOpen={!!leadToDelete}
+        onClose={() => setLeadToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Lead Permanentemente"
+        description={`Tem certeza que deseja excluir o lead ${leadToDelete?.name} (${leadToDelete?.company})? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir Lead"
+        variant="danger"
+      />
+
       {/* Header Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-[#1C1C1E] border border-zinc-800/80 flex items-center justify-between">
@@ -154,14 +295,25 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
           </div>
         </div>
 
-        <button
-          id="btn-add-new-lead-page"
-          onClick={onOpenNewLead}
-          className="px-4 py-2.5 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-sm shadow-lg shadow-[#8B5CF6]/20 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
-        >
-          <UserPlus className="w-4 h-4 stroke-[2.5]" />
-          <span>+ Novo Lead</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="px-3.5 py-2.5 rounded-xl bg-[#1C1C1E] hover:bg-zinc-800 border border-zinc-700 text-zinc-300 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+            title="Exportar dados filtrados em CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-[#C4B5FD]" />
+            <span className="hidden sm:inline">Exportar CSV</span>
+          </button>
+
+          <button
+            id="btn-add-new-lead-page"
+            onClick={onOpenNewLead}
+            className="px-4 py-2.5 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-sm shadow-lg shadow-[#8B5CF6]/20 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+          >
+            <UserPlus className="w-4 h-4 stroke-[2.5]" />
+            <span>+ Novo Lead</span>
+          </button>
+        </div>
       </div>
 
       {/* Leads Table */}
@@ -171,18 +323,18 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
             <thead>
               <tr className="border-b border-zinc-800 bg-[#1C1C1E]/80 text-zinc-400 text-xs uppercase tracking-wider font-semibold">
                 <th className="py-3.5 px-4">Lead / Contato</th>
-                <th className="py-3.5 px-4">Empresa & Frota</th>
+                <th className="py-3.5 px-4">Empresa &amp; Frota</th>
                 <th className="py-3.5 px-4">Valor Estimado</th>
                 <th className="py-3.5 px-4">Canal / Origem</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-4">Responsável</th>
-                <th className="py-3.5 px-4 text-right">Ação</th>
+                <th className="py-3.5 px-4 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/60 text-sm">
               {filteredLeads.map((lead) => {
                 return (
-                  <tr key={lead.id} className="hover:bg-zinc-800/30 transition-colors">
+                  <tr key={lead.id} className="hover:bg-zinc-800/30 transition-colors group">
                     <td className="py-4 px-4">
                       <div className="font-bold text-white flex items-center gap-2">
                         <span>{lead.name}</span>
@@ -226,7 +378,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     <td className="py-4 px-4">
                       <select
                         value={lead.status}
-                        onChange={(e) => onUpdateLeadStatus(lead.id, e.target.value as LeadStatus)}
+                        onChange={(e) => handleStatusChange(lead.id, e.target.value as LeadStatus)}
                         className={`text-xs px-2.5 py-1 rounded-full font-semibold border outline-none cursor-pointer ${
                           lead.status === 'Novo'
                             ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
@@ -254,15 +406,48 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
                     </td>
 
                     <td className="py-4 px-4 text-right">
-                      <button
-                        onClick={() => onOpenChat(lead)}
-                        className="btn-conversa-action px-3.5 py-1.5 rounded-xl bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 text-xs font-bold transition-all flex items-center gap-1.5 ml-auto cursor-pointer shadow-sm hover:shadow-md hover:shadow-[#8B5CF6]/25 group"
-                        title={`Abrir conversa de ${lead.name} no Atendimento`}
-                      >
-                        <MessageSquare className="w-3.5 h-3.5 text-[#A78BFA] group-hover:text-white transition-colors" />
-                        <span>Conversa</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setSelectedLeadForDetail(lead)}
+                          className="p-1.5 rounded-lg bg-[#18181B] hover:bg-zinc-800 border border-zinc-700/80 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                          title="Visualizar Detalhes do Lead"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          onClick={() => setSelectedLeadForEdit(lead)}
+                          className="p-1.5 rounded-lg bg-[#18181B] hover:bg-zinc-800 border border-zinc-700/80 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                          title="Editar Lead"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          onClick={() => handleMoveLeadToPipeline(lead)}
+                          className="p-1.5 rounded-lg bg-[#25193A] hover:bg-[#381c64] border border-[#8B5CF6]/50 text-[#DDD6FE] transition-colors cursor-pointer"
+                          title="Mover para Funil / Pipeline"
+                        >
+                          <Kanban className="w-3.5 h-3.5" />
+                        </button>
+
+                        <button
+                          onClick={() => onOpenChat(lead)}
+                          className="btn-conversa-action px-2.5 py-1.5 rounded-xl bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shadow-sm hover:shadow-md hover:shadow-[#8B5CF6]/25 group"
+                          title={`Abrir conversa de ${lead.name} no Atendimento`}
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-[#A78BFA] group-hover:text-white transition-colors" />
+                          <span className="hidden sm:inline">Conversa</span>
+                        </button>
+
+                        <button
+                          onClick={() => setLeadToDelete(lead)}
+                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 transition-colors cursor-pointer"
+                          title="Excluir Lead"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

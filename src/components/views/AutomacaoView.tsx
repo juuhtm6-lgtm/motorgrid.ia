@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Zap,
@@ -17,20 +17,59 @@ import {
   Layers,
   ChevronRight,
   RotateCcw,
+  Trash2,
 } from 'lucide-react';
-import { initialAutomations } from '../../data/mockData';
 import { AutomationRule } from '../../types';
+import { storageService, ScheduledMessageItem, BroadcastCampaignItem } from '../../services/storageService';
+import { useToast } from '../../context/ToastContext';
+import { CreateAutomationModal } from '../modals/CreateAutomationModal';
+import { CreateBroadcastModal } from '../modals/CreateBroadcastModal';
 
 export const AutomacaoView: React.FC = () => {
+  const toast = useToast();
   const [subTab, setSubTab] = useState<
     'regras' | 'sequencias' | 'agendadas' | 'transmissoes' | 'chatbot' | 'distribuicao'
   >('regras');
-  const [rules, setRules] = useState<AutomationRule[]>(initialAutomations);
+
+  const [rules, setRules] = useState<AutomationRule[]>(() => storageService.getAutomations());
+  const [scheduledMsgs, setScheduledMsgs] = useState<ScheduledMessageItem[]>(() => storageService.getScheduledMessages());
+  const [broadcasts, setBroadcasts] = useState<BroadcastCampaignItem[]>(() => storageService.getBroadcastCampaigns());
+
+  const [isCreateRuleOpen, setIsCreateRuleOpen] = useState(false);
+  const [isCreateBroadcastOpen, setIsCreateBroadcastOpen] = useState(false);
+
+  useEffect(() => {
+    const unsub = storageService.subscribe(() => {
+      setRules(storageService.getAutomations());
+      setScheduledMsgs(storageService.getScheduledMessages());
+      setBroadcasts(storageService.getBroadcastCampaigns());
+    });
+    return unsub;
+  }, []);
 
   const toggleRule = (id: string) => {
-    setRules((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r))
-    );
+    const newState = storageService.toggleAutomation(id);
+    toast.info(`Regra de automação ${newState ? 'ativada' : 'pausada'}.`);
+  };
+
+  const handleDeleteRule = (id: string, name: string) => {
+    storageService.deleteAutomation(id);
+    toast.success(`Regra "${name}" removida com sucesso.`);
+  };
+
+  const handleCancelScheduledMessage = (id: string) => {
+    storageService.cancelScheduledMessage(id);
+    toast.success('Mensagem agendada cancelada com sucesso.');
+  };
+
+  const handleSaveNewRule = (ruleData: Omit<AutomationRule, 'id' | 'executionsCount' | 'lastExecuted'>) => {
+    storageService.addAutomation(ruleData);
+    toast.success('Nova regra de automação criada e ativada com sucesso!');
+  };
+
+  const handleSendBroadcast = (campaign: { name: string; segment: string; message: string; scheduledTime: string }) => {
+    storageService.addBroadcastCampaign(campaign.name);
+    toast.success(`Campanha "${campaign.name}" iniciada para ${campaign.segment}!`);
   };
 
   return (
@@ -118,7 +157,7 @@ export const AutomacaoView: React.FC = () => {
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-sm">Gatilhos Comerciais &amp; Automações Ativas</h3>
             <button
-              onClick={() => alert('Abrindo assistente para criar nova regra com IA')}
+              onClick={() => setIsCreateRuleOpen(true)}
               className="px-3.5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -137,16 +176,25 @@ export const AutomacaoView: React.FC = () => {
                     <h4 className="font-bold text-white text-sm">{rule.name}</h4>
                     <p className="text-xs text-zinc-400 mt-0.5">{rule.description}</p>
                   </div>
-                  <button
-                    onClick={() => toggleRule(rule.id)}
-                    className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer ${
-                      rule.enabled
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
-                    }`}
-                  >
-                    {rule.enabled ? 'Ativa' : 'Pausada'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => toggleRule(rule.id)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors cursor-pointer ${
+                        rule.enabled
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                          : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
+                      }`}
+                    >
+                      {rule.enabled ? 'Ativa' : 'Pausada'}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRule(rule.id, rule.name)}
+                      title="Excluir regra"
+                      className="p-1 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Visual Logic Blocks: Trigger -> Condition -> Action */}
@@ -268,51 +316,38 @@ export const AutomacaoView: React.FC = () => {
         <div className="p-5 rounded-2xl bg-[#1C1C1E] border border-zinc-800 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-sm">Fila de Envios Agendados via WhatsApp</h3>
-            <span className="text-xs text-zinc-400 font-mono">3 mensagens na fila</span>
+            <span className="text-xs text-zinc-400 font-mono">{scheduledMsgs.length} mensagens na fila</span>
           </div>
 
-          <div className="space-y-3">
-            {[
-              {
-                to: 'Dr. Roberto Silveira (+55 11 98841-1122)',
-                time: 'Hoje às 17:30 (em 45 min)',
-                msg: 'Olá Dr. Roberto! Lembrando que seu Porsche Macan estará polido e pronto para o Test Drive amanhã às 10:00.',
-                car: 'Porsche Macan GTS',
-              },
-              {
-                to: 'Eduardo Martins (+55 11 97711-2233)',
-                time: 'Amanhã às 09:00',
-                msg: 'Bom dia Eduardo! A aprovação do financiamento BV da sua Toyota Hilux foi concluída com taxa de 1.19% a.m.',
-                car: 'Toyota Hilux GR-Sport',
-              },
-              {
-                to: 'Fernanda Lima (+55 21 99881-4455)',
-                time: 'Sexta-feira às 14:00',
-                msg: 'Olá Fernanda! Chegou uma Mercedes C300 exatamente na cor Branco Polar que você estava procurando.',
-                car: 'Mercedes-Benz C300',
-              },
-            ].map((item, idx) => (
-              <div
-                key={idx}
-                className="p-4 rounded-xl bg-[#0A0A0B] border border-zinc-800 flex items-start justify-between gap-4 text-xs"
-              >
-                <div className="space-y-1.5">
-                  <div className="font-bold text-white flex items-center gap-2">
-                    <span>{item.to}</span>
-                    <span className="text-[#C4B5FD] font-mono text-[10px]">🚗 {item.car}</span>
-                  </div>
-                  <p className="text-zinc-300 italic">"{item.msg}"</p>
-                  <div className="text-[11px] text-amber-400 font-mono">⏰ Disparo: {item.time}</div>
-                </div>
-                <button
-                  onClick={() => alert('Mensagem agendada cancelada com sucesso.')}
-                  className="px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs transition-colors cursor-pointer shrink-0"
+          {scheduledMsgs.length === 0 ? (
+            <div className="p-8 text-center rounded-xl bg-[#0A0A0B] border border-zinc-800 text-zinc-400 text-sm">
+              Nenhuma mensagem agendada no momento.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {scheduledMsgs.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 rounded-xl bg-[#0A0A0B] border border-zinc-800 flex items-start justify-between gap-4 text-xs"
                 >
-                  Cancelar
-                </button>
-              </div>
-            ))}
-          </div>
+                  <div className="space-y-1.5">
+                    <div className="font-bold text-white flex items-center gap-2">
+                      <span>{item.to}</span>
+                      <span className="text-[#C4B5FD] font-mono text-[10px]">🚗 {item.car}</span>
+                    </div>
+                    <p className="text-zinc-300 italic">"{item.msg}"</p>
+                    <div className="text-[11px] text-amber-400 font-mono">⏰ Disparo: {item.time}</div>
+                  </div>
+                  <button
+                    onClick={() => handleCancelScheduledMessage(item.id)}
+                    className="px-3 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs transition-colors cursor-pointer shrink-0"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -330,7 +365,7 @@ export const AutomacaoView: React.FC = () => {
                 </p>
               </div>
               <button
-                onClick={() => alert('Criando nova campanha')}
+                onClick={() => setIsCreateBroadcastOpen(true)}
                 className="px-3.5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
               >
                 + Nova Transmissão
@@ -338,27 +373,8 @@ export const AutomacaoView: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                {
-                  title: 'Feirão de Taxa Zero - Linha SUV Premium',
-                  sent: 450,
-                  delivered: '99.2%',
-                  read: '88.4%',
-                  leadsGenerated: 38,
-                  sales: 4,
-                  status: 'Concluída',
-                },
-                {
-                  title: 'Resgate de Propostas Antigas (Últimos 60 Dias)',
-                  sent: 280,
-                  delivered: '98.5%',
-                  read: '82.1%',
-                  leadsGenerated: 24,
-                  sales: 2,
-                  status: 'Concluída',
-                },
-              ].map((c, idx) => (
-                <div key={idx} className="p-4 rounded-xl bg-[#0A0A0B] border border-zinc-800 space-y-3 text-xs">
+              {broadcasts.map((c) => (
+                <div key={c.id} className="p-4 rounded-xl bg-[#0A0A0B] border border-zinc-800 space-y-3 text-xs">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-white text-sm">{c.title}</h4>
                     <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
@@ -477,6 +493,19 @@ export const AutomacaoView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modals */}
+      <CreateAutomationModal
+        isOpen={isCreateRuleOpen}
+        onClose={() => setIsCreateRuleOpen(false)}
+        onSave={handleSaveNewRule}
+      />
+
+      <CreateBroadcastModal
+        isOpen={isCreateBroadcastOpen}
+        onClose={() => setIsCreateBroadcastOpen(false)}
+        onSend={handleSendBroadcast}
+      />
     </div>
   );
 };

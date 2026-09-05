@@ -356,6 +356,8 @@ export interface CrmCard {
   documentsChecklist?: { id: string; name: string; completed: boolean }[];
   isOverdue?: boolean; // Item atrasado no SLA
   unitId: string;
+  createdAt?: string;
+  notes?: string;
 }
 
 // Contacts 360

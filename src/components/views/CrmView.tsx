@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Kanban,
   Users,
@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
+  ArrowLeft,
   Sparkles,
   ChevronRight,
   ShieldCheck,
@@ -23,6 +24,11 @@ import {
   Mail,
   UserCheck,
   Building,
+  Trash2,
+  Edit3,
+  Check,
+  X,
+  DollarSign,
 } from 'lucide-react';
 import {
   CrmCard,
@@ -32,70 +38,106 @@ import {
   PipelineConfig,
   LeadTemperature,
 } from '../../types';
-import {
-  initialPipelines,
-  initialCrmCards,
-  initialContacts,
-  initialCrmTasks,
-  initialAppointments,
-  initialAuthUsers,
-  initialVehicles,
-} from '../../data/mockData';
+import { initialPipelines } from '../../data/mockData';
 import { CreateContactModal } from '../modals/CreateContactModal';
 import { ScheduleAppointmentModal } from '../modals/ScheduleAppointmentModal';
+import { CreateCrmTaskModal } from '../modals/CreateCrmTaskModal';
+import { LossReasonModal } from '../modals/LossReasonModal';
+import { ConfirmActionModal } from '../modals/ConfirmActionModal';
+import { storageService } from '../../services/storageService';
+import { useToast } from '../../context/ToastContext';
 
 export const CrmView: React.FC = () => {
+  const toast = useToast();
   const [activeSubTab, setActiveSubTab] = useState<'pipelines' | 'contatos' | 'tarefas' | 'agenda'>('pipelines');
   const [selectedPipelineId, setSelectedPipelineId] = useState<string>('vendas');
-  const [cards, setCards] = useState<CrmCard[]>(initialCrmCards);
-  const [contacts, setContacts] = useState<Contact[]>(initialContacts);
-  const [tasks, setTasks] = useState<CrmTask[]>(initialCrmTasks);
-  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
+
+  // Datasets from central storage
+  const [cards, setCards] = useState<CrmCard[]>(() => storageService.getCrmCards());
+  const [contacts, setContacts] = useState<Contact[]>(() => storageService.getContacts());
+  const [tasks, setTasks] = useState<CrmTask[]>(() => storageService.getCrmTasks());
+  const [appointments, setAppointments] = useState<Appointment[]>(() => storageService.getAppointments());
+
+  // Filters & State
   const [taskFilter, setTaskFilter] = useState<'Hoje' | 'Atrasada' | 'Próxima' | 'Concluída' | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
-  // Modals
+  // Modals state
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
+  // Loss Reason modal
+  const [cardToMarkLost, setCardToMarkLost] = useState<CrmCard | null>(null);
+
+  // Confirm delete modals
+  const [cardToDelete, setCardToDelete] = useState<CrmCard | null>(null);
+  const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<CrmTask | null>(null);
+  const [appointmentToDelete, setAppointmentToDelete] = useState<Appointment | null>(null);
+
+  // Subscribe to storageService
+  useEffect(() => {
+    const unsub = storageService.subscribe(() => {
+      setCards(storageService.getCrmCards());
+      setContacts(storageService.getContacts());
+      setTasks(storageService.getCrmTasks());
+      setAppointments(storageService.getAppointments());
+    });
+    return unsub;
+  }, []);
 
   const currentPipeline = initialPipelines.find((p) => p.id === selectedPipelineId) || initialPipelines[0];
 
-  const handleMoveCard = (cardId: string, targetStageId: string) => {
-    setCards((prev) =>
-      prev.map((c) => (c.id === cardId ? { ...c, stageId: targetStageId } : c))
-    );
+  const handleStageChange = (card: CrmCard, targetStageId: string) => {
+    if (targetStageId === 'perdido') {
+      setCardToMarkLost(card);
+      return;
+    }
+
+    if (targetStageId === 'fechamento') {
+      storageService.markCardWon(card.id, card.vehiclePrice);
+      toast.success(`Parabéns! Venda de ${card.contactName} concretizada com sucesso!`, 'Venda Concluída');
+      return;
+    }
+
+    storageService.moveCardStage(card.id, targetStageId);
+    const targetStage = currentPipeline.stages.find((s) => s.id === targetStageId);
+    toast.success(`Oportunidade movida para "${targetStage?.name || targetStageId}".`);
+  };
+
+  const handleConfirmLoss = (reason: string, notes: string) => {
+    if (!cardToMarkLost) return;
+    storageService.markCardLost(cardToMarkLost.id, `${reason} - ${notes}`);
+    toast.info(`Oportunidade de ${cardToMarkLost.contactName} arquivada como perdida: ${reason}.`);
+    setCardToMarkLost(null);
   };
 
   const handleToggleTaskStatus = (taskId: string) => {
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? { ...t, status: t.status === 'Concluída' ? 'Hoje' : 'Concluída' }
-          : t
-      )
-    );
+    storageService.toggleCrmTaskStatus(taskId);
+    toast.success('Status da tarefa comercial atualizado!');
   };
 
   const getTemperatureBadge = (temp?: LeadTemperature) => {
     switch (temp) {
       case 'Quente':
         return (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-bold">
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-bold">
             <Flame className="w-2.5 h-2.5 text-rose-400 fill-rose-400" />
             Quente
           </span>
         );
       case 'Morno':
         return (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-bold">
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-bold">
             <Thermometer className="w-2.5 h-2.5 text-amber-400" />
             Morno
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[9px] font-bold">
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[9px] font-bold">
             <Snowflake className="w-2.5 h-2.5 text-blue-400" />
             Frio
           </span>
@@ -110,15 +152,8 @@ export const CrmView: React.FC = () => {
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}
         onCreateContact={(newContactData) => {
-          const created: Contact = {
-            ...newContactData,
-            id: `ct-${Date.now()}`,
-            createdAt: 'Hoje',
-            status: 'Ativo',
-            totalPurchases: 0,
-            vehiclesConsulted: [],
-          };
-          setContacts((prev) => [created, ...prev]);
+          const created = storageService.addContact(newContactData);
+          toast.success(`Contato "${created.name}" cadastrado com sucesso!`);
         }}
       />
 
@@ -126,17 +161,93 @@ export const CrmView: React.FC = () => {
         isOpen={isAppointmentModalOpen}
         onClose={() => setIsAppointmentModalOpen(false)}
         onSchedule={(newApt) => {
-          const created: Appointment = {
-            ...newApt,
-            id: `apt-${Date.now()}`,
-          };
-          setAppointments((prev) => [created, ...prev]);
+          const created = storageService.addAppointment(newApt);
+          toast.success(`Visita/Test Drive para ${created.contactName} agendado para ${created.date} às ${created.time}!`);
         }}
+      />
+
+      <CreateCrmTaskModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        onSave={(taskData) => {
+          const created = storageService.addCrmTask(taskData);
+          toast.success(`Tarefa "${created.title}" criada com sucesso!`);
+        }}
+      />
+
+      <LossReasonModal
+        isOpen={!!cardToMarkLost}
+        onClose={() => setCardToMarkLost(null)}
+        onConfirm={handleConfirmLoss}
+        leadName={cardToMarkLost?.contactName}
+        vehicleName={cardToMarkLost?.vehicleName}
+      />
+
+      {/* Confirm Delete Modals */}
+      <ConfirmActionModal
+        isOpen={!!cardToDelete}
+        onClose={() => setCardToDelete(null)}
+        onConfirm={() => {
+          if (!cardToDelete) return;
+          storageService.deleteCrmCard(cardToDelete.id);
+          toast.success(`Oportunidade de ${cardToDelete.contactName} excluída com sucesso.`);
+          setCardToDelete(null);
+        }}
+        title="Excluir Oportunidade do Pipeline"
+        description={`Tem certeza que deseja excluir o card de ${cardToDelete?.contactName} (${cardToDelete?.vehicleName})? Esta ação removerá a negociação do funil.`}
+        confirmText="Excluir Card"
+        variant="danger"
+      />
+
+      <ConfirmActionModal
+        isOpen={!!contactToDelete}
+        onClose={() => setContactToDelete(null)}
+        onConfirm={() => {
+          if (!contactToDelete) return;
+          storageService.deleteContact(contactToDelete.id);
+          toast.success(`Contato ${contactToDelete.name} excluído.`);
+          setContactToDelete(null);
+          if (selectedContact?.id === contactToDelete.id) setSelectedContact(null);
+        }}
+        title="Excluir Contato 360º"
+        description={`Deseja excluir o cadastro de ${contactToDelete?.name}?`}
+        confirmText="Excluir Contato"
+        variant="danger"
+      />
+
+      <ConfirmActionModal
+        isOpen={!!taskToDelete}
+        onClose={() => setTaskToDelete(null)}
+        onConfirm={() => {
+          if (!taskToDelete) return;
+          storageService.deleteCrmTask(taskToDelete.id);
+          toast.success(`Tarefa "${taskToDelete.title}" excluída.`);
+          setTaskToDelete(null);
+        }}
+        title="Excluir Tarefa Comercial"
+        description={`Excluir a tarefa "${taskToDelete?.title}" permanentemente?`}
+        confirmText="Excluir Tarefa"
+        variant="danger"
+      />
+
+      <ConfirmActionModal
+        isOpen={!!appointmentToDelete}
+        onClose={() => setAppointmentToDelete(null)}
+        onConfirm={() => {
+          if (!appointmentToDelete) return;
+          storageService.deleteAppointment(appointmentToDelete.id);
+          toast.success(`Agendamento de ${appointmentToDelete.contactName} cancelado.`);
+          setAppointmentToDelete(null);
+        }}
+        title="Cancelar Agendamento VIP"
+        description={`Tem certeza que deseja cancelar o agendamento de ${appointmentToDelete?.contactName} em ${appointmentToDelete?.date} às ${appointmentToDelete?.time}?`}
+        confirmText="Cancelar Agendamento"
+        variant="danger"
       />
 
       {/* Sub Navigation Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
-        <div className="flex items-center gap-2 p-1 rounded-xl bg-[#1C1C1E] border border-zinc-800">
+        <div className="flex items-center gap-2 p-1 rounded-xl bg-[#1C1C1E] border border-zinc-800 flex-wrap">
           <button
             onClick={() => setActiveSubTab('pipelines')}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
@@ -146,7 +257,7 @@ export const CrmView: React.FC = () => {
             }`}
           >
             <Kanban className="w-4 h-4" />
-            <span>Pipelines / Funis</span>
+            <span>Pipelines / Funis ({cards.length})</span>
           </button>
           <button
             onClick={() => setActiveSubTab('contatos')}
@@ -157,7 +268,7 @@ export const CrmView: React.FC = () => {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>Contatos 360º</span>
+            <span>Contatos 360º ({contacts.length})</span>
           </button>
           <button
             onClick={() => setActiveSubTab('tarefas')}
@@ -168,7 +279,7 @@ export const CrmView: React.FC = () => {
             }`}
           >
             <CheckSquare className="w-4 h-4" />
-            <span>Tarefas Comerciais</span>
+            <span>Tarefas Comerciais ({tasks.length})</span>
           </button>
           <button
             onClick={() => setActiveSubTab('agenda')}
@@ -179,7 +290,7 @@ export const CrmView: React.FC = () => {
             }`}
           >
             <Calendar className="w-4 h-4" />
-            <span>Agendamentos VIP</span>
+            <span>Agendamentos VIP ({appointments.length})</span>
           </button>
         </div>
 
@@ -188,16 +299,27 @@ export const CrmView: React.FC = () => {
           {activeSubTab === 'contatos' && (
             <button
               onClick={() => setIsContactModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
+              className="px-3.5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Novo Contato 360º</span>
             </button>
           )}
+
+          {activeSubTab === 'tarefas' && (
+            <button
+              onClick={() => setIsTaskModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ Nova Tarefa</span>
+            </button>
+          )}
+
           {activeSubTab === 'agenda' && (
             <button
               onClick={() => setIsAppointmentModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer font-['Plus_Jakarta_Sans',sans-serif]"
+              className="px-3.5 py-2 rounded-xl bg-[#C4B5FD] hover:bg-[#DDD6FE] text-[#2E1065] font-bold text-xs shadow-md shadow-[#8B5CF6]/20 transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Agendar Visita / Test Drive</span>
@@ -240,13 +362,16 @@ export const CrmView: React.FC = () => {
             </div>
           </div>
 
-          {/* Kanban Board Columns (Horizontal Scrollable) */}
+          {/* Kanban Board Columns */}
           <div className="flex gap-4 overflow-x-auto pb-6 min-h-[580px]">
-            {currentPipeline.stages.map((stage) => {
+            {currentPipeline.stages.map((stage, stageIndex) => {
               const stageCards = cards.filter(
                 (c) => c.pipelineId === selectedPipelineId && c.stageId === stage.id
               );
               const totalValue = stageCards.reduce((acc, c) => acc + (c.vehiclePrice || 0), 0);
+
+              const prevStage = stageIndex > 0 ? currentPipeline.stages[stageIndex - 1] : null;
+              const nextStage = stageIndex < currentPipeline.stages.length - 1 ? currentPipeline.stages[stageIndex + 1] : null;
 
               return (
                 <div
@@ -331,12 +456,57 @@ export const CrmView: React.FC = () => {
                           </div>
                         )}
 
-                        {/* Card Footer: Responsible & Stage Mover */}
+                        {/* Card Footer: Responsible & Score */}
                         <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px]">
                           <span className="text-zinc-400 truncate">Resp: {card.assignedTo}</span>
                           <span className="text-[#DDD6FE] font-mono font-bold">
                             Score: {card.gridScore} pts
                           </span>
+                        </div>
+
+                        {/* Interactive Stage Actions & Quick Move */}
+                        <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between gap-1">
+                          <div className="flex items-center gap-1">
+                            {prevStage && (
+                              <button
+                                onClick={() => handleStageChange(card, prevStage.id)}
+                                className="p-1 rounded-md bg-[#0A0A0B] hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 transition-colors cursor-pointer"
+                                title={`Voltar para: ${prevStage.name}`}
+                              >
+                                <ArrowLeft className="w-3 h-3" />
+                              </button>
+                            )}
+
+                            <select
+                              value={card.stageId}
+                              onChange={(e) => handleStageChange(card, e.target.value)}
+                              className="text-[10px] px-1.5 py-1 rounded bg-[#0A0A0B] border border-zinc-800 text-zinc-300 focus:border-[#8B5CF6] outline-none max-w-[130px]"
+                            >
+                              {currentPipeline.stages.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                  {s.name}
+                                </option>
+                              ))}
+                            </select>
+
+                            {nextStage && (
+                              <button
+                                onClick={() => handleStageChange(card, nextStage.id)}
+                                className="p-1 rounded-md bg-[#8B5CF6]/20 hover:bg-[#8B5CF6] text-[#DDD6FE] hover:text-white border border-[#8B5CF6]/40 transition-colors cursor-pointer"
+                                title={`Avançar para: ${nextStage.name}`}
+                              >
+                                <ArrowRight className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={() => setCardToDelete(card)}
+                            className="p-1 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer ml-auto"
+                            title="Excluir Oportunidade"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -389,39 +559,54 @@ export const CrmView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/60">
-                {contacts.map((c) => (
-                  <tr key={c.id} className="hover:bg-zinc-800/40 transition-colors">
-                    <td className="p-3">
-                      <div className="font-bold text-white text-xs">{c.name}</div>
-                      <div className="text-[10px] text-zinc-400">{c.email || 'Sem e-mail'}</div>
-                    </td>
-                    <td className="p-3 font-mono text-zinc-300">{c.phone}</td>
-                    <td className="p-3 text-zinc-300">
-                      {c.city}, {c.state}
-                    </td>
-                    <td className="p-3">
-                      <span className="px-2 py-0.5 rounded-md bg-zinc-800 border border-zinc-700 text-zinc-300 text-[10px] font-mono">
-                        {c.origin}
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      <span className="px-2 py-0.5 rounded-md bg-[#8B5CF6]/20 text-[#DDD6FE] border border-[#8B5CF6]/30 text-[10px] font-semibold">
-                        {c.assignedTo}
-                      </span>
-                    </td>
-                    <td className="p-3 max-w-[200px] truncate text-zinc-300">
-                      {c.tradeInHistory || c.notes || 'Interesse em Sedans/SUVs'}
-                    </td>
-                    <td className="p-3 text-right">
-                      <button
-                        onClick={() => setSelectedContact(c)}
-                        className="px-2.5 py-1 rounded-lg bg-[#0A0A0B] hover:bg-zinc-800 border border-zinc-700 text-zinc-200 text-[11px] transition-colors cursor-pointer"
-                      >
-                        Ver 360º
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {contacts
+                  .filter((c) =>
+                    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    c.phone.includes(searchQuery) ||
+                    (c.city || '').toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map((c) => (
+                    <tr key={c.id} className="hover:bg-zinc-800/40 transition-colors">
+                      <td className="p-3">
+                        <div className="font-bold text-white text-xs">{c.name}</div>
+                        <div className="text-[10px] text-zinc-400">{c.email || 'Sem e-mail'}</div>
+                      </td>
+                      <td className="p-3 font-mono text-zinc-300">{c.phone}</td>
+                      <td className="p-3 text-zinc-300">
+                        {c.city}, {c.state}
+                      </td>
+                      <td className="p-3">
+                        <span className="px-2 py-0.5 rounded-md bg-zinc-800 border border-zinc-700 text-zinc-300 text-[10px] font-mono">
+                          {c.origin}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <span className="px-2 py-0.5 rounded-md bg-[#8B5CF6]/20 text-[#DDD6FE] border border-[#8B5CF6]/30 text-[10px] font-semibold">
+                          {c.assignedTo}
+                        </span>
+                      </td>
+                      <td className="p-3 max-w-[200px] truncate text-zinc-300">
+                        {c.tradeInHistory || c.notes || 'Interesse em Sedans/SUVs'}
+                      </td>
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setSelectedContact(c)}
+                            className="px-2.5 py-1 rounded-lg bg-[#0A0A0B] hover:bg-zinc-800 border border-zinc-700 text-zinc-200 text-[11px] transition-colors cursor-pointer"
+                          >
+                            Ver 360º
+                          </button>
+                          <button
+                            onClick={() => setContactToDelete(c)}
+                            className="p-1 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                            title="Excluir Contato"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -434,20 +619,30 @@ export const CrmView: React.FC = () => {
       {activeSubTab === 'tarefas' && (
         <div className="space-y-4">
           {/* Filter tabs */}
-          <div className="flex items-center gap-2">
-            {(['all', 'Hoje', 'Atrasada', 'Próxima', 'Concluída'] as const).map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setTaskFilter(filter)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  taskFilter === filter
-                    ? 'bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/30'
-                    : 'bg-[#1C1C1E] text-zinc-400 border border-zinc-800 hover:text-white'
-                }`}
-              >
-                {filter === 'all' ? 'Todas Tarefas' : filter}
-              </button>
-            ))}
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              {(['all', 'Hoje', 'Atrasada', 'Próxima', 'Concluída'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setTaskFilter(filter)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    taskFilter === filter
+                      ? 'bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/30'
+                      : 'bg-[#1C1C1E] text-zinc-400 border border-zinc-800 hover:text-white'
+                  }`}
+                >
+                  {filter === 'all' ? 'Todas Tarefas' : filter}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setIsTaskModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ Nova Tarefa</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -458,7 +653,7 @@ export const CrmView: React.FC = () => {
                 return (
                   <div
                     key={t.id}
-                    className={`p-4 rounded-2xl border transition-all flex items-start gap-3 ${
+                    className={`p-4 rounded-2xl border transition-all flex items-start gap-3 relative group ${
                       isDone
                         ? 'bg-[#141416]/60 border-zinc-800/40 opacity-70'
                         : t.status === 'Atrasada'
@@ -473,6 +668,7 @@ export const CrmView: React.FC = () => {
                           ? 'bg-emerald-500 text-white border-emerald-400'
                           : 'bg-[#0A0A0B] border-zinc-700 text-transparent hover:border-[#8B5CF6]'
                       }`}
+                      title={isDone ? 'Marcar como pendente' : 'Marcar como concluída'}
                     >
                       <CheckCircle2 className="w-4 h-4" />
                     </button>
@@ -486,24 +682,40 @@ export const CrmView: React.FC = () => {
                         >
                           {t.title}
                         </h4>
-                        <span
-                          className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
-                            t.priority === 'Urgente'
-                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                              : t.priority === 'Alta'
-                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                              : 'bg-zinc-800 text-zinc-300'
-                          }`}
-                        >
-                          {t.priority}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                              t.priority === 'Urgente'
+                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                : t.priority === 'Alta'
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                : 'bg-zinc-800 text-zinc-300'
+                            }`}
+                          >
+                            {t.priority}
+                          </span>
+                          <button
+                            onClick={() => setTaskToDelete(t)}
+                            className="p-1 rounded text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                            title="Excluir Tarefa"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
 
                       <div className="text-[11px] text-zinc-400 mt-1 flex items-center gap-2">
                         <span>👤 {t.contactName}</span>
                         <span>•</span>
-                        <span className="font-mono text-zinc-300">📅 {t.dueDate} às {t.dueTime}</span>
+                        <span className="font-mono text-zinc-300">📅 {t.dueDate} {t.dueTime ? `às ${t.dueTime}` : ''}</span>
                       </div>
+
+                      {t.vehicle && (
+                        <div className="text-[11px] text-[#DDD6FE] mt-1 flex items-center gap-1 font-mono">
+                          <Car className="w-3 h-3 text-[#A78BFA]" />
+                          <span>{t.vehicle}</span>
+                        </div>
+                      )}
 
                       {t.notes && (
                         <p className="text-[11px] text-zinc-300 mt-1.5 bg-[#0A0A0B] p-2 rounded-lg border border-zinc-800">
@@ -528,19 +740,39 @@ export const CrmView: React.FC = () => {
       {/* ========================================================================= */}
       {activeSubTab === 'agenda' && (
         <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-zinc-400">{appointments.length} agendamentos confirmados</span>
+            <button
+              onClick={() => setIsAppointmentModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7C3AED] text-white text-xs font-bold shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>Agendar Novo Test Drive</span>
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {appointments.map((apt) => (
               <div
                 key={apt.id}
-                className="p-4 rounded-2xl bg-[#1C1C1E] border border-zinc-800 hover:border-[#8B5CF6]/40 shadow-xl transition-all space-y-3"
+                className="p-4 rounded-2xl bg-[#1C1C1E] border border-zinc-800 hover:border-[#8B5CF6]/40 shadow-xl transition-all space-y-3 relative group"
               >
                 <div className="flex items-center justify-between">
                   <span className="px-2 py-0.5 rounded-md bg-[#8B5CF6]/20 text-[#DDD6FE] border border-[#8B5CF6]/30 text-[10px] font-bold">
                     {apt.type}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
-                    {apt.status}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                      {apt.status}
+                    </span>
+                    <button
+                      onClick={() => setAppointmentToDelete(apt)}
+                      className="p-1 rounded text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      title="Cancelar / Excluir Agendamento"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
 
                 <div>
