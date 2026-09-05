@@ -637,6 +637,7 @@ export default function App() {
 
           {activeTab === 'leads' && (
             <LeadsView
+              theme={theme}
               leads={leads}
               onOpenNewLead={() => setIsCreateLeadModalOpen(true)}
               onOpenChat={handleOpenChatFromLead}

@@ -26,6 +26,7 @@ import {
   MetricSummary,
   WebhookEndpoint,
   LeadItem,
+  LeadStatus,
   EstoqueItem,
   PipelineConfig,
 } from '../types';
@@ -2176,21 +2177,34 @@ export const initialWebhooks: WebhookEndpoint[] = [
   },
 ];
 
-export const initialLeads: LeadItem[] = initialConversations.map((c) => ({
-  id: c.id,
-  name: c.contactName,
-  email: 'cliente@motorgrid.com.br',
-  phone: c.contactPhone,
-  company: c.tracking.origin,
-  fleetSize: 1,
-  estimatedValue: c.tracking.vehicleOfInterest?.price || 250000,
-  source: 'Tráfego Pago',
-  status: c.status === 'Novo' ? 'Novo' : 'Em Contato',
-  assignedTo: c.assignedTo,
-  createdAt: 'Hoje',
-  lastContact: c.lastMessageTime,
-  tags: c.tags,
-}));
+export const initialLeads: LeadItem[] = initialConversations.map((c) => {
+  const vehicleName = c.tracking?.vehicleOfInterest
+    ? `${c.tracking.vehicleOfInterest.brand} ${c.tracking.vehicleOfInterest.model}`
+    : 'BMW 320i';
+  const price = c.tracking?.vehicleOfInterest?.price || 289900;
+  const origin = c.tracking?.origin || 'Instagram Ads';
+  const trafficType = c.tracking?.utmMedium === 'portal' ? 'Portal' : (c.tracking?.utmMedium === 'cpc' ? 'Tráfego Pago' : 'Orgânico');
+
+  return {
+    id: c.id,
+    name: c.contactName,
+    email: c.id === 'conv-1' ? 'cliente@motorgrid.com' : `${c.contactName.toLowerCase().replace(/[^a-z0-9]/g, '.')}@motorgrid.com.br`,
+    phone: c.contactPhone,
+    company: origin,
+    fleetSize: 1,
+    estimatedValue: price,
+    source: (origin as any) || 'Instagram Ads',
+    status: (c.status === 'Novo' ? 'Novo' : c.status === 'Em Atendimento' ? 'Em Contato' : 'Qualificado') as LeadStatus,
+    assignedTo: c.assignedTo,
+    createdAt: 'Hoje',
+    lastContact: c.lastMessageTime || 'Há 3 min',
+    tags: c.tags,
+    vehicleInterest: vehicleName,
+    channel: c.channel,
+    trafficType: trafficType,
+    origin: origin,
+  };
+});
 
 export const monthlyRevenueData = [
   { month: 'Mar', mrr: 1120000, novos: 1450000, churn: 0, clientes: 34 },

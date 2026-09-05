@@ -702,8 +702,8 @@ export interface WebhookEndpoint {
   lastTriggered?: string;
 }
 
-export type LeadStatus = 'Novo' | 'Em Contato' | 'Qualificado' | 'Proposta Enviada' | 'Ganho' | 'Perdido';
-export type LeadSource = 'Site / Landing Page' | 'WhatsApp Direto' | 'Indicação de Frotista' | 'Tráfego Pago' | 'Feira Automotiva' | 'Outbound';
+export type LeadStatus = 'Novo' | 'Em Contato' | 'Qualificado' | 'Agendado' | 'Proposta Enviada' | 'Negociação' | 'Ganho' | 'Perdido';
+export type LeadSource = 'Site / Landing Page' | 'WhatsApp Direto' | 'Indicação de Frotista' | 'Tráfego Pago' | 'Feira Automotiva' | 'Outbound' | 'Instagram Ads' | 'Google Ads' | 'Webmotors' | 'OLX Autos' | 'Facebook Ads';
 export interface LeadItem {
   id: string;
   name: string;
@@ -719,6 +719,10 @@ export interface LeadItem {
   createdAt: string;
   lastContact: string;
   tags?: string[];
+  vehicleInterest?: string;
+  channel?: CommunicationChannel | string;
+  trafficType?: string;
+  origin?: string;
 }
 
 export type EstoqueStatus = 'Disponível' | 'Instalado' | 'Em Teste' | 'Em Manutenção' | 'Reservado';
