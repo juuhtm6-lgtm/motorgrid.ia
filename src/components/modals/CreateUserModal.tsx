@@ -11,7 +11,8 @@ import {
   Car,
   KeyRound,
 } from 'lucide-react';
-import { AuthUser, UserRole, PlanTier } from '../../types';
+import { AuthUser, UserRole, PlanTier, CanonicalRole } from '../../types';
+import { getDefaultPermissions } from '../../data/mockData';
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<UserRole>('Gestor de Frotas');
+  const [role, setRole] = useState<UserRole>('Vendedor');
   const [company, setCompany] = useState(currentCompany);
   const [plan, setPlan] = useState<PlanTier>('Pro');
   const [phone, setPhone] = useState('');
@@ -52,16 +53,35 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
 
+    let canonicalRole: CanonicalRole = 'salesperson';
+    if (role === 'Gerente' || role === 'Gestor Geral') canonicalRole = 'manager';
+    else if (role === 'Supervisor') canonicalRole = 'supervisor';
+    else if (role === 'SDR') canonicalRole = 'sdr';
+    else if (role === 'Vendedor') canonicalRole = 'salesperson';
+
+    const permissions = getDefaultPermissions(canonicalRole);
+
     onCreateUser({
       name,
       email,
       role,
+      canonicalRole,
       company: company || currentCompany,
+      companyId: 'tenant-1',
+      unitId: 'unit-1',
+      unitName: 'Showroom Matriz - Jardins',
       avatar: selectedAvatar,
       plan,
       phone,
       twoFactorEnabled: false,
       status: 'Ativo',
+      permissions,
+      leadsCount: 0,
+      attendancesCount: 0,
+      salesCount: 0,
+      salesMonth: 0,
+      avgResponseTimeMin: 0,
+      scoreAi: 90,
     });
 
     onClose();
@@ -137,11 +157,11 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 onChange={(e) => setRole(e.target.value as UserRole)}
                 className="w-full px-3 py-2.5 rounded-xl bg-[#0A0A0B] border border-zinc-700 text-zinc-100 focus:outline-none focus:border-[#8B5CF6]"
               >
-                <option value="Administrador">Administrador</option>
-                <option value="Gestor de Frotas">Gestor de Frotas</option>
-                <option value="Engenheiro de Telemetria">Engenheiro de Telemetria</option>
-                <option value="Customer Success">Customer Success</option>
-                <option value="Analista de Operações">Analista de Operações</option>
+                <option value="Gerente">Gerente da Concessionária</option>
+                <option value="Supervisor">Supervisor Comercial</option>
+                <option value="SDR">SDR / Pré-vendas</option>
+                <option value="Vendedor">Vendedor Showroom</option>
+                <option value="Gestor Geral">Gestor Geral</option>
               </select>
             </div>
 

@@ -49,6 +49,7 @@ import { ReportsView } from './components/views/ReportsView';
 import { RelatoriosView } from './components/views/RelatoriosView';
 import { MetaAdsView } from './components/views/MetaAdsView';
 import { SettingsView } from './components/views/SettingsView';
+import { EquipeView } from './components/views/EquipeView';
 import { NewCustomerModal } from './components/modals/NewCustomerModal';
 import { NewTaskModal } from './components/modals/NewTaskModal';
 import { CreateLeadModal } from './components/modals/CreateLeadModal';
@@ -680,6 +681,13 @@ export default function App() {
 
           {activeTab === 'performance' && (
             <PerformanceView metrics={metrics} />
+          )}
+
+          {activeTab === 'equipe' && (
+            <EquipeView
+              currentUser={currentUser}
+              theme={theme}
+            />
           )}
 
           {activeTab === 'customers' && (

@@ -103,6 +103,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: TrendingUp,
     },
     {
+      id: 'equipe' as ActiveTab,
+      label: 'Gestão de Equipe',
+      icon: Users,
+    },
+    {
       id: 'relatorios' as ActiveTab,
       label: 'Relatórios',
       icon: BarChart3,
@@ -277,13 +282,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
               key={item.id}
               onClick={() => {
                 if (
+                  item.id === 'equipe' &&
+                  currentUser &&
+                  currentUser.canonicalRole !== 'platform_admin' &&
+                  currentUser.canonicalRole !== 'manager' &&
+                  currentUser.canonicalRole !== 'supervisor' &&
+                  !currentUser.permissions?.equipe?.createUser &&
+                  !currentUser.permissions?.equipe?.editUser
+                ) {
+                  toast.error(
+                    `Acesso restrito: Gestão de Equipe é restrita a Gerentes, Supervisores e Administradores. Seu perfil é: ${currentUser.role}`
+                  );
+                  return;
+                }
+                if (
                   item.id === 'administracao' &&
                   currentUser &&
+                  currentUser.canonicalRole !== 'platform_admin' &&
+                  currentUser.canonicalRole !== 'manager' &&
+                  currentUser.role !== 'Administrador MotorGrid' &&
                   currentUser.role !== 'Administrador' &&
                   currentUser.role !== 'Gestor Geral'
                 ) {
                   toast.error(
-                    `Acesso restrito: Módulo exclusivo para Administradores e Gestores. Perfil atual: ${currentUser.role}`
+                    `Acesso restrito: Módulo exclusivo para Administradores e Gerentes. Perfil atual: ${currentUser.role}`
                   );
                   return;
                 }

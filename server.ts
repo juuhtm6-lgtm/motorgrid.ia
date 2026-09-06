@@ -36,6 +36,121 @@ async function startServer() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // ========================================================
+  // MULTI-TENANT RBAC & TEAM SECURITY ENDPOINTS
+  // ========================================================
+
+  // Tenant Security Middleware Helper
+  const requireTenantAccess = (req: Request, res: Response, next: express.NextFunction) => {
+    const tenantId = (req.headers['x-tenant-id'] as string) || req.body?.companyId || req.query?.companyId;
+    const userRole = (req.headers['x-user-role'] as string) || 'salesperson';
+
+    if (userRole === 'platform_admin') {
+      return next(); // Platform admin has cross-tenant oversight
+    }
+
+    if (!tenantId) {
+      return res.status(401).json({
+        error: 'Acesso negado: Tenant ID ausente na requisição.',
+        code: 'TENANT_HEADER_REQUIRED',
+      });
+    }
+
+    next();
+  };
+
+  // 1. RBAC Session Validation Endpoint
+  app.get('/api/auth/verify-session', (req: Request, res: Response) => {
+    const userId = req.headers['x-user-id'] as string;
+    const tenantId = req.headers['x-tenant-id'] as string;
+    const userRole = req.headers['x-user-role'] as string;
+
+    if (!userId || !tenantId) {
+      return res.status(401).json({ valid: false, error: 'Sessão não autorizada ou credenciais expiradas.' });
+    }
+
+    return res.json({
+      valid: true,
+      authenticatedUser: {
+        userId,
+        tenantId,
+        userRole: userRole || 'salesperson',
+        isSuperAdmin: userRole === 'platform_admin',
+        verifiedAt: new Date().toISOString(),
+      },
+    });
+  });
+
+  // 2. Validate Permission Grant (Backend Enforcement of Inheritance Rule)
+  app.post('/api/rbac/validate-grant', (req: Request, res: Response) => {
+    const { targetRole, proposedPermissions, granterRole, granterPermissions, companyModules } = req.body;
+
+    const violations: string[] = [];
+
+    // Check Plan modules
+    if (companyModules) {
+      if (!companyModules.gridAi && proposedPermissions?.gridAi?.useAi) {
+        violations.push('Módulo Grid AI não habilitado no plano da concessionária.');
+      }
+      if (!companyModules.estoque && (proposedPermissions?.estoque?.view || proposedPermissions?.estoque?.edit)) {
+        violations.push('Módulo de Estoque não contratado no plano da concessionária.');
+      }
+      if (!companyModules.relatorios && proposedPermissions?.relatorios?.export) {
+        violations.push('Exportação de relatórios bloqueada pelo plano.');
+      }
+    }
+
+    // Check Granter boundaries (unless platform_admin)
+    if (granterRole !== 'platform_admin') {
+      if (targetRole === 'platform_admin') {
+        violations.push('Gerentes não podem conceder privilégios de Administrador MotorGrid.');
+      }
+      if (granterPermissions) {
+        if (!granterPermissions.crm?.delete && proposedPermissions?.crm?.delete) {
+          violations.push('Você não pode conceder exclusão no CRM sem possuir essa permissão.');
+        }
+        if (!granterPermissions.leads?.viewAll && proposedPermissions?.leads?.viewAll) {
+          violations.push('Você não pode conceder visualização de todos os leads da loja.');
+        }
+        if (!granterPermissions.equipe?.changePermissions && proposedPermissions?.equipe?.changePermissions) {
+          violations.push('Apenas administradores podem delegar gestão de permissões.');
+        }
+      }
+    }
+
+    if (violations.length > 0) {
+      return res.status(403).json({
+        valid: false,
+        violations,
+        error: 'Violação da hierarquia de herança de permissões.',
+      });
+    }
+
+    return res.json({ valid: true, message: 'Permissões validadas com sucesso dentro da hierarquia.' });
+  });
+
+  // 3. Security Audit Log Intake Endpoint
+  app.post('/api/audit/log', requireTenantAccess, (req: Request, res: Response) => {
+    const { action, module, targetRecord, companyId, userId, userName, userRole, result } = req.body;
+
+    const logEntry = {
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      timestamp: new Date().toISOString(),
+      action: action || 'Ação Operacional',
+      module: module || 'Sistema',
+      targetRecord: targetRecord || 'N/A',
+      companyId: companyId || req.headers['x-tenant-id'] || 'tenant-1',
+      userId: userId || req.headers['x-user-id'] || 'usr-anon',
+      userName: userName || 'Usuário',
+      userRole: userRole || req.headers['x-user-role'] || 'Operador',
+      result: result || 'Sucesso',
+      ip: req.ip || '127.0.0.1',
+    };
+
+    console.log(`[AUDIT LOG] [${logEntry.companyId}] [${logEntry.userRole}] ${logEntry.action} -> ${logEntry.result}`);
+    return res.json({ success: true, logEntry });
+  });
+
   // Gemini Generic Generate API
   app.post('/api/gemini/generate', async (req: Request, res: Response) => {
     const { prompt, systemInstruction } = req.body;

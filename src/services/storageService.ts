@@ -10,6 +10,11 @@ import {
   Conversation,
   AttendanceSummary,
   AutomationRule,
+  AuthUser,
+  CompanyTenant,
+  AuditLogEntry,
+  UserPermissions,
+  CanonicalRole,
 } from '../types';
 import { ExecutiveLeadRecord } from '../types/dashboard';
 import {
@@ -21,6 +26,10 @@ import {
   initialAppointments,
   initialConversations,
   initialAutomations,
+  initialCompanies,
+  initialAuthUsers,
+  initialAuditLogs,
+  getDefaultPermissions,
 } from '../data/mockData';
 import { initialExecutiveRecords } from '../data/executiveRecordsData';
 
@@ -37,6 +46,9 @@ const STORAGE_KEYS = {
   DASHBOARD_RECORDS: 'motorgrid_dashboard_records_v2',
   BROADCASTS: 'motorgrid_broadcasts_v2',
   MARKETPLACE_MODULES: 'motorgrid_marketplace_modules_v2',
+  USERS: 'motorgrid_auth_users',
+  COMPANIES: 'motorgrid_companies_v2',
+  AUDIT_LOGS: 'motorgrid_audit_logs_v2',
 };
 
 export interface BroadcastCampaignItem {
@@ -799,6 +811,248 @@ class StorageService {
 
   public saveMarketplaceModules<T>(modules: T[]): void {
     this.setStored(STORAGE_KEYS.MARKETPLACE_MODULES, modules);
+  }
+
+  // ==========================================
+  // 13. GESTÃO DE EMPRESAS & MULTI-TENANCY
+  // ==========================================
+  public getCompanies(): CompanyTenant[] {
+    return this.getStored<CompanyTenant[]>(STORAGE_KEYS.COMPANIES, initialCompanies);
+  }
+
+  public getCompany(companyId: string): CompanyTenant | undefined {
+    const companies = this.getCompanies();
+    return companies.find((c) => c.id === companyId);
+  }
+
+  public updateCompany(companyId: string, partial: Partial<CompanyTenant>): void {
+    const companies = this.getCompanies();
+    const updated = companies.map((c) => (c.id === companyId ? { ...c, ...partial } : c));
+    this.setStored(STORAGE_KEYS.COMPANIES, updated);
+  }
+
+  // ==========================================
+  // 14. GESTÃO DE USUÁRIOS & EQUIPES (RBAC)
+  // ==========================================
+  public getUsers(): AuthUser[] {
+    return this.getStored<AuthUser[]>(STORAGE_KEYS.USERS, initialAuthUsers);
+  }
+
+  public getTeamUsers(companyId?: string): AuthUser[] {
+    const users = this.getUsers();
+    if (!companyId || companyId === 'platform') {
+      return users;
+    }
+    return users.filter((u) => u.companyId === companyId);
+  }
+
+  public getUserById(userId: string): AuthUser | undefined {
+    const users = this.getUsers();
+    return users.find((u) => u.id === userId);
+  }
+
+  public addUser(user: AuthUser, actorUser?: AuthUser): { success: boolean; error?: string } {
+    const users = this.getUsers();
+    const existing = users.find((u) => u.email.toLowerCase() === user.email.toLowerCase());
+    if (existing) {
+      return { success: false, error: 'Já existe um usuário cadastrado com este e-mail corporativo.' };
+    }
+
+    // Tenant check user limit
+    if (user.companyId && user.companyId !== 'platform') {
+      const company = this.getCompany(user.companyId);
+      if (company) {
+        const currentCount = users.filter((u) => u.companyId === user.companyId && u.status !== 'Bloqueado').length;
+        if (currentCount >= company.userLimit) {
+          return {
+            success: false,
+            error: `Limite de usuários do plano (${company.userLimit} licenças) atingido para esta empresa.`,
+          };
+        }
+      }
+    }
+
+    const updated = [user, ...users];
+    this.setStored(STORAGE_KEYS.USERS, updated);
+
+    // Audit log
+    this.addAuditLog({
+      userId: actorUser?.id || user.id,
+      userName: actorUser?.name || user.name,
+      userRole: actorUser?.role || user.role,
+      companyId: user.companyId || 'tenant-1',
+      companyName: user.company || 'Empresa',
+      action: 'Criação de Usuário',
+      module: 'Gestão de Equipe',
+      targetRecord: `${user.name} (${user.role} - ${user.email})`,
+      ipAddress: '189.40.122.9',
+      result: 'Sucesso',
+    });
+
+    return { success: true };
+  }
+
+  public updateUser(userId: string, partial: Partial<AuthUser>, actorUser?: AuthUser): void {
+    const users = this.getUsers();
+    const targetUser = users.find((u) => u.id === userId);
+    const updated = users.map((u) => (u.id === userId ? { ...u, ...partial } : u));
+    this.setStored(STORAGE_KEYS.USERS, updated);
+
+    if (targetUser) {
+      this.addAuditLog({
+        userId: actorUser?.id || 'usr-system',
+        userName: actorUser?.name || 'Sistema',
+        userRole: actorUser?.role || 'Gerente',
+        companyId: targetUser.companyId || 'tenant-1',
+        companyName: targetUser.company || 'Empresa',
+        action: partial.status ? `Alteração de Status para ${partial.status}` : 'Edição de Cadastro de Usuário',
+        module: 'Gestão de Equipe',
+        targetRecord: `${targetUser.name} (${userId})`,
+        ipAddress: '189.40.122.9',
+        result: 'Sucesso',
+      });
+    }
+  }
+
+  // ==========================================
+  // 15. REGRA DE HERANÇA DE PERMISSÕES
+  // ==========================================
+  public validatePermissionGrant(
+    targetRole: CanonicalRole,
+    proposedPermissions: UserPermissions,
+    granterUser: AuthUser,
+    company?: CompanyTenant
+  ): { valid: boolean; violations: string[] } {
+    const violations: string[] = [];
+
+    // 1. Regra da Empresa: Módulos contratados no Plano/Empresa
+    if (company) {
+      if (!company.enabledModules.gridAi && proposedPermissions.gridAi?.useAi) {
+        violations.push('Módulo Grid AI não contratado pela concessionária no plano atual.');
+      }
+      if (!company.enabledModules.estoque && (proposedPermissions.estoque?.view || proposedPermissions.estoque?.edit)) {
+        violations.push('Módulo de Estoque não habilitado no plano da concessionária.');
+      }
+      if (!company.enabledModules.relatorios && proposedPermissions.relatorios?.export) {
+        violations.push('Exportação de relatórios bloqueada pelo plano da empresa.');
+      }
+    }
+
+    // 2. Regra do Concedente: Nenhum usuário pode conceder permissão superior à sua própria
+    if (granterUser.canonicalRole !== 'platform_admin') {
+      const granterPerms = granterUser.permissions || getDefaultPermissions(granterUser.canonicalRole || 'manager');
+
+      // Check CRM
+      if (!granterPerms.crm.delete && proposedPermissions.crm.delete) {
+        violations.push('Você não pode conceder permissão de exclusão no CRM que você mesmo não possui.');
+      }
+      // Check Leads
+      if (!granterPerms.leads.viewAll && proposedPermissions.leads.viewAll) {
+        violations.push('Você não pode conceder visualização de todos os leads da empresa.');
+      }
+      if (!granterPerms.leads.delete && proposedPermissions.leads.delete) {
+        violations.push('Você não pode conceder exclusão de leads.');
+      }
+      // Check Relatórios
+      if (!granterPerms.relatorios.export && proposedPermissions.relatorios.export) {
+        violations.push('Você não possui permissão para exportar relatórios.');
+      }
+      // Check Equipe
+      if (!granterPerms.equipe.changePermissions && proposedPermissions.equipe.changePermissions) {
+        violations.push('Apenas administradores ou gerentes com permissão podem delegar gestão de acessos.');
+      }
+
+      // Check Role hierarchy: Manager can only create/manage Supervisor, SDR, Salesperson
+      if (targetRole === 'platform_admin') {
+        violations.push('Gerentes não podem promover usuários a Administrador MotorGrid.');
+      }
+    }
+
+    return {
+      valid: violations.length === 0,
+      violations,
+    };
+  }
+
+  public updateUserPermissions(
+    userId: string,
+    permissions: UserPermissions,
+    granterUser: AuthUser
+  ): { success: boolean; error?: string } {
+    const user = this.getUserById(userId);
+    if (!user) {
+      return { success: false, error: 'Usuário não encontrado.' };
+    }
+
+    const company = user.companyId ? this.getCompany(user.companyId) : undefined;
+    const validation = this.validatePermissionGrant(
+      user.canonicalRole || 'salesperson',
+      permissions,
+      granterUser,
+      company
+    );
+
+    if (!validation.valid) {
+      this.addAuditLog({
+        userId: granterUser.id,
+        userName: granterUser.name,
+        userRole: granterUser.role,
+        companyId: user.companyId || 'tenant-1',
+        companyName: user.company,
+        action: 'Tentativa Inválida de Alteração de Permissões (Violação de Herança)',
+        module: 'Permissões RBAC',
+        targetRecord: `${user.name} - ${validation.violations.join('; ')}`,
+        ipAddress: '189.40.122.9',
+        result: 'Bloqueado',
+      });
+      return { success: false, error: validation.violations.join(' ') };
+    }
+
+    this.updateUser(userId, { permissions }, granterUser);
+
+    this.addAuditLog({
+      userId: granterUser.id,
+      userName: granterUser.name,
+      userRole: granterUser.role,
+      companyId: user.companyId || 'tenant-1',
+      companyName: user.company,
+      action: 'Atualização de Permissões Granulares (RBAC)',
+      module: 'Permissões RBAC',
+      targetRecord: `${user.name} (${user.role})`,
+      ipAddress: '189.40.122.9',
+      result: 'Sucesso',
+    });
+
+    return { success: true };
+  }
+
+  // ==========================================
+  // 16. AUDITORIA OPERACIONAL & LOGS
+  // ==========================================
+  public getAuditLogs(companyId?: string): AuditLogEntry[] {
+    const logs = this.getStored<AuditLogEntry[]>(STORAGE_KEYS.AUDIT_LOGS, initialAuditLogs);
+    if (!companyId || companyId === 'platform') {
+      return logs;
+    }
+    return logs.filter((l) => l.companyId === companyId || l.companyId === 'platform');
+  }
+
+  public addAuditLog(entry: Omit<AuditLogEntry, 'id' | 'timestamp'> & { timestamp?: string }): AuditLogEntry {
+    const logs = this.getAuditLogs();
+    const now = new Date();
+    const timeString =
+      entry.timestamp ||
+      `Hoje às ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+
+    const newLog: AuditLogEntry = {
+      id: `log-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      timestamp: timeString,
+      ...entry,
+    };
+
+    const updated = [newLog, ...logs.slice(0, 99)]; // retain last 100
+    this.setStored(STORAGE_KEYS.AUDIT_LOGS, updated);
+    return newLog;
   }
 }
 

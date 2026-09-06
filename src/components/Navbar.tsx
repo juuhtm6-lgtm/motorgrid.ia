@@ -69,6 +69,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         return { title: 'Automação & Gatilhos Comerciais', subtitle: 'Regras de atendimento 24/7, distribuição de leads e disparos automáticos' };
       case 'performance':
         return { title: 'Performance & Eficiência Comercial', subtitle: 'Desempenho da equipe, conversão por vendedor e metas' };
+      case 'equipe':
+        return {
+          title: 'Gestão de Equipe & Controle de Permissões',
+          subtitle: 'Estrutura hierárquica, gestão de colaboradores, unidades e permissões RBAC',
+        };
       case 'administracao':
       case 'settings':
         return { title: 'Painel de Administração do Sistema', subtitle: 'Membros da equipe, planos, credenciais de API e segurança do workspace' };

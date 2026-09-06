@@ -27,11 +27,70 @@ export type ActiveTab =
   | 'sales'
   | 'ai-copilot'
   | 'login'
-  | 'administracao';
+  | 'administracao'
+  | 'equipe'
+  | 'metas'
+  | 'agenda'
+  | 'tarefas';
 
 export type PlanTier = 'Starter' | 'Pro' | 'Enterprise' | 'Custom';
 export type LeadTemperature = 'Frio' | 'Morno' | 'Quente' | 'Pronto para Fechar';
 export type ThemeMode = 'dark' | 'light';
+
+// RBAC Canonical Roles
+export type CanonicalRole =
+  | 'platform_admin'
+  | 'manager'
+  | 'supervisor'
+  | 'sdr'
+  | 'salesperson';
+
+// Granular RBAC Permissions
+export interface UserPermissions {
+  crm: {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+  };
+  leads: {
+    viewOwn: boolean;
+    viewAll: boolean;
+    edit: boolean;
+    transfer: boolean;
+    delete: boolean;
+  };
+  atendimentos: {
+    view: boolean;
+    reply: boolean;
+    transfer: boolean;
+  };
+  pipeline: {
+    view: boolean;
+    move: boolean;
+  };
+  relatorios: {
+    viewOwn: boolean;
+    viewTeam: boolean;
+    export: boolean;
+  };
+  equipe: {
+    createUser: boolean;
+    editUser: boolean;
+    changePermissions: boolean;
+  };
+  estoque: {
+    view: boolean;
+    edit: boolean;
+  };
+  gridAi: {
+    useAi: boolean;
+  };
+  configuracoes: {
+    view: boolean;
+    edit: boolean;
+  };
+}
 
 export interface IntegrationItem {
   id: string;
@@ -55,6 +114,40 @@ export interface TenantUnit {
   sellersCount: number;
 }
 
+export interface CompanyTenant {
+  id: string; // e.g. 'tenant-1'
+  name: string;
+  tradeName: string;
+  cnpj: string;
+  logo: string;
+  address: string;
+  phone: string;
+  timezone: string;
+  plan: PlanTier;
+  status: 'Ativo' | 'Inativo' | 'Bloqueado';
+  userLimit: number;
+  activeUsersCount: number;
+  managerId?: string;
+  managerName?: string;
+  enabledModules: {
+    crm: boolean;
+    leads: boolean;
+    pipeline: boolean;
+    atendimentos: boolean;
+    agenda: boolean;
+    tarefas: boolean;
+    equipe: boolean;
+    metas: boolean;
+    relatorios: boolean;
+    estoque: boolean;
+    gridAi: boolean;
+    metaAds: boolean;
+    configuracoes: boolean;
+  };
+  units: TenantUnit[];
+  activeUnitId: string;
+}
+
 export interface Tenant {
   id: string;
   name: string;
@@ -72,9 +165,18 @@ export interface Tenant {
 // User & RBAC
 export type UserRole =
   | 'Administrador'
+  | 'Administrador MotorGrid'
+  | 'platform_admin'
+  | 'Gerente'
+  | 'manager'
+  | 'Supervisor'
+  | 'supervisor'
+  | 'SDR'
+  | 'sdr'
+  | 'Vendedor'
+  | 'salesperson'
   | 'Gestor'
   | 'SDR / ACO'
-  | 'Vendedor'
   | 'Documentação'
   | 'Marketing'
   | 'Admin / Diretor'
@@ -106,20 +208,41 @@ export interface AuthUser {
   name: string;
   email: string;
   role: UserRole;
+  canonicalRole?: CanonicalRole;
   team?: string;
   company: string;
+  companyId?: string;
   unitId?: string;
+  unitName?: string;
   avatar?: string;
   plan: PlanTier;
   phone?: string;
   twoFactorEnabled?: boolean;
   lastLogin: string;
   createdAt: string;
-  status: 'Ativo' | 'Inativo';
+  status: 'Ativo' | 'Ausente' | 'Offline' | 'Bloqueado' | 'Inativo';
   leadsCount?: number;
+  attendancesCount?: number;
+  salesCount?: number;
   salesMonth?: number;
   avgResponseTimeMin?: number;
   scoreAi?: number;
+  permissions?: UserPermissions;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;
+  userId: string;
+  userName: string;
+  userRole: string;
+  companyId: string;
+  companyName: string;
+  action: string;
+  module: string;
+  targetRecord: string;
+  ipAddress: string;
+  result: 'Sucesso' | 'Bloqueado' | 'Erro';
 }
 
 export interface TeamMember {
