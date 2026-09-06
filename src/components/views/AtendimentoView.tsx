@@ -544,6 +544,20 @@ export const AtendimentoView: React.FC<AtendimentoViewProps> = ({
                 },
               ],
             });
+
+            // Synchronize assignedTo with Leads, CRM Cards, and Dashboard
+            const leads = storageService.getLeads();
+            const matchedLead = leads.find((l) => l.name === conv.contactName || l.phone === conv.contactPhone);
+            if (matchedLead) {
+              storageService.updateLead(matchedLead.id, { assignedTo: targetUser.name });
+            }
+
+            const cards = storageService.getCrmCards();
+            const matchedCard = cards.find((c) => c.contactName === conv.contactName || c.contactPhone === conv.contactPhone);
+            if (matchedCard) {
+              storageService.updateCrmCard(matchedCard.id, { assignedTo: targetUser.name });
+            }
+
             toast.success(`Atendimento transferido com sucesso para ${targetUser.name}!`);
           }
         }}

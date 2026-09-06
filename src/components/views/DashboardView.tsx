@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { initialExecutiveRecords } from '../../data/executiveRecordsData';
+import { storageService } from '../../services/storageService';
 import {
   DashboardFilters,
   ExecutiveLeadRecord,
@@ -58,9 +59,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigateTab,
 }) => {
   // Estado de Dados do Sistema
-  const [allRecords, setAllRecords] = useState<ExecutiveLeadRecord[]>(
-    initialExecutiveRecords
+  const [allRecords, setAllRecords] = useState<ExecutiveLeadRecord[]>(() =>
+    storageService.getDashboardRecords()
   );
+
+  useEffect(() => {
+    const unsub = storageService.subscribe(() => {
+      setAllRecords(storageService.getDashboardRecords());
+    });
+    return unsub;
+  }, []);
 
   // Estado de Filtros Globais
   const [filters, setFilters] = useState<DashboardFilters>({

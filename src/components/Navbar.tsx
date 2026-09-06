@@ -45,6 +45,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onOpenCreateUser,
   onOpenLogoutModal,
+  availableUsers,
+  onSwitchUser,
   theme = 'dark',
   onToggleTheme,
 }) => {
@@ -296,6 +298,39 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <UserPlus className="w-4 h-4 text-[#8B5CF6]" />
                   <span>Criar Novo Usuário</span>
                 </button>
+
+                {/* Alternar Perfil */}
+                {availableUsers && availableUsers.length > 1 && onSwitchUser && (
+                  <div className="pt-1.5 pb-1">
+                    <div className="px-2 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                      Alternar Perfil
+                    </div>
+                    <div className="space-y-0.5 max-h-36 overflow-y-auto">
+                      {availableUsers.map((u) => {
+                        const isCurrent = u.id === currentUser?.id;
+                        return (
+                          <button
+                            key={u.id}
+                            onClick={() => {
+                              onSwitchUser(u);
+                              setUserDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors text-left cursor-pointer ${
+                              isCurrent
+                                ? 'bg-[#8B5CF6]/20 text-white font-semibold'
+                                : 'text-zinc-400 hover:text-white hover:bg-[#27272A]'
+                            }`}
+                          >
+                            <span className="truncate">{u.name}</span>
+                            <span className="text-[10px] font-mono opacity-70 shrink-0 ml-1">
+                              {u.role.split(' ')[0]}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <div className="my-1 border-t border-[rgba(255,255,255,0.05)]" />
 

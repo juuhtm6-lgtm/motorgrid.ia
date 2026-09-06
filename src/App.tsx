@@ -28,6 +28,7 @@ import {
   ActiveTab,
   ThemeMode,
 } from './types';
+import { storageService } from './services/storageService';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { CommandPalette } from './components/CommandPalette';
@@ -159,8 +160,15 @@ export default function App() {
   const [metrics, setMetrics] = useState(initialMetrics);
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
   const [deals, setDeals] = useState<Deal[]>(initialDeals);
-  const [leads, setLeads] = useState<LeadItem[]>(initialLeads);
+  const [leads, setLeads] = useState<LeadItem[]>(() => storageService.getLeads());
   const [tasks, setTasks] = useState<ProjectTask[]>(initialTasks);
+
+  useEffect(() => {
+    const unsub = storageService.subscribe(() => {
+      setLeads(storageService.getLeads());
+    });
+    return unsub;
+  }, []);
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(initialTeamMembers);
   const [webhooks, setWebhooks] = useState<WebhookEndpoint[]>(initialWebhooks);
@@ -261,6 +269,18 @@ export default function App() {
 
   const handleSwitchUser = (user: AuthUser) => {
     setCurrentUser(user);
+    try {
+      localStorage.setItem('motorgrid_current_user', JSON.stringify(user));
+    } catch (e) {
+      console.error('Error persisting current user:', e);
+    }
+
+    // Role-based route guard: if on administration and role not allowed, redirect to dashboard
+    const isPrivileged = ['Administrador', 'Gestor', 'Admin / Diretor', 'Diretor / Sócio', 'Gerente Geral', 'Gestor de Vendas'].includes(user.role);
+    if (activeTab === 'administracao' && !isPrivileged) {
+      setActiveTab('dashboard');
+    }
+
     const newNotif: ActivityNotification = {
       id: `notif-${Date.now()}`,
       title: 'Alternância de Perfil',
@@ -296,13 +316,8 @@ export default function App() {
 
   // Leads Handlers
   const handleAddLead = (newLeadData: Omit<LeadItem, 'id' | 'createdAt' | 'lastContact'>) => {
-    const created: LeadItem = {
-      ...newLeadData,
-      id: `lead-${Date.now()}`,
-      createdAt: 'Agora mesmo',
-      lastContact: 'Criado agora',
-    };
-    setLeads((prev) => [created, ...prev]);
+    const created = storageService.addLead(newLeadData);
+    setLeads(storageService.getLeads());
 
     // Add notification
     const newNotif: ActivityNotification = {
@@ -317,7 +332,8 @@ export default function App() {
   };
 
   const handleUpdateLeadStatus = (id: string, status: LeadStatus) => {
-    setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+    storageService.updateLeadStatus(id, status);
+    setLeads(storageService.getLeads());
   };
 
   const handleConvertLeadToCustomer = (lead: LeadItem) => {

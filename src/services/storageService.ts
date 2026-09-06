@@ -169,6 +169,90 @@ class StorageService {
     const updated = [newLead, ...leads];
     this.setStored(STORAGE_KEYS.LEADS, updated);
 
+    // Also register in CRM Cards (Pipeline Kanban)
+    const cards = this.getCrmCards();
+    const newCard: CrmCard = {
+      id: `card-${Date.now()}`,
+      pipelineId: 'vendas',
+      stageId: 'lead_novo',
+      contactName: newLead.name,
+      contactPhone: newLead.phone,
+      contactEmail: newLead.email,
+      origin: newLead.source || 'Website / Frotas',
+      unitId: 'unit-matriz',
+      timeInStage: '0d',
+      lastInteraction: 'Criado agora',
+      vehicleName: newLead.notes || `${newLead.company} (${newLead.fleetSize} un)`,
+      vehiclePrice: newLead.estimatedValue || 289900,
+      temperature: 'Quente',
+      gridScore: 90,
+      assignedTo: newLead.assignedTo || 'Rodrigo Mendes',
+    };
+    this.setStored(STORAGE_KEYS.CRM_CARDS, [newCard, ...cards]);
+
+    // Also register in Conversations (Atendimento WhatsApp)
+    const conversations = this.getConversations();
+    const convExists = conversations.some((c) => c.contactPhone === newLead.phone);
+    if (!convExists) {
+      const newConv: Conversation = {
+        id: newLead.id,
+        contactId: `contact-${newLead.id}`,
+        contactName: newLead.name,
+        contactPhone: newLead.phone,
+        channel: 'WhatsApp',
+        assignedTo: newLead.assignedTo || 'Camila Rocha',
+        assignedUserRole: 'SDR de Pré-Vendas',
+        team: 'Pré-Atendimento',
+        status: 'Novo',
+        unreadCount: 1,
+        leadScore: 90,
+        temperature: 'Quente',
+        unitId: 'unit-matriz',
+        tags: ['Novo Lead', newLead.source || 'Online'],
+        isNewLead: true,
+        lastMessage: `Olá! Tenho interesse em veículos da MotorGrid (${newLead.company}).`,
+        lastMessageTime: 'Agora',
+        messages: [
+          {
+            id: `msg-${Date.now()}`,
+            sender: 'client',
+            senderName: newLead.name,
+            text: `Olá! Tenho interesse em veículos da MotorGrid (${newLead.company}).`,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          },
+        ],
+        events: [
+          {
+            id: `ev-${Date.now()}`,
+            type: 'lead_received',
+            title: 'Lead Recebido no Sistema',
+            description: `Origem: ${newLead.source || 'Website'}. Responsável: ${newLead.assignedTo || 'Camila Rocha'}`,
+            timestamp: 'Agora mesmo',
+            authorName: 'MotorGrid Ingestion Engine',
+          },
+        ],
+        tracking: {
+          origin: newLead.source || 'Website',
+          utmSource: 'direct_entry',
+          vehicleOfInterest: {
+            id: 'veh-interest',
+            brand: 'MotorGrid',
+            model: newLead.company,
+            version: 'Fleet Edition',
+            year: 2025,
+            price: newLead.estimatedValue || 289900,
+            km: 0,
+            photo: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=300&auto=format&fit=crop&q=80',
+            gearbox: 'Automático',
+            color: 'Cinza',
+            fuel: 'Híbrido',
+            store: 'Matriz Sorocaba',
+          },
+        },
+      };
+      this.setStored(STORAGE_KEYS.CONVERSATIONS, [newConv, ...conversations]);
+    }
+
     // Also register in Dashboard Records
     const newRecord: ExecutiveLeadRecord = {
       id: `rec-${Date.now()}`,
@@ -315,17 +399,102 @@ class StorageService {
   }
 
   public markCardWon(id: string, finalPrice?: number): void {
-    this.updateCrmCard(id, {
+    const card = this.updateCrmCard(id, {
       stageId: 'fechamento',
       vehiclePrice: finalPrice || undefined,
     });
+
+    if (card) {
+      // 1. Update matching Lead status to 'Ganho'
+      const leads = this.getLeads();
+      const matched = leads.find((l) => l.name === card.contactName || l.phone === card.contactPhone);
+      if (matched) {
+        this.updateLead(matched.id, { status: 'Ganho' });
+      }
+
+      // 2. Update dashboard record to 'vendido'
+      const records = this.getDashboardRecords();
+      let recordUpdated = false;
+      const updatedRecords = records.map((r) => {
+        if (r.contactName === card.contactName || r.contactPhone === card.contactPhone) {
+          recordUpdated = true;
+          return {
+            ...r,
+            status: 'vendido' as const,
+            isProposal: true,
+            isVisited: true,
+            vehiclePrice: finalPrice || r.vehiclePrice,
+          };
+        }
+        return r;
+      });
+
+      if (!recordUpdated) {
+        const newRecord: ExecutiveLeadRecord = {
+          id: `rec-${Date.now()}`,
+          contactName: card.contactName,
+          contactPhone: card.contactPhone,
+          contactEmail: card.contactEmail || '',
+          vehicleId: 'veh-won',
+          vehicleName: card.vehicleName || 'Veículo Negociado',
+          vehiclePhoto: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?w=300&auto=format&fit=crop&q=80',
+          vehiclePrice: finalPrice || card.vehiclePrice || 289900,
+          origin: card.origin || 'Showroom',
+          channelType: 'presencial',
+          assignedTo: card.assignedTo || 'Rodrigo Mendes',
+          unitId: card.unitId || 'unit-matriz',
+          storeName: 'Matriz Sorocaba',
+          team: 'Comercial',
+          createdAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+          dateOnly: new Date().toISOString().slice(0, 10),
+          firstResponseTimeMinutes: 1.5,
+          isAttended: true,
+          isQualified: true,
+          isScheduled: true,
+          isVisited: true,
+          isProposal: true,
+          status: 'ganho',
+          lastInteractionMinutesAgo: 1,
+          daysInFunnel: 3,
+        };
+        updatedRecords.unshift(newRecord);
+      }
+
+      this.setStored(STORAGE_KEYS.DASHBOARD_RECORDS, updatedRecords);
+    }
   }
 
   public markCardLost(id: string, lossReason: string): void {
-    this.updateCrmCard(id, {
+    const card = this.updateCrmCard(id, {
       stageId: 'perdido',
       lossReason,
     });
+
+    if (card) {
+      // 1. Update matching Lead status to 'Perdido'
+      const leads = this.getLeads();
+      const matched = leads.find((l) => l.name === card.contactName || l.phone === card.contactPhone);
+      if (matched) {
+        this.updateLead(matched.id, {
+          status: 'Perdido',
+          notes: `${matched.notes || ''} [Perda: ${lossReason}]`,
+        });
+      }
+
+      // 2. Update dashboard record to 'perdido' and attach lossReason
+      const records = this.getDashboardRecords();
+      const updatedRecords = records.map((r) => {
+        if (r.contactName === card.contactName || r.contactPhone === card.contactPhone) {
+          return {
+            ...r,
+            status: 'perdido' as const,
+            lossReason,
+          };
+        }
+        return r;
+      });
+      this.setStored(STORAGE_KEYS.DASHBOARD_RECORDS, updatedRecords);
+    }
   }
 
   public deleteCrmCard(id: string): void {
@@ -436,6 +605,35 @@ class StorageService {
     };
     const updated = [newApt, ...appointments];
     this.setStored(STORAGE_KEYS.APPOINTMENTS, updated);
+
+    // Sync matching Lead status to 'Agendado'
+    const leads = this.getLeads();
+    const matchedLead = leads.find((l) => l.name === newApt.contactName || l.phone === newApt.contactPhone);
+    if (matchedLead) {
+      this.updateLead(matchedLead.id, { status: 'Agendado' });
+    }
+
+    // Sync matching CRM Card stage to 'visita_agendada'
+    const cards = this.getCrmCards();
+    const matchedCard = cards.find((c) => c.contactName === newApt.contactName || c.contactPhone === newApt.contactPhone);
+    if (matchedCard) {
+      this.updateCrmCard(matchedCard.id, { stageId: 'visita_agendada' });
+    }
+
+    // Sync Dashboard records
+    const records = this.getDashboardRecords();
+    const updatedRecords = records.map((r) => {
+      if (r.contactName === newApt.contactName || r.contactPhone === newApt.contactPhone) {
+        return {
+          ...r,
+          isScheduled: true,
+          status: 'agendado' as const,
+        };
+      }
+      return r;
+    });
+    this.setStored(STORAGE_KEYS.DASHBOARD_RECORDS, updatedRecords);
+
     return newApt;
   }
 

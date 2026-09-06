@@ -275,7 +275,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               id={`nav-item-${item.id}`}
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                if (
+                  item.id === 'administracao' &&
+                  currentUser &&
+                  currentUser.role !== 'Administrador' &&
+                  currentUser.role !== 'Gestor Geral'
+                ) {
+                  toast.error(
+                    `Acesso restrito: Módulo exclusivo para Administradores e Gestores. Perfil atual: ${currentUser.role}`
+                  );
+                  return;
+                }
+                setActiveTab(item.id);
+              }}
               title={collapsed ? item.label : undefined}
               className={`w-full relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                 isActive
