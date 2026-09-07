@@ -64,7 +64,27 @@ export default function App() {
   const [authUsers, setAuthUsers] = useState<AuthUser[]>(() => {
     try {
       const saved = localStorage.getItem('motorgrid_auth_users');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const seen = new Set<string>();
+          const cleaned: AuthUser[] = [];
+          parsed.forEach((u: any, idx: number) => {
+            if (!u) return;
+            const validId = u.id && typeof u.id === 'string' && u.id.trim() !== ''
+              ? u.id.trim()
+              : `usr-fixed-${idx}-${Date.now()}`;
+            if (!seen.has(validId)) {
+              seen.add(validId);
+              cleaned.push({
+                ...u,
+                id: validId,
+              });
+            }
+          });
+          if (cleaned.length > 0) return cleaned;
+        }
+      }
     } catch (e) {
       console.error('Error reading auth users:', e);
     }
@@ -241,26 +261,40 @@ export default function App() {
   };
 
   const handleCreateUser = (newUser: AuthUser) => {
-    setAuthUsers((prev) => [...prev, newUser]);
+    const userWithId: AuthUser = {
+      ...newUser,
+      id: newUser.id && newUser.id.trim() !== ''
+        ? newUser.id.trim()
+        : `usr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      createdAt: newUser.createdAt || new Date().toISOString().split('T')[0],
+      lastLogin: newUser.lastLogin || 'Nunca',
+    };
+
+    setAuthUsers((prev) => {
+      const filtered = prev.filter(
+        (u) => u.id !== userWithId.id && u.email.toLowerCase() !== userWithId.email.toLowerCase()
+      );
+      return [...filtered, userWithId];
+    });
 
     const teamMember: TeamMember = {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-      team: newUser.team || 'Comercial',
-      unitId: newUser.unitId || 'unit-1',
-      phone: newUser.phone || '',
+      id: userWithId.id,
+      name: userWithId.name,
+      email: userWithId.email,
+      role: userWithId.role,
+      team: userWithId.team || 'Comercial',
+      unitId: userWithId.unitId || 'unit-1',
+      phone: userWithId.phone || '',
       status: 'Ativo',
-      avatar: newUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      avatar: userWithId.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       lastLogin: 'Nunca',
     };
-    setTeamMembers((prev) => [...prev, teamMember]);
+    setTeamMembers((prev) => [...prev.filter((m) => m.id !== teamMember.id), teamMember]);
 
     const newNotif: ActivityNotification = {
       id: `notif-${Date.now()}`,
       title: 'Novo Usuário Criado',
-      description: `${newUser.name} (${newUser.role}) foi adicionado com sucesso ao MotorGrid.`,
+      description: `${userWithId.name} (${userWithId.role}) foi adicionado com sucesso ao MotorGrid.`,
       timestamp: 'Agora',
       type: 'system',
       read: false,

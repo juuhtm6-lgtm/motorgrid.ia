@@ -53,6 +53,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
+  // Deduplicate and ensure unique keys for available users
+  const sanitizedAvailableUsers = React.useMemo(() => {
+    if (!availableUsers || !Array.isArray(availableUsers)) return [];
+    const seen = new Set<string>();
+    const result: AuthUser[] = [];
+    availableUsers.forEach((u, idx) => {
+      if (!u) return;
+      const key = u.id && typeof u.id === 'string' && u.id.trim() !== ''
+        ? u.id.trim()
+        : `user-${idx}-${u.email || ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(u);
+      }
+    });
+    return result;
+  }, [availableUsers]);
+
   const getTabTitle = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -305,17 +323,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
 
                 {/* Alternar Perfil */}
-                {availableUsers && availableUsers.length > 1 && onSwitchUser && (
+                {sanitizedAvailableUsers.length > 1 && onSwitchUser && (
                   <div className="pt-1.5 pb-1">
                     <div className="px-2 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                       Alternar Perfil
                     </div>
                     <div className="space-y-0.5 max-h-36 overflow-y-auto">
-                      {availableUsers.map((u) => {
-                        const isCurrent = u.id === currentUser?.id;
+                      {sanitizedAvailableUsers.map((u, index) => {
+                        const isCurrent = currentUser?.id ? u.id === currentUser.id : false;
+                        const uniqueKey = `switch-user-${u.id || index}-${u.email || 'user'}`;
                         return (
                           <button
-                            key={u.id}
+                            key={uniqueKey}
                             onClick={() => {
                               onSwitchUser(u);
                               setUserDropdownOpen(false);

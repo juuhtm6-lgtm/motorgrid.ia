@@ -17,7 +17,7 @@ import { getDefaultPermissions } from '../../data/mockData';
 interface CreateUserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateUser: (newUser: Omit<AuthUser, 'id' | 'createdAt' | 'lastLogin'>) => void;
+  onCreateUser: (newUser: AuthUser) => void;
   currentCompany?: string;
 }
 
@@ -60,8 +60,10 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
     else if (role === 'Vendedor') canonicalRole = 'salesperson';
 
     const permissions = getDefaultPermissions(canonicalRole);
+    const generatedId = `usr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
     onCreateUser({
+      id: generatedId,
       name,
       email,
       role,
@@ -74,6 +76,8 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
       plan,
       phone,
       twoFactorEnabled: false,
+      createdAt: new Date().toISOString().split('T')[0],
+      lastLogin: 'Nunca',
       status: 'Ativo',
       permissions,
       leadsCount: 0,
