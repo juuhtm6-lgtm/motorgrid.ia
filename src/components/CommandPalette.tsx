@@ -19,6 +19,7 @@ import {
   Car,
   Cloud,
   TrendingUp,
+  Share2,
 } from 'lucide-react';
 import { ActiveTab, Customer, ProjectTask } from '../types';
 
@@ -91,7 +92,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     { label: 'Ir para Estoque de Rastreadores', tab: 'estoque' as ActiveTab, icon: Car },
     { label: 'Ir para Automação', tab: 'automacao' as ActiveTab, icon: Cloud },
     { label: 'Ir para Performance', tab: 'performance' as ActiveTab, icon: TrendingUp },
+    { label: 'Ir para Gestão de Equipe', tab: 'equipe' as ActiveTab, icon: Users },
     { label: 'Ir para Administração', tab: 'administracao' as ActiveTab, icon: Settings },
+    { label: 'Ir para Meta API (Conexões Meta)', tab: 'meta-api' as ActiveTab, icon: Share2 },
     { label: 'Ir para Clientes & CRM', tab: 'customers' as ActiveTab, icon: Users },
     { label: 'Ir para Operações & Sprints', tab: 'projects' as ActiveTab, icon: KanbanSquare },
     { label: 'Ir para Planos & Faturamento', tab: 'billing' as ActiveTab, icon: CreditCard },

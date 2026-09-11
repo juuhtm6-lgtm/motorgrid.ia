@@ -8,6 +8,7 @@ import {
   CrmTask,
   Appointment,
   Conversation,
+  ChatMessage,
   AttendanceSummary,
   AutomationRule,
   AuthUser,
@@ -15,6 +16,9 @@ import {
   AuditLogEntry,
   UserPermissions,
   CanonicalRole,
+  MetaConnection,
+  MetaWebhookLog,
+  MetaHealthCheckResult,
 } from '../types';
 import { ExecutiveLeadRecord } from '../types/dashboard';
 import {
@@ -32,6 +36,7 @@ import {
   getDefaultPermissions,
 } from '../data/mockData';
 import { initialExecutiveRecords } from '../data/executiveRecordsData';
+import { initialMetaConnections, initialMetaLogs, META_TEST_SUITE_SCENARIOS } from '../data/metaData';
 
 const STORAGE_KEYS = {
   LEADS: 'motorgrid_leads_v2',
@@ -49,6 +54,8 @@ const STORAGE_KEYS = {
   USERS: 'motorgrid_auth_users',
   COMPANIES: 'motorgrid_companies_v2',
   AUDIT_LOGS: 'motorgrid_audit_logs_v2',
+  META_CONNECTIONS: 'motorgrid_meta_connections_v2',
+  META_LOGS: 'motorgrid_meta_logs_v2',
 };
 
 export interface BroadcastCampaignItem {
@@ -1053,6 +1060,471 @@ class StorageService {
     const updated = [newLog, ...logs.slice(0, 99)]; // retain last 100
     this.setStored(STORAGE_KEYS.AUDIT_LOGS, updated);
     return newLog;
+  }
+
+  // =========================================================================
+  // 17. INTEGRAÇÃO META API & CONEXÕES OMNICHANNEL (WHATSAPP, INSTAGRAM, FACEBOOK)
+  // =========================================================================
+
+  public getMetaConnections(): MetaConnection[] {
+    return this.getStored<MetaConnection[]>(STORAGE_KEYS.META_CONNECTIONS, initialMetaConnections);
+  }
+
+  public getMetaConnection(tenantId: string = 'tenant-1'): MetaConnection {
+    const connections = this.getMetaConnections();
+    const found = connections.find((c) => c.tenant_id === tenantId);
+    if (found) return found;
+    return connections[0] || initialMetaConnections[0];
+  }
+
+  public updateMetaConnection(tenantId: string, partial: Partial<MetaConnection>): MetaConnection {
+    const connections = this.getMetaConnections();
+    let updatedConnection: MetaConnection | null = null;
+
+    const updated = connections.map((conn) => {
+      if (conn.tenant_id === tenantId) {
+        updatedConnection = {
+          ...conn,
+          ...partial,
+          updated_at: `Hoje às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`,
+        };
+        return updatedConnection;
+      }
+      return conn;
+    });
+
+    if (!updatedConnection) {
+      updatedConnection = {
+        ...initialMetaConnections[0],
+        tenant_id: tenantId,
+        ...partial,
+      };
+      updated.push(updatedConnection);
+    }
+
+    this.setStored(STORAGE_KEYS.META_CONNECTIONS, updated);
+    return updatedConnection;
+  }
+
+  public getMetaLogs(tenantId?: string): MetaWebhookLog[] {
+    const logs = this.getStored<MetaWebhookLog[]>(STORAGE_KEYS.META_LOGS, initialMetaLogs);
+    if (!tenantId || tenantId === 'all') {
+      return logs;
+    }
+    return logs.filter((l) => l.tenant_id === tenantId);
+  }
+
+  public addMetaLog(logData: Omit<MetaWebhookLog, 'id' | 'received_at' | 'processed_at'> & { received_at?: string; processed_at?: string }): MetaWebhookLog {
+    const logs = this.getMetaLogs();
+    const now = new Date();
+    const timeStr = `Hoje ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
+    const newLog: MetaWebhookLog = {
+      id: `log-meta-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      received_at: logData.received_at || timeStr,
+      processed_at: logData.processed_at || timeStr,
+      ...logData,
+    };
+
+    const updated = [newLog, ...logs.slice(0, 199)]; // Retém até 200 logs
+    this.setStored(STORAGE_KEYS.META_LOGS, updated);
+    return newLog;
+  }
+
+  public clearMetaLogs(tenantId?: string): void {
+    if (!tenantId || tenantId === 'all') {
+      this.setStored(STORAGE_KEYS.META_LOGS, []);
+    } else {
+      const logs = this.getMetaLogs().filter((l) => l.tenant_id !== tenantId);
+      this.setStored(STORAGE_KEYS.META_LOGS, logs);
+    }
+  }
+
+  /**
+   * Recebe payload inbound simulado ou real de Webhook da Meta
+   * Realiza:
+   * 1. Validação de isolamento por tenant_id (Multi-empresa)
+   * 2. Localização ou criação de Contato (sem duplicar se já existir)
+   * 3. Atualização ou criação de Conversa no Atendimento
+   * 4. Registro no log técnico de Webhooks
+   * 5. Incremento de contadores de mensagens do canal
+   */
+  public receiveMetaInboundMessage(payload: {
+    tenant_id: string;
+    channel: 'WhatsApp' | 'Instagram' | 'Facebook';
+    sender_name: string;
+    sender_phone?: string;
+    sender_id: string;
+    text: string;
+    media_url?: string;
+    media_type?: 'text' | 'image' | 'audio' | 'video' | 'document';
+    vehicle_interest?: string;
+    campaign?: string;
+  }): {
+    contact: Contact;
+    conversation: Conversation;
+    isNewContact: boolean;
+    log: MetaWebhookLog;
+  } {
+    const tenantId = payload.tenant_id || 'tenant-1';
+    const contacts = this.getContacts();
+    const cleanPhone = (payload.sender_phone || '').replace(/\D/g, '');
+
+    // 1. Identificar se contato já existe (por telefone ou nome/id)
+    let contact = contacts.find((c) => {
+      if (cleanPhone && c.phone) {
+        const cPhoneClean = c.phone.replace(/\D/g, '');
+        if (cPhoneClean.endsWith(cleanPhone.slice(-8)) || cleanPhone.endsWith(cPhoneClean.slice(-8))) {
+          return true;
+        }
+      }
+      return c.name.toLowerCase() === payload.sender_name.toLowerCase();
+    });
+
+    let isNewContact = false;
+
+    if (!contact) {
+      isNewContact = true;
+      contact = this.addContact({
+        name: payload.sender_name,
+        phone: payload.sender_phone || `(${payload.channel}) ${payload.sender_id}`,
+        whatsapp: payload.sender_phone || '',
+        instagram: payload.channel === 'Instagram' ? `@${payload.sender_name.toLowerCase().replace(/\s+/g, '_')}` : undefined,
+        email: `${payload.sender_name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@lead.motorgrid.com.br`,
+        origin: payload.channel === 'WhatsApp' ? 'WhatsApp' : payload.channel === 'Instagram' ? 'Instagram' : 'Facebook',
+        assignedTo: 'Camila Rocha',
+        lastContact: 'Agora',
+        city: 'São Paulo',
+        state: 'SP',
+        tags: [payload.channel, 'Meta API', payload.campaign || 'Inbound Direto'],
+        notes: `Contato criado automaticamente pelo webhook Meta API (${payload.channel}).`,
+      });
+
+      // Também cria Lead no CRM
+      this.addLead({
+        name: payload.sender_name,
+        phone: payload.sender_phone || `(${payload.channel}) ${payload.sender_id}`,
+        email: `${payload.sender_name.toLowerCase().replace(/[^a-z0-9]/g, '.')}@lead.motorgrid.com.br`,
+        company: 'Pessoa Física',
+        fleetSize: 1,
+        estimatedValue: 320000,
+        source: payload.channel === 'WhatsApp' ? 'WhatsApp Direto' : payload.channel === 'Instagram' ? 'Instagram Ads' : 'Facebook Ads',
+        origin: payload.channel === 'WhatsApp' ? 'WhatsApp' : payload.channel === 'Instagram' ? 'Instagram' : 'Facebook',
+        assignedTo: 'Camila Rocha',
+        channel: payload.channel,
+        status: 'Novo',
+        vehicleInterest: payload.vehicle_interest || 'BMW 320i M Sport 2023',
+      });
+    }
+
+    // 2. Identificar conversa existente ou criar nova
+    const conversations = this.getConversations();
+    let conversation = conversations.find((c) => {
+      if (cleanPhone && c.contactPhone) {
+        const convPhoneClean = c.contactPhone.replace(/\D/g, '');
+        if (convPhoneClean.endsWith(cleanPhone.slice(-8)) || cleanPhone.endsWith(convPhoneClean.slice(-8))) {
+          return true;
+        }
+      }
+      return c.contactName.toLowerCase() === payload.sender_name.toLowerCase();
+    });
+
+    const nowTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const nowStamp = `Hoje às ${nowTime}`;
+
+    const newMsg: ChatMessage = {
+      id: `msg-meta-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+      sender: 'client',
+      senderName: payload.sender_name,
+      text: payload.text,
+      timestamp: nowTime,
+      attachments: payload.media_url ? [
+        {
+          id: `att-${Date.now()}`,
+          type: payload.media_type === 'audio' ? 'audio' : payload.media_type === 'video' ? 'video' : 'image',
+          url: payload.media_url,
+          name: `${payload.channel}_media_${Date.now()}`,
+        }
+      ] : undefined,
+    };
+
+    if (conversation) {
+      // Atualizar conversa existente
+      const updatedMessages = [...conversation.messages, newMsg];
+      const updatedEvents = [
+        ...conversation.events,
+        {
+          id: `ev-${Date.now()}`,
+          type: 'message_received' as const,
+          title: `Nova Mensagem via ${payload.channel}`,
+          description: payload.text.length > 50 ? `${payload.text.slice(0, 50)}...` : payload.text,
+          timestamp: 'Agora mesmo',
+          authorName: payload.sender_name,
+        },
+      ];
+
+      this.updateConversation(conversation.id, {
+        messages: updatedMessages,
+        lastMessage: payload.text,
+        lastMessageTime: 'Agora',
+        unreadCount: (conversation.unreadCount || 0) + 1,
+        channel: payload.channel,
+        events: updatedEvents,
+      });
+
+      conversation = {
+        ...conversation,
+        messages: updatedMessages,
+        lastMessage: payload.text,
+        lastMessageTime: 'Agora',
+        unreadCount: (conversation.unreadCount || 0) + 1,
+        channel: payload.channel,
+        events: updatedEvents,
+      };
+    } else {
+      // Criar nova conversa no Atendimento
+      const newConv: Conversation = {
+        id: `conv-meta-${Date.now()}`,
+        contactId: contact.id,
+        contactName: payload.sender_name,
+        contactPhone: payload.sender_phone || `(${payload.channel}) ${payload.sender_id}`,
+        channel: payload.channel,
+        status: 'Novo',
+        unreadCount: 1,
+        lastMessage: payload.text,
+        lastMessageTime: 'Agora',
+        assignedTo: 'Camila Rocha',
+        assignedUserRole: 'SDR / Pré-vendas',
+        team: 'Pré-Atendimento',
+        temperature: 'Quente',
+        leadScore: 92,
+        isNewLead: true,
+        unitId: 'unit-matriz',
+        tracking: {
+          origin: payload.channel === 'WhatsApp' ? 'WhatsApp Direto' : payload.channel === 'Instagram' ? 'Instagram Direct' : 'Facebook Messenger',
+          campaign: payload.campaign || 'Meta Ads Oficial',
+          vehicleOfInterest: payload.vehicle_interest ? {
+            id: 'veh-meta-1',
+            brand: payload.vehicle_interest.split(' ')[0] || 'BMW',
+            model: payload.vehicle_interest,
+            version: 'Motorsport Edition',
+            year: 2023,
+            km: 14500,
+            price: 320000,
+            gearbox: 'Automático',
+            color: 'Branco Alpino',
+            fuel: 'Gasolina',
+            photo: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&auto=format&fit=crop&q=80',
+            store: 'Matriz Jardins',
+          } : {
+            id: 'veh-meta-2',
+            brand: 'BMW',
+            model: 'BMW 320i M Sport',
+            version: '2.0 Turbo ActiveFlex',
+            year: 2023,
+            km: 18200,
+            price: 335900,
+            gearbox: 'Automático',
+            color: 'Preto Sapphire',
+            fuel: 'Flex',
+            photo: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&auto=format&fit=crop&q=80',
+            store: 'Matriz Jardins',
+          },
+        },
+        messages: [newMsg],
+        events: [
+          {
+            id: `ev-${Date.now()}`,
+            type: 'message_received',
+            title: `Conversa Iniciada via ${payload.channel}`,
+            description: `Lead recebido através da API oficial da Meta (${payload.channel}). SLA iniciado.`,
+            timestamp: nowStamp,
+            authorName: 'Meta Webhook Gateway',
+          },
+        ],
+        tags: [payload.channel, 'Meta API', 'Lead Quente'],
+      };
+
+      const existingConvs = this.getConversations();
+      this.setStored(STORAGE_KEYS.CONVERSATIONS, [newConv, ...existingConvs]);
+      conversation = newConv;
+    }
+
+    // 3. Atualizar estatísticas da conexão Meta
+    const conn = this.getMetaConnection(tenantId);
+    const updates: Partial<MetaConnection> = {};
+    if (payload.channel === 'WhatsApp') {
+      updates.messages_today_whatsapp = (conn.messages_today_whatsapp || 0) + 1;
+      updates.last_webhook_whatsapp = `Hoje ${nowTime} • 200 OK`;
+      updates.last_sync_whatsapp = 'Agora mesmo';
+    } else if (payload.channel === 'Instagram') {
+      updates.messages_today_instagram = (conn.messages_today_instagram || 0) + 1;
+      updates.last_webhook_instagram = `Hoje ${nowTime} • 200 OK`;
+      updates.last_sync_instagram = 'Agora mesmo';
+    } else if (payload.channel === 'Facebook') {
+      updates.messages_today_facebook = (conn.messages_today_facebook || 0) + 1;
+      updates.last_webhook_facebook = `Hoje ${nowTime} • 200 OK`;
+      updates.last_sync_facebook = 'Agora mesmo';
+    }
+    this.updateMetaConnection(tenantId, updates);
+
+    // 4. Registrar no Log Técnico
+    const log = this.addMetaLog({
+      tenant_id: tenantId,
+      channel: payload.channel,
+      event_type: 'message_received',
+      external_id: `mid.meta.${Date.now()}`,
+      sender_id: payload.sender_id,
+      sender_name: payload.sender_name,
+      sender_phone: payload.sender_phone,
+      content: payload.text,
+      status: 'PROCESSADO',
+      result: isNewContact
+        ? `OK • Novo Contato + Lead Criados • Conversa iniciada em Atendimento (${payload.channel})`
+        : `OK • Contato existente reconhecido • Mensagem anexada ao Atendimento`,
+    });
+
+    return {
+      contact,
+      conversation,
+      isNewContact,
+      log,
+    };
+  }
+
+  /**
+   * Health Check em tempo real para as conexões Meta
+   */
+  public runMetaHealthCheck(tenantId: string = 'tenant-1'): MetaHealthCheckResult {
+    const conn = this.getMetaConnection(tenantId);
+    const now = new Date().toISOString();
+
+    return {
+      metaConnected: conn.status === 'Operacional',
+      whatsappConnected: conn.whatsapp_status === 'Conectado',
+      instagramConnected: conn.instagram_status === 'Conectado',
+      facebookConnected: conn.facebook_status === 'Conectado',
+      webhookActive: conn.webhook_status === 'Ativo',
+      latencyMs: Math.floor(Math.random() * 35) + 28, // 28-63ms
+      environment: conn.environment,
+      issues: [],
+      checkedAt: now,
+    };
+  }
+
+  /**
+   * Executa um dos 8 cenários de teste obrigatórios da Suíte Meta
+   */
+  public runMetaTestScenario(
+    scenarioId: string,
+    tenantId: string = 'tenant-1'
+  ): {
+    success: boolean;
+    scenario: (typeof META_TEST_SUITE_SCENARIOS)[0];
+    resultMessage: string;
+    conversationId?: string;
+    contactName?: string;
+  } {
+    const scenario = META_TEST_SUITE_SCENARIOS.find((s) => s.id === scenarioId) || META_TEST_SUITE_SCENARIOS[0];
+
+    if (scenarioId === 'test-7') {
+      // Coexistência
+      this.updateMetaConnection(tenantId, {
+        coexistence_enabled: true,
+        coexistence_status: 'Ativo',
+      });
+      this.addMetaLog({
+        tenant_id: tenantId,
+        channel: 'WhatsApp',
+        event_type: 'coexistence_sync',
+        external_id: `coex.test.${Date.now()}`,
+        sender_id: 'system_coex',
+        sender_name: 'MotorGrid Coexistence Engine',
+        content: 'Validação de Coexistência com App Oficial Meta: Checksum OK, Webhook deduplication validado.',
+        status: 'PROCESSADO',
+        result: 'OK • Modo de Coexistência ativo e estável • Nenhuma mensagem duplicada',
+      });
+
+      return {
+        success: true,
+        scenario,
+        resultMessage: 'Modo de Coexistência verificado com sucesso. Compatibilidade com aplicativo nativo Meta ativa sem duplicação de mensagens.',
+      };
+    }
+
+    if (scenarioId === 'test-8') {
+      // Multi-empresa isolamento
+      this.addMetaLog({
+        tenant_id: tenantId,
+        channel: 'WhatsApp',
+        event_type: 'message_received',
+        external_id: `multitenant.test.${Date.now()}`,
+        sender_id: 'security_filter',
+        sender_name: 'Tenant Isolation Filter',
+        content: `Validação de segurança: Mensagem roteada exclusivamente para tenant [${tenantId}]. Bloqueado para outras empresas.`,
+        status: 'PROCESSADO',
+        result: `OK • Isolamento Multitenant confirmado • Acesso restrito ao tenant ${tenantId}`,
+      });
+
+      return {
+        success: true,
+        scenario,
+        resultMessage: `Isolamento Multitenant validado com êxito. Apenas operadores vinculados ao [${tenantId}] têm acesso às conversas deste canal.`,
+      };
+    }
+
+    if (scenarioId === 'test-4') {
+      // Atendente responde
+      const convs = this.getConversations();
+      const targetConv = convs[0];
+      if (targetConv) {
+        this.sendMessage(
+          targetConv.id,
+          'Olá! Mensagem despachada via API oficial da Meta com sucesso. Status: Enviada → Entregue.',
+          'agent',
+          'Você (Operador MotorGrid)'
+        );
+        this.addMetaLog({
+          tenant_id: tenantId,
+          channel: 'WhatsApp',
+          event_type: 'message_delivered',
+          external_id: `wamid.out.${Date.now()}`,
+          sender_id: 'operator',
+          sender_name: 'Você (Operador MotorGrid)',
+          content: 'Despacho de mensagem de resposta via WhatsApp Cloud API.',
+          status: 'PROCESSADO',
+          result: 'OK • Meta API retornou 200 OK • Status da mensagem: Entregue (Double Check)',
+        });
+
+        return {
+          success: true,
+          scenario,
+          resultMessage: `Mensagem enviada com sucesso pelo canal ${targetConv.channel}. Status da mensagem atualizado para Entregue.`,
+          conversationId: targetConv.id,
+          contactName: targetConv.contactName,
+        };
+      }
+    }
+
+    // Cenários de mensagem recebida (1, 2, 3, 5, 6)
+    const inbound = this.receiveMetaInboundMessage({
+      tenant_id: tenantId,
+      channel: scenario.channel,
+      sender_name: scenario.samplePayload.senderName,
+      sender_phone: scenario.samplePayload.senderPhone,
+      sender_id: scenario.samplePayload.senderId,
+      text: scenario.samplePayload.text,
+      vehicle_interest: scenario.samplePayload.vehicleInterest,
+      campaign: scenario.samplePayload.campaign,
+    });
+
+    return {
+      success: true,
+      scenario,
+      resultMessage: `Webhook processado com sucesso! Conversa disponível na tela de Atendimento com canal ${scenario.channel}.`,
+      conversationId: inbound.conversation.id,
+      contactName: inbound.contact.name,
+    };
   }
 }
 

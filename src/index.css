@@ -2356,6 +2356,54 @@ html.dark #motorgrid-brand-panel .brand-card-desc,
   color: #94A3B8 !important;
 }
 
+/* ==========================================================================
+   GRID IA OFFICIAL LOGO - THEME ADAPTIVE WORDMARK CONTRAST
+   Light Mode: GRID is deep dark slate #0F172A with maximum contrast
+   Dark Mode: GRID is crisp white #FFFFFF
+   Preserves official blue-to-purple gradient on G symbol and IA letters
+   ========================================================================== */
+html.light .grid-ia-wordmark-grid,
+html.light .grid-ia-wordmark-grid path,
+html.light .grid-ia-wordmark-grid rect,
+body.light .grid-ia-wordmark-grid,
+body.light .grid-ia-wordmark-grid path,
+body.light .grid-ia-wordmark-grid rect,
+.light .grid-ia-wordmark-grid,
+.light .grid-ia-wordmark-grid path,
+.light .grid-ia-wordmark-grid rect,
+[data-logo-theme="light"] .grid-ia-wordmark-grid,
+[data-logo-theme="light"] .grid-ia-wordmark-grid path,
+[data-logo-theme="light"] .grid-ia-wordmark-grid rect,
+.grid-ia-wordmark-theme-light,
+.grid-ia-wordmark-theme-light path,
+.grid-ia-wordmark-theme-light rect {
+  fill: #0F172A !important;
+  color: #0F172A !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+html.dark .grid-ia-wordmark-grid,
+html.dark .grid-ia-wordmark-grid path,
+html.dark .grid-ia-wordmark-grid rect,
+body.dark .grid-ia-wordmark-grid,
+body.dark .grid-ia-wordmark-grid path,
+body.dark .grid-ia-wordmark-grid rect,
+.dark .grid-ia-wordmark-grid,
+.dark .grid-ia-wordmark-grid path,
+.dark .grid-ia-wordmark-grid rect,
+[data-logo-theme="dark"] .grid-ia-wordmark-grid,
+[data-logo-theme="dark"] .grid-ia-wordmark-grid path,
+[data-logo-theme="dark"] .grid-ia-wordmark-grid rect,
+.grid-ia-wordmark-theme-dark,
+.grid-ia-wordmark-theme-dark path,
+.grid-ia-wordmark-theme-dark rect {
+  fill: #FFFFFF !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
 
 
 

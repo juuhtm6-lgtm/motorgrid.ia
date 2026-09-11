@@ -50,6 +50,7 @@ import { RelatoriosView } from './components/views/RelatoriosView';
 import { MetaAdsView } from './components/views/MetaAdsView';
 import { SettingsView } from './components/views/SettingsView';
 import { EquipeView } from './components/views/EquipeView';
+import { MetaApiView } from './components/views/MetaApiView';
 import { NewCustomerModal } from './components/modals/NewCustomerModal';
 import { NewTaskModal } from './components/modals/NewTaskModal';
 import { CreateLeadModal } from './components/modals/CreateLeadModal';
@@ -201,6 +202,13 @@ export default function App() {
   const handleOpenChatFromLead = (lead: LeadItem) => {
     setActiveChatConversationId(lead.id);
     setActiveChatPhone(lead.phone);
+    setActiveTab('atendimento');
+  };
+
+  const handleOpenChatFromMeta = (conversationId?: string) => {
+    if (conversationId) {
+      setActiveChatConversationId(conversationId);
+    }
     setActiveTab('atendimento');
   };
 
@@ -969,6 +977,14 @@ export default function App() {
               onOpenCreateUser={() => setIsCreateUserModalOpen(true)}
               onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
               authUsers={authUsers}
+            />
+          )}
+
+          {(activeTab === 'meta-api' || activeTab === 'conexoes-meta') && (
+            <MetaApiView
+              currentUser={currentUser}
+              theme={theme}
+              onNavigateToAtendimento={handleOpenChatFromMeta}
             />
           )}
         </main>

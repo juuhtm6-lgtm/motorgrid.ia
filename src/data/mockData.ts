@@ -48,6 +48,7 @@ export const getDefaultPermissions = (canonicalRole: CanonicalRole): UserPermiss
       estoque: { view: true, edit: true },
       gridAi: { useAi: true },
       configuracoes: { view: true, edit: true },
+      meta: { view: true, configure: true, connect: true, disconnect: true, logs: true },
     };
   }
 
@@ -62,6 +63,7 @@ export const getDefaultPermissions = (canonicalRole: CanonicalRole): UserPermiss
       estoque: { view: true, edit: false },
       gridAi: { useAi: true },
       configuracoes: { view: true, edit: false },
+      meta: { view: true, configure: false, connect: false, disconnect: false, logs: true },
     };
   }
 
@@ -76,6 +78,7 @@ export const getDefaultPermissions = (canonicalRole: CanonicalRole): UserPermiss
       estoque: { view: true, edit: false },
       gridAi: { useAi: true },
       configuracoes: { view: false, edit: false },
+      meta: { view: false, configure: false, connect: false, disconnect: false, logs: false },
     };
   }
 
@@ -90,6 +93,7 @@ export const getDefaultPermissions = (canonicalRole: CanonicalRole): UserPermiss
     estoque: { view: true, edit: false },
     gridAi: { useAi: true },
     configuracoes: { view: false, edit: false },
+    meta: { view: false, configure: false, connect: false, disconnect: false, logs: false },
   };
 };
 

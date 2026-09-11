@@ -95,6 +95,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       case 'administracao':
       case 'settings':
         return { title: 'Painel de Administração do Sistema', subtitle: 'Membros da equipe, planos, credenciais de API e segurança do workspace' };
+      case 'meta-api':
+      case 'conexoes-meta':
+        return {
+          title: 'Conexões Meta (WhatsApp, Instagram, Facebook)',
+          subtitle: 'Conecte seus canais Meta ao MotorGrid e centralize seus atendimentos em uma única operação.',
+        };
       case 'customers':
         return { title: 'Gestão de Clientes & Compradores', subtitle: 'Base de clientes, contratos e histórico de negociações' };
       case 'projects':

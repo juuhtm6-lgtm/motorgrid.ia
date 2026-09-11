@@ -1,7 +1,8 @@
 import React, { useId } from 'react';
+import { useResolvedTheme } from './GridIALogoFull';
 
 export interface GridIAIconProps extends React.SVGProps<SVGSVGElement> {
-  /** 'dark' for dark/black backgrounds, 'light' for light/white backgrounds. Default: 'dark' */
+  /** 'dark' for dark/black backgrounds, 'light' for light/white backgrounds. Default: auto-detected */
   theme?: 'dark' | 'light';
   /** Size in pixels or CSS units (e.g. 40, '40px'). Default: 40 */
   size?: number | string;
@@ -22,7 +23,7 @@ export interface GridIAIconProps extends React.SVGProps<SVGSVGElement> {
  * - Proporção de aspecto 1:1 rigorosa sem distorção ou corte
  */
 export const GridIAIcon: React.FC<GridIAIconProps> = ({
-  theme = 'dark',
+  theme,
   size = 40,
   className = '',
   title = 'GRID IA - Símbolo Oficial',
@@ -30,7 +31,8 @@ export const GridIAIcon: React.FC<GridIAIconProps> = ({
   ...props
 }) => {
   const uniqueId = useId().replace(/:/g, '');
-  const isDark = theme === 'dark';
+  const activeTheme = useResolvedTheme(theme);
+  const isDark = activeTheme === 'dark';
 
   const gradId = `grid-ia-grad-${uniqueId}`;
   const facetId = `grid-ia-facet-${uniqueId}`;

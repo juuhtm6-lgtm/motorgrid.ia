@@ -32,7 +32,7 @@ export interface GridIALogoProps {
  */
 export const GridIALogo: React.FC<GridIALogoProps> = ({
   variant = 'full',
-  theme = 'dark',
+  theme,
   size = 'md',
   width,
   height,

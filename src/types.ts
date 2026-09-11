@@ -31,7 +31,9 @@ export type ActiveTab =
   | 'equipe'
   | 'metas'
   | 'agenda'
-  | 'tarefas';
+  | 'tarefas'
+  | 'meta-api'
+  | 'conexoes-meta';
 
 export type PlanTier = 'Starter' | 'Pro' | 'Enterprise' | 'Custom';
 export type LeadTemperature = 'Frio' | 'Morno' | 'Quente' | 'Pronto para Fechar';
@@ -90,6 +92,86 @@ export interface UserPermissions {
     view: boolean;
     edit: boolean;
   };
+  meta?: {
+    view: boolean;
+    configure: boolean;
+    connect: boolean;
+    disconnect: boolean;
+    logs: boolean;
+  };
+}
+
+// Meta Integration & Omnichannel Types
+export interface MetaConnection {
+  id: string;
+  tenant_id: string;
+  tenant_name: string;
+  app_id: string;
+  business_id: string;
+  waba_id: string;
+  phone_number_id: string;
+  phone_number: string;
+  phone_display_name: string;
+  whatsapp_quality: 'Verde (Alta)' | 'Amarela (Média)' | 'Vermelha (Baixa)';
+  whatsapp_status: 'Conectado' | 'Desconectado' | 'Pendente';
+  instagram_account_id: string;
+  instagram_username: string;
+  instagram_page_id: string;
+  instagram_status: 'Conectado' | 'Desconectado' | 'Pendente';
+  facebook_page_id: string;
+  facebook_page_name: string;
+  facebook_status: 'Conectado' | 'Desconectado' | 'Pendente';
+  status: 'Operacional' | 'Atenção' | 'Erro' | 'Desconectado';
+  coexistence_enabled: boolean;
+  coexistence_status: 'Ativo' | 'Disponível' | 'Não disponível' | 'Pendente de configuração' | 'Erro';
+  webhook_url: string;
+  verify_token_masked: string;
+  app_secret_masked: string;
+  system_token_masked: string;
+  webhook_status: 'Ativo' | 'Pendente' | 'Erro';
+  environment: 'Produção' | 'Teste';
+  messages_today_whatsapp: number;
+  messages_today_instagram: number;
+  messages_today_facebook: number;
+  last_sync_whatsapp: string;
+  last_sync_instagram: string;
+  last_sync_facebook: string;
+  last_webhook_whatsapp: string;
+  last_webhook_instagram: string;
+  last_webhook_facebook: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MetaWebhookLog {
+  id: string;
+  tenant_id: string;
+  channel: 'WhatsApp' | 'Instagram' | 'Facebook';
+  event_type: 'message_received' | 'message_delivered' | 'message_read' | 'leadgen' | 'coexistence_sync';
+  external_id: string;
+  sender_id: string;
+  sender_name: string;
+  sender_phone?: string;
+  content: string;
+  media_type?: 'text' | 'image' | 'audio' | 'video' | 'document' | 'location';
+  media_url?: string;
+  status: 'RECEBIDO' | 'PROCESSADO' | 'ERRO';
+  result: string;
+  received_at: string;
+  processed_at: string;
+  error_message?: string;
+}
+
+export interface MetaHealthCheckResult {
+  metaConnected: boolean;
+  whatsappConnected: boolean;
+  instagramConnected: boolean;
+  facebookConnected: boolean;
+  webhookActive: boolean;
+  latencyMs: number;
+  environment: string;
+  issues: string[];
+  checkedAt: string;
 }
 
 export interface IntegrationItem {

@@ -23,6 +23,7 @@ import {
   Users,
   Target,
   Award,
+  Share2,
 } from 'lucide-react';
 import { AuthUser, ActiveTab } from '../types';
 import { useToast } from '../context/ToastContext';
@@ -131,6 +132,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Administração',
       icon: Settings,
     },
+    {
+      id: 'meta-api' as ActiveTab,
+      label: 'Meta API',
+      icon: Share2,
+    },
   ];
 
   return (
@@ -209,9 +215,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
               activeTab === 'vendedores' ||
               activeTab === 'funil-comercial');
 
+          const isMetaApiSection =
+            item.id === 'meta-api' && (activeTab === 'meta-api' || activeTab === 'conexoes-meta');
+
+          // RBAC: Check access to Meta API module
+          if (item.id === 'meta-api' && currentUser) {
+            const canViewMeta =
+              currentUser.canonicalRole === 'platform_admin' ||
+              currentUser.canonicalRole === 'manager' ||
+              currentUser.canonicalRole === 'supervisor' ||
+              currentUser.permissions?.meta?.view !== false;
+            if (!canViewMeta) return null;
+          }
+
           const isActive =
             activeTab === item.id ||
             isRelatoriosSection ||
+            isMetaApiSection ||
             (item.id === 'dashboard' && activeTab === 'sales') ||
             (item.id === 'leads' && activeTab === 'customers') ||
             (item.id === 'pipeline' && activeTab === 'projects') ||
@@ -318,34 +338,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               id={`nav-item-${item.id}`}
               key={item.id}
               onClick={() => {
-                if (
-                  item.id === 'equipe' &&
-                  currentUser &&
-                  currentUser.canonicalRole !== 'platform_admin' &&
-                  currentUser.canonicalRole !== 'manager' &&
-                  currentUser.canonicalRole !== 'supervisor' &&
-                  !currentUser.permissions?.equipe?.createUser &&
-                  !currentUser.permissions?.equipe?.editUser
-                ) {
-                  toast.error(
-                    `Acesso restrito: Gestão de Equipe é restrita a Gerentes, Supervisores e Administradores. Seu perfil é: ${currentUser.role}`
-                  );
-                  return;
-                }
-                if (
-                  item.id === 'administracao' &&
-                  currentUser &&
-                  currentUser.canonicalRole !== 'platform_admin' &&
-                  currentUser.canonicalRole !== 'manager' &&
-                  currentUser.role !== 'Administrador MotorGrid' &&
-                  currentUser.role !== 'Administrador' &&
-                  currentUser.role !== 'Gestor Geral'
-                ) {
-                  toast.error(
-                    `Acesso restrito: Módulo exclusivo para Administradores e Gerentes. Perfil atual: ${currentUser.role}`
-                  );
-                  return;
-                }
                 setActiveTab(item.id);
               }}
               title={collapsed ? item.label : undefined}
