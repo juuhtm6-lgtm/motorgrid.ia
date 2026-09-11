@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 250" fill="none" width="100%" height="100%">
+  <defs>
+    <linearGradient id="stack-dark-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF" />
+      <stop offset="28%" stop-color="#007DFE" />
+      <stop offset="65%" stop-color="#6025F5" />
+      <stop offset="100%" stop-color="#A855F7" />
+    </linearGradient>
+
+    <linearGradient id="stack-dark-facet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED" />
+      <stop offset="50%" stop-color="#581C87" />
+      <stop offset="100%" stop-color="#2E1065" />
+    </linearGradient>
+
+    <linearGradient id="stack-dark-ia-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF" />
+      <stop offset="35%" stop-color="#007DFE" />
+      <stop offset="70%" stop-color="#6025F5" />
+      <stop offset="100%" stop-color="#A855F7" />
+    </linearGradient>
+  </defs>
+  <rect width="220" height="250" fill="#0A0A0B" rx="16" />
+  <g transform="translate(20, 15) scale(0.9)">
+    
+  <!-- Left Cybernetic Grid Matrix -->
+  <g stroke="url(#stack-dark-grad)" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="28" y1="54" x2="28" y2="146" />
+    <line x1="52" y1="32" x2="52" y2="168" />
+    <line x1="78" y1="32" x2="78" y2="168" />
+
+    <line x1="52" y1="32" x2="78" y2="32" />
+    <line x1="28" y1="54" x2="78" y2="54" />
+    <line x1="28" y1="76" x2="78" y2="76" />
+    <line x1="12" y1="100" x2="68" y2="100" />
+    <line x1="28" y1="124" x2="78" y2="124" />
+    <line x1="28" y1="146" x2="78" y2="146" />
+    <line x1="52" y1="168" x2="78" y2="168" />
+  </g>
+
+  <!-- Left Inner Arc of G Counter -->
+  <path
+    d="M 78 68 A 42 42 0 0 0 68 100 A 42 42 0 0 0 78 132"
+    stroke="url(#stack-dark-grad)"
+    stroke-width="4.2"
+    stroke-linecap="round"
+    fill="none"
+  />
+
+  <!-- Circular Cyber-Nodes with White Reflective Center -->
+  <circle cx="52" cy="32" r="5.5" fill="#00D2FF" />
+  <circle cx="52" cy="32" r="2.2" fill="#FFFFFF" />
+
+  <circle cx="28" cy="54" r="5.5" fill="#0099FF" />
+  <circle cx="28" cy="54" r="2.2" fill="#FFFFFF" />
+
+  <circle cx="12" cy="100" r="5.8" fill="#007DFE" />
+  <circle cx="12" cy="100" r="2.2" fill="#FFFFFF" />
+
+  <circle cx="28" cy="146" r="5.5" fill="#7C3AED" />
+  <circle cx="28" cy="146" r="2.2" fill="#FFFFFF" />
+
+  <circle cx="52" cy="168" r="5.5" fill="#A855F7" />
+  <circle cx="52" cy="168" r="2.2" fill="#FFFFFF" />
+
+  <!-- Floating Digital Data Pixels -->
+  <rect x="6" y="74" width="6.5" height="6.5" rx="1.5" fill="#00D2FF" />
+  <rect x="0" y="97" width="7" height="7" rx="1.5" fill="#007DFE" />
+  <rect x="8" y="122" width="6.5" height="6.5" rx="1.5" fill="#8B5CF6" />
+
+  <!-- Upper G Body with Open Right Terminal -->
+  <path
+    d="M 166 54
+       A 68 68 0 0 0 116 32
+       L 78 32
+       L 78 68
+       A 42 42 0 0 1 116 58
+       A 42 42 0 0 1 147 72
+       L 166 54
+       Z"
+    fill="url(#stack-dark-grad)"
+  />
+
+  <!-- Main Lower Curve, Right Spur & Inward Crossbar -->
+  <path
+    d="M 78 132
+       L 78 168
+       L 116 168
+       A 68 68 0 0 0 184 100
+       L 184 90
+       L 112 90
+       L 112 114
+       L 156 114
+       A 42 42 0 0 1 116 142
+       A 42 42 0 0 1 78 132
+       Z"
+    fill="url(#stack-dark-grad)"
+  />
+
+  <!-- 3D Origami Ribbon Fold Facet at Lower-Left -->
+  <polygon
+    points="78,132 108,152 78,168"
+    fill="url(#stack-dark-facet)"
+  />
+  
+  </g>
+  <g transform="translate(25, 204) scale(1)">
+    
+  <!-- GRID -->
+  <g fill="#FFFFFF">
+    <!-- G -->
+    <path d="M 28 8.5 L 23 8.5 C 21.5 5.5 17.5 4.5 13.5 4.5 C 6.5 4.5 2 9.5 2 16 C 2 22.5 6.5 27.5 13.5 27.5 C 19.5 27.5 24 24 24.5 18 L 14 18 L 14 14 L 28.5 14 L 28.5 20 C 27.5 26.5 21.5 31.5 13.5 31.5 C 4.5 31.5 -2 25 -2 16 C -2 7 4.5 0.5 13.5 0.5 C 19.5 0.5 25 3.5 28 8.5 Z" transform="translate(2, 0)" />
+    <!-- R -->
+    <path d="M 38 1 L 52 1 C 58 1 62 4.5 62 9.5 C 62 13.5 59.5 16.5 55 17.5 L 63 31 L 56.5 31 L 49 18 L 44 18 L 44 31 L 38 31 Z M 44 5.5 L 44 13.5 L 51.5 13.5 C 54.5 13.5 56.5 12 56.5 9.5 C 56.5 7 54.5 5.5 51.5 5.5 Z" />
+    <!-- I -->
+    <rect x="70" y="1" width="5.5" height="30" rx="1.5" />
+    <!-- D -->
+    <path d="M 82 1 L 96 1 C 105 1 111 7 111 16 C 111 25 105 31 96 31 L 82 31 Z M 88 5.5 L 88 26.5 L 95.5 26.5 C 101.5 26.5 105 22.5 105 16 C 105 9.5 101.5 5.5 95.5 5.5 Z" />
+  </g>
+
+  <!-- IA -->
+  <g fill="url(#stack-dark-ia-grad)">
+    <!-- I -->
+    <rect x="126" y="1" width="5.5" height="30" rx="1.5" />
+    <!-- A (Futuristic Chevron) -->
+    <path d="M 151 1 L 156 1 L 168 31 L 162 31 L 153.5 9.5 L 145 31 L 139 31 Z" />
+  </g>
+  
+  </g>
+</svg>

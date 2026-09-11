@@ -41,7 +41,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AuthUser, PlanTier, UserRole } from '../../types';
-import { MotorGridLogo } from '../MotorGridLogo';
+import { GridIALogoFull } from '../brand/GridIALogoFull';
 
 interface SalesLandingPageProps {
   onLogin: (user: AuthUser) => void;
@@ -327,7 +327,7 @@ export const SalesLandingPage: React.FC<SalesLandingPageProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <MotorGridLogo size="md" />
+            <GridIALogoFull theme="dark" size="md" />
             <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#8B5CF6]/15 text-[#A78BFA] border border-[#8B5CF6]/30">
               Telemetria & Frotas
             </span>
@@ -1125,8 +1125,8 @@ export const SalesLandingPage: React.FC<SalesLandingPageProps> = ({
       <footer className="border-t border-zinc-800/80 bg-[#08080A] py-12 text-xs text-zinc-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <MotorGridLogo size="sm" />
-            <span>© 2026 MotorGrid Automotive Technology Ltda. Todos os direitos reservados.</span>
+            <GridIALogoFull theme="dark" size="sm" />
+            <span>© 2026 GRID IA Automotive Technology Ltda. Todos os direitos reservados.</span>
           </div>
 
           <div className="flex items-center gap-6 text-zinc-400">
@@ -1154,7 +1154,7 @@ export const SalesLandingPage: React.FC<SalesLandingPageProps> = ({
             {/* Header & Mode Switcher */}
             <div className="space-y-3">
               <div className="flex items-center gap-2.5">
-                <MotorGridLogo size="sm" />
+                <GridIALogoFull theme="dark" size="sm" />
                 <span className="text-xs font-bold text-[#A78BFA] px-2 py-0.5 rounded-full bg-[#8B5CF6]/15 border border-[#8B5CF6]/30">
                   Acesso Conectado
                 </span>

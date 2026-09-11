@@ -643,6 +643,7 @@ export default function App() {
         availableUsers={authUsers}
         onSwitchUser={handleSwitchUser}
         onOpenNewLead={() => setIsCreateLeadModalOpen(true)}
+        theme={theme}
       />
 
       {/* Main Content Area */}

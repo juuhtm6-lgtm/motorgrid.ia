@@ -23,7 +23,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MotorGridIcon } from '../MotorGridLogo';
+import { GridIALogoFull } from '../brand/GridIALogoFull';
 import { AuthUser, ThemeMode } from '../../types';
 
 interface MotorGridLoginViewProps {
@@ -156,16 +156,8 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
       {/* Top Header Bar with Theme Toggle */}
       <header className="w-full flex items-center justify-between px-6 py-4 z-20">
         {/* Mobile Logo Brand */}
-        <div className="flex items-center gap-2.5 md:hidden">
-          <div className="p-1.5 rounded-lg bg-[#1C1C1E] border border-[#8B5CF6]/30">
-            <MotorGridIcon className="w-6 h-6" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-sm tracking-tight text-white dark:text-white">MotorGrid</span>
-            <span className="text-[8px] font-semibold tracking-widest uppercase opacity-70 text-[#8B5CF6]">
-              Automotive Command
-            </span>
-          </div>
+        <div className="flex items-center md:hidden">
+          <GridIALogoFull theme={theme} size="sm" />
         </div>
 
         <div className="hidden md:block" />
@@ -269,30 +261,15 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                 </span>
               </div>
 
-              {/* [EMBLEMA MOTORGRID] Official Emblem Hero */}
-              <div className="flex items-center gap-5 mb-6 relative z-10">
-                <div className="relative flex items-center justify-center p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#1C1533] to-[#0D0A1A] border border-[#8B5CF6]/50 shadow-xl shadow-[#8B5CF6]/25 group">
-                  {/* Subtle pulsing glow ring */}
-                  <div className="absolute -inset-0.5 bg-[#8B5CF6]/30 rounded-2xl blur-sm -z-10 animate-pulse" />
-                  <MotorGridIcon className="w-14 h-14 sm:w-16 sm:h-16 drop-shadow-[0_0_15px_rgba(139,92,246,0.6)]" />
-                </div>
-
-                <div className="flex flex-col justify-center">
-                  <div className="flex items-baseline">
-                    <span
-                      className="brand-logo-text text-3xl sm:text-4xl font-extrabold tracking-tight font-['Inter',sans-serif]"
-                      style={{ color: '#FFFFFF' }}
-                    >
-                      MotorGrid
-                    </span>
-                  </div>
-                  <span
-                    className="brand-subtitle font-bold uppercase text-xs sm:text-sm tracking-[0.28em] mt-1 font-['Inter',sans-serif]"
-                    style={{ color: '#A78BFA' }}
-                  >
-                    AUTOMOTIVE COMMAND
-                  </span>
-                </div>
+              {/* [EMBLEMA GRID IA] Official Emblem Hero */}
+              <div className="mb-6 relative z-10 flex items-center">
+                <GridIALogoFull
+                  theme="dark"
+                  size="lg"
+                  showSubtitle={true}
+                  subtitle="SISTEMA OPERACIONAL AUTOMOTIVO"
+                  className="shrink-0"
+                />
               </div>
 
               {/* Main Headline */}
@@ -459,7 +436,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                 <h2 className={`text-2xl font-extrabold tracking-tight ${
                   theme === 'dark' ? 'text-white' : 'text-[#0F172A]'
                 }`}>
-                  Bem-vindo ao MotorGrid
+                  Bem-vindo ao GRID IA
                 </h2>
                 <p className={`text-sm mt-1 ${
                   theme === 'dark' ? 'text-zinc-400' : 'text-[#475569]'
@@ -713,7 +690,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div>
-            <span className="font-semibold text-[#8B5CF6]">MotorGrid Automotive Command</span>
+            <span className="font-semibold text-[#8B5CF6]">MotorGrid - Sistema Operacional de Vendas Automotivas</span>
             <span className="mx-2">•</span>
             <span>© 2026 MotorGrid. Todos os direitos reservados.</span>
           </div>
@@ -904,7 +881,7 @@ export const MotorGridLoginView: React.FC<MotorGridLoginViewProps> = ({
                 {activeLegalModal === 'privacidade' && (
                   <>
                     <p>
-                      O <strong>MotorGrid Automotive Command</strong> cumpre integralmente a Lei Geral de Proteção de Dados (LGPD nº 13.709/2018).
+                      O <strong>MotorGrid - Sistema Operacional de Vendas Automotivas</strong> cumpre integralmente a Lei Geral de Proteção de Dados (LGPD nº 13.709/2018).
                     </p>
                     <p>
                       Todos os dados de clientes, propostas, veículos e conversas trafegam sob criptografia TLS 1.3 de ponta a ponta e são armazenados em data centers de alta disponibilidade com redundância geográfica e isolamento multi-tenant por concessionária/grupo.

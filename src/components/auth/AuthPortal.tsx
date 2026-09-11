@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AuthUser, UserRole, PlanTier } from '../../types';
-import { MotorGridLogo } from '../MotorGridLogo';
+import { GridIALogoFull } from '../brand/GridIALogoFull';
 import { useToast } from '../../context/ToastContext';
 
 interface AuthPortalProps {
@@ -167,7 +167,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
         {/* Left Side: Brand Story & Telematics Overview */}
         <div className="lg:col-span-5 space-y-6 text-left hidden lg:block">
           <div className="space-y-3">
-            <MotorGridLogo size="lg" showSubtitle={true} />
+            <GridIALogoFull theme="dark" size="lg" showSubtitle={true} subtitle="SISTEMA OPERACIONAL AUTOMOTIVO" />
             <p className="text-sm text-zinc-300 font-medium leading-relaxed">
               Plataforma de inteligência e telemetria veicular B2B de alto desempenho para frotas conectadas, concessionárias e montadoras.
             </p>
@@ -215,7 +215,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
           <div className="pt-2 flex items-center gap-3 text-xs text-zinc-500 font-mono">
             <span className="flex items-center gap-1.5 text-[#C4B5FD]">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              MotorGrid Auth v3.2
+              GRID IA Auth v3.2
             </span>
             <span>•</span>
             <span>Ambiente Seguro SSL</span>
@@ -227,7 +227,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
           <div className="rounded-3xl bg-[#1C1C1E] border border-[#8B5CF6]/30 shadow-2xl shadow-[#8B5CF6]/15 p-6 sm:p-8 backdrop-blur-xl relative">
             {/* Top Brand on mobile */}
             <div className="lg:hidden mb-6 flex justify-center">
-              <MotorGridLogo size="md" showSubtitle={true} />
+              <GridIALogoFull theme="dark" size="md" />
             </div>
 
             {/* Auth Mode Toggle Tabs */}
@@ -271,7 +271,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-extrabold text-white tracking-tight">
-                    Acessar Workspace MotorGrid
+                    Acessar Workspace GRID IA
                   </h3>
                   <p className="text-xs text-zinc-400 mt-1">
                     Entre com suas credenciais corporativas ou utilize o acesso rápido abaixo.
@@ -361,7 +361,7 @@ export const AuthPortal: React.FC<AuthPortalProps> = ({
                       </span>
                     ) : (
                       <>
-                        <span>Acessar Plataforma MotorGrid</span>
+                        <span>Acessar Plataforma GRID IA</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}

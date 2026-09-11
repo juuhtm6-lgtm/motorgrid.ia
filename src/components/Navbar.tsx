@@ -100,9 +100,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       case 'projects':
         return { title: 'Operações & Tarefas', subtitle: 'Acompanhamento de processos de entrega e vistorias' };
       case 'billing':
-        return { title: 'Planos & Faturamento MotorGrid', subtitle: 'Gestão de assinaturas, cobranças PIX/Cartão e faturas fiscais' };
+        return { title: 'Planos & Faturamento GRID IA', subtitle: 'Gestão de assinaturas, cobranças PIX/Cartão e faturas fiscais' };
       case 'ai-copilot':
-        return { title: 'Copilot IA Gemini - MotorGrid Intelligence', subtitle: 'Diagnósticos automotivos preditivos e estratégias comerciais' };
+        return { title: 'Copilot IA Gemini - GRID IA Intelligence', subtitle: 'Diagnósticos automotivos preditivos e estratégias comerciais' };
       case 'reports':
         return { title: 'Relatórios & Análise de Vendas', subtitle: 'Desempenho de canais, conversão e métricas financeiras' };
       case 'meta-ads':
@@ -122,7 +122,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       case 'sales':
         return { title: 'Página de Vendas & Planos Comerciais', subtitle: 'Landing page pública com simulador de ROI, planos e checkout integrado' };
       default:
-        return { title: 'MotorGrid', subtitle: 'Automotive Command' };
+        return { title: 'GRID IA', subtitle: 'Sistema Operacional de Vendas Automotivas' };
     }
   };
 

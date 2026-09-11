@@ -24,9 +24,10 @@ import {
   Target,
   Award,
 } from 'lucide-react';
-import { MotorGridIcon } from './MotorGridLogo';
 import { AuthUser, ActiveTab } from '../types';
 import { useToast } from '../context/ToastContext';
+import { GridIAIcon } from './brand/GridIAIcon';
+import { GridIALogoFull } from './brand/GridIALogoFull';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -42,6 +43,7 @@ interface SidebarProps {
   availableUsers: AuthUser[];
   onSwitchUser: (user: AuthUser) => void;
   onOpenNewLead?: () => void;
+  theme?: 'light' | 'dark';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -55,6 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   availableUsers,
   onSwitchUser,
   onOpenNewLead,
+  theme = 'dark',
 }) => {
   const toast = useToast();
   const [relatoriosExpanded, setRelatoriosExpanded] = useState(true);
@@ -133,40 +136,60 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       id="main-sidebar"
-      className={`relative flex flex-col border-r border-[rgba(255,255,255,0.06)] bg-[#0A0A0B] transition-all duration-300 z-30 select-none font-['Inter',sans-serif] ${
-        collapsed ? 'w-20' : 'w-64'
-      }`}
+      className={`relative flex flex-col transition-all duration-300 z-30 select-none font-['Inter',sans-serif] ${
+        theme === 'light'
+          ? 'border-r border-slate-200/80 bg-white text-slate-800'
+          : 'border-r border-[rgba(255,255,255,0.06)] bg-[#0A0A0B] text-zinc-100'
+      } ${collapsed ? 'w-20' : 'w-64'}`}
     >
-      {/* Brand Header */}
-      <div className="flex items-center justify-between h-20 px-4 border-b border-[rgba(255,255,255,0.06)] bg-[#0A0A0B]">
-        <div className="flex items-center gap-3 overflow-hidden">
-          {/* MotorGrid Icon Container */}
-          <div className="relative shrink-0 flex items-center justify-center p-2.5 rounded-xl bg-[#101012] border border-[rgba(139,92,246,0.35)] shadow-md shadow-[#8B5CF6]/20">
-            <MotorGridIcon className="w-9 h-9" />
-          </div>
-
-          {!collapsed && (
-            <div className="flex flex-col justify-center min-w-0">
-              <div className="font-bold text-white tracking-tight text-[19px] leading-tight flex items-center">
-                <span>MotorGrid</span>
-              </div>
-              <span className="font-semibold uppercase text-[#A1A1AA] text-[10px] tracking-[0.15em] mt-0.5">
-                AUTOMOTIVE COMMAND
-              </span>
+      {/* Official GRID IA Brand Header */}
+      <div className={`flex items-center justify-between h-20 px-3.5 border-b transition-colors ${
+        theme === 'light'
+          ? 'border-slate-200/80 bg-white'
+          : 'border-[rgba(255,255,255,0.06)] bg-[#0A0A0B]'
+      }`}>
+        {collapsed ? (
+          /* Símbolo Oficial GRID IA Recolhido (Proporção 1:1, 40px, centralizado) */
+          <div className="w-full flex items-center justify-center">
+            <div
+              className={`relative shrink-0 flex items-center justify-center p-1.5 rounded-xl transition-all ${
+                theme === 'light'
+                  ? 'bg-slate-50 border border-slate-200 shadow-sm'
+                  : 'bg-[#101012] border border-[rgba(139,92,246,0.30)] shadow-md shadow-[#8B5CF6]/15'
+              }`}
+            >
+              <GridIAIcon
+                size={40}
+                theme={theme}
+                title="GRID IA"
+              />
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          /* Logotipo Completo Oficial GRID IA Expandido ([SÍMBOLO OFICIAL GRID IA] + [GRID IA]) */
+          <div className="flex items-center justify-start flex-1 min-w-0 pr-1">
+            <GridIALogoFull
+              theme={theme}
+              size="md"
+              iconSize={38}
+            />
+          </div>
+        )}
 
         <button
           id="toggle-sidebar-btn"
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg text-[#A1A1AA] hover:text-white hover:bg-[#1C1C1E] transition-colors cursor-pointer shrink-0"
+          className={`p-1.5 rounded-lg transition-colors cursor-pointer shrink-0 ${
+            theme === 'light'
+              ? 'text-slate-400 hover:text-slate-800 hover:bg-slate-100'
+              : 'text-[#A1A1AA] hover:text-white hover:bg-[#1C1C1E]'
+          }`}
           title={collapsed ? 'Expandir menu' : 'Recolher menu'}
         >
           {collapsed ? (
             <ChevronRight className="w-4 h-4 text-[#8B5CF6]" />
           ) : (
-            <ChevronLeft className="w-4 h-4 text-[#A1A1AA]" />
+            <ChevronLeft className="w-4 h-4 text-inherit" />
           )}
         </button>
       </div>
@@ -215,14 +238,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   title={collapsed ? item.label : undefined}
                   className={`w-full relative flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[rgba(139,92,246,0.14)] text-white font-semibold'
-                      : 'text-[#A1A1AA] hover:bg-[#1C1C1E] hover:text-white'
+                      ? theme === 'light'
+                        ? 'bg-purple-50 text-[#6D28D9] font-semibold'
+                        : 'bg-[rgba(139,92,246,0.14)] text-white font-semibold'
+                      : theme === 'light'
+                        ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                        : 'text-[#A1A1AA] hover:bg-[#1C1C1E] hover:text-white'
                   } ${collapsed ? 'justify-center px-2' : ''}`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <Icon
                       className={`w-4.5 h-4.5 shrink-0 transition-colors ${
-                        isActive ? 'text-[#8B5CF6]' : 'text-[#A1A1AA]'
+                        isActive
+                          ? 'text-[#8B5CF6]'
+                          : theme === 'light'
+                            ? 'text-slate-400'
+                            : 'text-[#A1A1AA]'
                       }`}
                     />
                     {!collapsed && (
@@ -234,9 +265,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                   {!collapsed && (
                     <ChevronDown
-                      className={`w-4 h-4 text-[#A1A1AA] transition-transform ${
-                        relatoriosExpanded ? 'rotate-180' : ''
-                      }`}
+                      className={`w-4 h-4 transition-transform ${
+                        theme === 'light' ? 'text-slate-400' : 'text-[#A1A1AA]'
+                      } ${relatoriosExpanded ? 'rotate-180' : ''}`}
                     />
                   )}
 
@@ -247,7 +278,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Sub-items */}
                 {!collapsed && relatoriosExpanded && item.subItems && (
-                  <div className="pl-7 pr-1 py-1 space-y-1 border-l border-[rgba(255,255,255,0.06)] ml-4 my-1">
+                  <div className={`pl-7 pr-1 py-1 space-y-1 ml-4 my-1 border-l ${
+                    theme === 'light' ? 'border-slate-200' : 'border-[rgba(255,255,255,0.06)]'
+                  }`}>
                     {item.subItems.map((sub) => {
                       const isSubActive = activeTab === sub.id;
                       return (
@@ -257,8 +290,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           onClick={() => setActiveTab(sub.id)}
                           className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                             isSubActive
-                              ? 'bg-[rgba(139,92,246,0.14)] text-white font-semibold'
-                              : 'text-[#A1A1AA] hover:text-white hover:bg-[#1C1C1E]'
+                              ? theme === 'light'
+                                ? 'bg-purple-50 text-[#6D28D9] font-semibold'
+                                : 'bg-[rgba(139,92,246,0.14)] text-white font-semibold'
+                              : theme === 'light'
+                                ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                                : 'text-[#A1A1AA] hover:text-white hover:bg-[#1C1C1E]'
                           }`}
                         >
                           <span className="truncate">{sub.label}</span>
@@ -314,13 +351,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
               title={collapsed ? item.label : undefined}
               className={`w-full relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-[rgba(139,92,246,0.14)] text-white font-semibold'
-                  : 'text-[#A1A1AA] hover:bg-[#1C1C1E] hover:text-white'
+                  ? theme === 'light'
+                    ? 'bg-purple-50 text-[#6D28D9] font-semibold'
+                    : 'bg-[rgba(139,92,246,0.14)] text-white font-semibold'
+                  : theme === 'light'
+                    ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    : 'text-[#A1A1AA] hover:bg-[#1C1C1E] hover:text-white'
               } ${collapsed ? 'justify-center px-2' : ''}`}
             >
               <Icon
                 className={`w-4.5 h-4.5 shrink-0 transition-colors ${
-                  isActive ? 'text-[#8B5CF6]' : 'text-[#A1A1AA]'
+                  isActive
+                    ? 'text-[#8B5CF6]'
+                    : theme === 'light'
+                      ? 'text-slate-400'
+                      : 'text-[#A1A1AA]'
                 }`}
               />
 
@@ -340,7 +385,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* Bottom Section: Primary Button & Actions */}
-      <div className="p-3 border-t border-[rgba(255,255,255,0.06)] bg-[#0A0A0B] space-y-2">
+      <div className={`p-3 border-t space-y-2 transition-colors ${
+        theme === 'light'
+          ? 'border-slate-200/80 bg-white'
+          : 'border-[rgba(255,255,255,0.06)] bg-[#0A0A0B]'
+      }`}>
         {/* + New Lead Button (Primary: bg #8B5CF6 text #FFFFFF hover #7C3AED / #6D28D9) */}
         <button
           id="sidebar-new-lead-btn"
@@ -357,13 +406,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Support Link */}
         <button
           id="sidebar-support-btn"
-          onClick={() => toast.info('Central de Ajuda MotorGrid: Suporte 24/7 via WhatsApp (+55 11 9999-8888) ou helpdesk@motorgrid.io')}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#A1A1AA] hover:text-white hover:bg-[#1C1C1E] transition-colors cursor-pointer text-xs font-medium ${
-            collapsed ? 'justify-center px-0' : ''
-          }`}
+          onClick={() => toast.info('Central de Ajuda GRID IA: Suporte 24/7 via WhatsApp (+55 11 9999-8888) ou suporte@gridia.com.br')}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-colors cursor-pointer text-xs font-medium ${
+            theme === 'light'
+              ? 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+              : 'text-[#A1A1AA] hover:text-white hover:bg-[#1C1C1E]'
+          } ${collapsed ? 'justify-center px-0' : ''}`}
           title="Suporte"
         >
-          <HelpCircle className="w-4 h-4 text-[#A1A1AA] shrink-0" />
+          <HelpCircle className="w-4 h-4 shrink-0 text-inherit" />
           {!collapsed && <span>Suporte</span>}
         </button>
 
@@ -371,12 +422,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <button
           id="sidebar-signout-btn"
           onClick={onOpenLogoutModal}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#A1A1AA] hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer text-xs font-medium ${
-            collapsed ? 'justify-center px-0' : ''
-          }`}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-colors cursor-pointer text-xs font-medium ${
+            theme === 'light'
+              ? 'text-slate-500 hover:text-rose-600 hover:bg-rose-50'
+              : 'text-[#A1A1AA] hover:text-rose-400 hover:bg-rose-500/10'
+          } ${collapsed ? 'justify-center px-0' : ''}`}
           title="Sair"
         >
-          <LogOut className="w-4 h-4 text-[#A1A1AA] hover:text-rose-400 shrink-0" />
+          <LogOut className="w-4 h-4 hover:text-rose-400 shrink-0 text-inherit" />
           {!collapsed && <span>Sair</span>}
         </button>
       </div>

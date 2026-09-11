@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" width="100%" height="100%">
+  <defs>
+    <!-- Official Vertical Gradient: Electric Cyan (#00D2FF) -> Royal Blue (#007DFE) -> Deep Indigo (#6025F5) -> Neon Purple (#A855F7) -->
+    <linearGradient id="grid-ia-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF" />
+      <stop offset="28%" stop-color="#007DFE" />
+      <stop offset="65%" stop-color="#6025F5" />
+      <stop offset="100%" stop-color="#A855F7" />
+    </linearGradient>
+
+    <!-- Lower-Left 3D Origami Ribbon Fold Facet (Deep Violet / Plum shadow) -->
+    <linearGradient id="grid-ia-facet-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6D28D9" />
+      <stop offset="50%" stop-color="#581C87" />
+      <stop offset="100%" stop-color="#3B0764" />
+    </linearGradient>
+
+    <!-- Glow filters for cybernetic nodes -->
+    <filter id="node-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- ==================== LEFT WIREFRAME MATRIX GRID ==================== -->
+  <g stroke="url(#grid-ia-grad)" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Vertical Line 1 (Outer col, x=38): connects rows 1 to 5 (y=52 to 148) -->
+    <line x1="38" y1="52" x2="38" y2="148" />
+
+    <!-- Vertical Line 2 (Middle col, x=62): connects rows 0 to 6 (y=28 to 172) -->
+    <line x1="62" y1="28" x2="62" y2="172" />
+
+    <!-- Vertical Line 3 (Inner col, x=86): connects rows 0 to 6 (y=28 to 172) -->
+    <line x1="86" y1="28" x2="86" y2="172" />
+
+    <!-- Horizontal Row 0 (y=28): from middle col x=62 to x=86 (enters G top flat edge) -->
+    <line x1="62" y1="28" x2="86" y2="28" />
+
+    <!-- Horizontal Row 1 (y=52): from outer col x=38 to x=86 -->
+    <line x1="38" y1="52" x2="86" y2="52" />
+
+    <!-- Horizontal Row 2 (y=76): from outer col x=38 to G inner arc -->
+    <line x1="38" y1="76" x2="86" y2="76" />
+
+    <!-- Horizontal Row 3 (y=100, Center axis): from far-left terminal x=20 to G inner arc -->
+    <line x1="20" y1="100" x2="78" y2="100" />
+
+    <!-- Horizontal Row 4 (y=124): from outer col x=38 to G inner arc -->
+    <line x1="38" y1="124" x2="86" y2="124" />
+
+    <!-- Horizontal Row 5 (y=148): from outer col x=38 to x=86 -->
+    <line x1="38" y1="148" x2="86" y2="148" />
+
+    <!-- Horizontal Row 6 (y=172, Bottom): from middle col x=62 to x=86 (enters purple facet) -->
+    <line x1="62" y1="172" x2="86" y2="172" />
+  </g>
+
+  <!-- Left Inner Circular Arc (completes the circular counter of G on the left) -->
+  <path
+    d="M 86 73 A 44 44 0 0 0 78 100 A 44 44 0 0 0 86 127"
+    stroke="url(#grid-ia-grad)"
+    stroke-width="4.2"
+    stroke-linecap="round"
+    fill="none"
+  />
+
+  <!-- Circular Cyber-Nodes at grid intersections / line terminals -->
+  <!-- Top Node (Row 0, Col 2): Cyan -->
+  <circle cx="62" cy="28" r="6" fill="#00D2FF" />
+  <circle cx="62" cy="28" r="2.2" fill="#FFFFFF" />
+
+  <!-- Upper-Left Node (Row 1, Col 1): Cyan-Blue -->
+  <circle cx="38" cy="52" r="6" fill="#0099FF" />
+  <circle cx="38" cy="52" r="2.2" fill="#FFFFFF" />
+
+  <!-- Center-Left Terminal Node (Row 3, Col 0): Electric Blue -->
+  <circle cx="20" cy="100" r="6.2" fill="#007DFE" />
+  <circle cx="20" cy="100" r="2.2" fill="#FFFFFF" />
+
+  <!-- Lower-Left Node (Row 5, Col 1): Royal Purple -->
+  <circle cx="38" cy="148" r="6" fill="#7C3AED" />
+  <circle cx="38" cy="148" r="2.2" fill="#EDE9FE" />
+
+  <!-- Bottom Node (Row 6, Col 2): Neon Violet -->
+  <circle cx="62" cy="172" r="6" fill="#A855F7" />
+  <circle cx="62" cy="172" r="2.2" fill="#FFFFFF" />
+
+  <!-- Floating Digital Data Pixels on the far left -->
+  <rect x="12" y="72" width="7.5" height="7.5" rx="1.5" fill="#00D2FF" />
+  <rect x="4" y="96" width="8" height="8" rx="1.5" fill="#007DFE" />
+  <rect x="14" y="124" width="7.5" height="7.5" rx="1.5" fill="#8B5CF6" />
+
+  <!-- ==================== SOLID BODY OF THE LETTER G ==================== -->
+  <!--
+    Outer shape:
+    - Top edge: (86, 28) to (124, 28)
+    - Outer arc: clockwise arc with radius 72 around center (124, 100) down to (124, 172)
+    - Bottom curve: from (124, 172) to (86, 172)
+    - Bottom-left facet: folded triangle between (86, 127), (114, 150), and (86, 172)
+    - Inner contour:
+      * Top inner arc from (86, 73) around center (124, 100) with radius 44 to (168, 100)
+      * Crossbar top edge: from (168, 100) to (106, 100) - wait, crossbar is centered at y=100
+      * Crossbar left edge: (106, 88) to (106, 112)
+  -->
+
+  <!-- Upper and Main Solid Body of G with Inward Horizontal Crossbar -->
+  <path
+    d="M 86 28
+       L 124 28
+       A 72 72 0 0 1 196 100
+       A 72 72 0 0 1 124 172
+       L 86 172
+       L 86 127
+       A 44 44 0 0 0 118 142
+       L 118 114
+       L 168 114
+       L 168 86
+       L 106 86
+       L 106 114
+       L 118 114
+       A 44 44 0 0 0 124 56
+       A 44 44 0 0 0 86 73
+       Z"
+    fill="url(#grid-ia-grad)"
+  />
+
+  <!-- 3D Origami Ribbon Fold Facet at Lower-Left -->
+  <polygon
+    points="86,127 118,150 86,172"
+    fill="url(#grid-ia-facet-grad)"
+  />
+</svg>

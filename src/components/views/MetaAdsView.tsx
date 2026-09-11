@@ -70,7 +70,7 @@ import { initialAuthUsers } from '../../data/mockData';
 import { CampaignDetailModal } from '../metaAds/CampaignDetailModal';
 import { MetaConnectModal } from '../metaAds/MetaConnectModal';
 import { ExecutiveDashboardView } from '../metaAds/ExecutiveDashboardView';
-import { MotorGridIcon } from '../MotorGridLogo';
+import { GridIALogoFull } from '../brand/GridIALogoFull';
 import { useToast } from '../../context/ToastContext';
 
 interface MetaAdsViewProps {
@@ -233,21 +233,12 @@ export const MetaAdsView: React.FC<MetaAdsViewProps> = ({
       {/* ========================================================================= */}
       <div className="bg-[#0A0A0B] border-b border-[rgba(255,255,255,0.06)] px-6 py-3.5 sticky top-0 z-30 font-['Inter',sans-serif]">
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* Brand & Title - MotorGrid Logo & Typography */}
-          <div className="flex items-center gap-3">
-            {/* Neon MotorGrid Icon */}
-            <div className="relative shrink-0 flex items-center justify-center p-2 rounded-xl bg-[#1C1C1E] border border-[rgba(255,255,255,0.08)] shadow-sm">
-              <MotorGridIcon className="w-7 h-7" />
-            </div>
-
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-white text-sm tracking-tight">
-                  MotorGrid
-                </span>
-              </div>
+          {/* Brand & Title - GRID IA Logo & Typography */}
+          <div className="flex items-center gap-4">
+            <GridIALogoFull theme="dark" size="sm" />
+            <div className="hidden sm:block border-l border-[rgba(255,255,255,0.12)] pl-3">
               <p className="text-[10px] font-semibold tracking-[0.14em] text-[#71717A] uppercase">
-                DASHBOARD DE ADS • AUTOMOTIVE COMMAND
+                DASHBOARD DE ADS • SISTEMA OPERACIONAL AUTOMOTIVO
               </p>
             </div>
           </div>
