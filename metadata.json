@@ -1,5 +1,5 @@
 {
-  "name": "MotorGrid - Automotive Technology",
+  "name": "GRID IA - Sistema Operacional de Vendas Automotivas",
   "description": "Sistema Operacional de Vendas Automotivas - Gestão inteligente de estoque, leads, CRM, simulador financeiro e IA.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

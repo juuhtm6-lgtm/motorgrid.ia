@@ -1,61 +1,68 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Building2, Phone, Mail, Car, DollarSign, Tag, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, UserPlus, Phone, Mail, Car, DollarSign, Sparkles, CheckCircle2, RefreshCw } from 'lucide-react';
 import { LeadItem, LeadSource, LeadStatus } from '../../types';
 
 interface CreateLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (lead: Omit<LeadItem, 'id' | 'createdAt' | 'lastContact'>) => void;
+  onSubmit?: (lead: Omit<LeadItem, 'id' | 'createdAt' | 'lastContact'>) => void;
+  onCreateLead?: (lead: Omit<LeadItem, 'id' | 'createdAt' | 'lastContact'>) => void;
 }
 
 export const CreateLeadModal: React.FC<CreateLeadModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  onCreateLead,
 }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [company, setCompany] = useState('');
-  const [fleetSize, setFleetSize] = useState(15);
-  const [estimatedValue, setEstimatedValue] = useState(1500);
-  const [source, setSource] = useState<LeadSource>('Site / Landing Page');
+  const [vehicleInterest, setVehicleInterest] = useState('BMW 320i M Sport 2024');
+  const [estimatedValue, setEstimatedValue] = useState(289900);
+  const [tradeInVehicle, setTradeInVehicle] = useState('Jeep Compass Longitude 2022');
+  const [downPayment, setDownPayment] = useState(50000);
+  const [purchaseIntent, setPurchaseIntent] = useState<'Alta' | 'Média' | 'Baixa'>('Alta');
+  const [source, setSource] = useState<LeadSource>('WhatsApp Direto');
   const [status, setStatus] = useState<LeadStatus>('Novo');
-  const [assignedTo, setAssignedTo] = useState('Ana Luísa (Head Ops)');
+  const [assignedTo, setAssignedTo] = useState('Rodrigo Mendes (Vendas)');
   const [notes, setNotes] = useState('');
-  const [tagsInput, setTagsInput] = useState('Frota Pesada, Telemetria CAN-Bus');
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !company) return;
+    if (!name.trim()) return;
 
-    const tags = tagsInput
-      .split(',')
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0);
-
-    onSubmit({
-      name,
-      email: email || `${name.toLowerCase().replace(/\s+/g, '.')}@${company.toLowerCase().replace(/\s+/g, '')}.com.br`,
-      phone: phone || '(11) 98765-4321',
-      company,
-      fleetSize: Number(fleetSize) || 10,
-      estimatedValue: Number(estimatedValue) || 1200,
+    const leadPayload: any = {
+      name: name.trim(),
+      email: email.trim() || `${name.toLowerCase().replace(/\s+/g, '.')}@cliente.com.br`,
+      phone: phone.trim() || '(11) 98765-4321',
+      company: 'Pessoa Física',
+      fleetSize: 1,
+      estimatedValue: Number(estimatedValue) || 289900,
+      vehicleInterest: vehicleInterest.trim(),
+      tradeInVehicle: tradeInVehicle.trim(),
+      downPayment: Number(downPayment) || 0,
+      purchaseIntent,
       source,
       status,
-      assignedTo,
-      notes: notes || 'Lead interessado em redução de combustível e bloqueio preventivo via MotorGrid.',
-      tags,
-    });
+      assignedTo: assignedTo.replace(/ \(.+\)/, ''),
+      notes: notes.trim() || `Interesse em ${vehicleInterest}. Troca: ${tradeInVehicle || 'Sem troca'}. Entrada: R$ ${downPayment}.`,
+      tags: ['Showroom', purchaseIntent === 'Alta' ? 'Lead Quente' : 'Lead Morno', vehicleInterest.split(' ')[0]],
+    };
+
+    const handler = onCreateLead || onSubmit;
+    if (handler) {
+      handler(leadPayload);
+    }
 
     onClose();
     // Reset
     setName('');
     setEmail('');
     setPhone('');
-    setCompany('');
+    setNotes('');
   };
 
   return (
@@ -67,12 +74,12 @@ export const CreateLeadModal: React.FC<CreateLeadModalProps> = ({
         {/* Header */}
         <div className="px-6 py-4 border-b border-zinc-800 bg-[#1C1C1E] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#C4B5FD] text-[#2E1065] shadow-md shadow-[#8B5CF6]/20">
+            <div className="p-2 rounded-xl bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/20">
               <UserPlus className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">+ Novo Lead Comercial</h2>
-              <p className="text-xs text-zinc-400">Cadastre um novo lead e direcione para o funil MotorGrid</p>
+              <h2 className="text-lg font-bold text-white tracking-tight">+ Novo Lead de Veículo</h2>
+              <p className="text-xs text-zinc-400">Cadastre a oportunidade diretamente no funil de vendas</p>
             </div>
           </div>
           <button
@@ -89,13 +96,13 @@ export const CreateLeadModal: React.FC<CreateLeadModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Nome do Contato / Decisor *
+                Nome do Cliente *
               </label>
               <input
                 id="lead-name-input"
                 type="text"
                 required
-                placeholder="Ex: Carlos Mendes"
+                placeholder="Ex: Carlos Eduardo Mendes"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] text-white placeholder-zinc-500 outline-none transition-colors"
@@ -104,33 +111,14 @@ export const CreateLeadModal: React.FC<CreateLeadModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Empresa / Concessionária *
-              </label>
-              <div className="relative">
-                <Building2 className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
-                <input
-                  id="lead-company-input"
-                  type="text"
-                  required
-                  placeholder="Ex: Transportadora Rota Sul"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] text-white placeholder-zinc-500 outline-none transition-colors"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                WhatsApp / Telefone
+                WhatsApp / Telefone *
               </label>
               <div className="relative">
                 <Phone className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                 <input
                   id="lead-phone-input"
                   type="text"
+                  required
                   placeholder="(11) 98765-4321"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -138,20 +126,40 @@ export const CreateLeadModal: React.FC<CreateLeadModalProps> = ({
                 />
               </div>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Veículo de Interesse *
+              </label>
+              <div className="relative">
+                <Car className="w-4 h-4 text-[#8B5CF6] absolute left-3 top-2.5" />
+                <input
+                  id="lead-vehicle-input"
+                  type="text"
+                  required
+                  placeholder="Ex: BMW 320i M Sport 2024"
+                  value={vehicleInterest}
+                  onChange={(e) => setVehicleInterest(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white placeholder-zinc-500 outline-none"
+                />
+              </div>
+            </div>
 
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Email Corporativo
+                Valor do Veículo (R$)
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+                <DollarSign className="w-4 h-4 text-emerald-400 absolute left-3 top-2.5" />
                 <input
-                  id="lead-email-input"
-                  type="email"
-                  placeholder="carlos@rotasul.com.br"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] text-white placeholder-zinc-500 outline-none transition-colors"
+                  id="lead-value-input"
+                  type="number"
+                  step="1000"
+                  value={estimatedValue}
+                  onChange={(e) => setEstimatedValue(Number(e.target.value))}
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white outline-none"
                 />
               </div>
             </div>
@@ -160,45 +168,40 @@ export const CreateLeadModal: React.FC<CreateLeadModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Tamanho da Frota (Veículos)
+                Veículo para Troca (Opcional)
               </label>
               <div className="relative">
-                <Car className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+                <RefreshCw className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                 <input
-                  id="lead-fleet-input"
-                  type="number"
-                  min="1"
-                  value={fleetSize}
-                  onChange={(e) => {
-                    const size = Number(e.target.value);
-                    setFleetSize(size);
-                    setEstimatedValue(size * 89);
-                  }}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] text-white placeholder-zinc-500 outline-none transition-colors"
+                  id="lead-tradein-input"
+                  type="text"
+                  placeholder="Ex: Jeep Compass Longitude 2022"
+                  value={tradeInVehicle}
+                  onChange={(e) => setTradeInVehicle(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white placeholder-zinc-500 outline-none"
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Valor Estimado da Proposta (R$/mês)
+                Valor de Entrada Pretendido (R$)
               </label>
               <div className="relative">
                 <DollarSign className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                 <input
-                  id="lead-value-input"
+                  id="lead-downpayment-input"
                   type="number"
-                  min="100"
-                  step="50"
-                  value={estimatedValue}
-                  onChange={(e) => setEstimatedValue(Number(e.target.value))}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] text-white placeholder-zinc-500 outline-none transition-colors"
+                  step="1000"
+                  value={downPayment}
+                  onChange={(e) => setDownPayment(Number(e.target.value))}
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white outline-none"
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
                 Canal de Origem
@@ -207,62 +210,62 @@ export const CreateLeadModal: React.FC<CreateLeadModalProps> = ({
                 id="lead-source-select"
                 value={source}
                 onChange={(e) => setSource(e.target.value as LeadSource)}
-                className="w-full px-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white outline-none"
               >
-                <option value="Site / Landing Page">Site / Landing Page</option>
                 <option value="WhatsApp Direto">WhatsApp Direto</option>
-                <option value="Indicação de Frotista">Indicação de Frotista</option>
-                <option value="Tráfego Pago">Tráfego Pago (Google / Meta)</option>
-                <option value="Feira Automotiva">Feira / Evento Automotivo</option>
-                <option value="Outbound">Prospecção Ativa (Outbound)</option>
+                <option value="Instagram Ads">Instagram Ads</option>
+                <option value="Facebook Ads">Facebook Ads</option>
+                <option value="Webmotors Pro">Webmotors Pro</option>
+                <option value="Site / Landing Page">Site / Landing Page</option>
+                <option value="Showroom Presencial">Showroom Presencial</option>
+                <option value="Indicação">Indicação de Cliente</option>
               </select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Responsável Comercial
+                Intenção de Compra
+              </label>
+              <select
+                id="lead-intent-select"
+                value={purchaseIntent}
+                onChange={(e) => setPurchaseIntent(e.target.value as any)}
+                className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white outline-none"
+              >
+                <option value="Alta">🔥 Alta (Pronto para fechar)</option>
+                <option value="Média">⚡ Média (Pesquisando)</option>
+                <option value="Baixa">❄️ Baixa (Curioso / Futuro)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                Consultor Responsável
               </label>
               <select
                 id="lead-assigned-select"
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white outline-none"
               >
-                <option value="Ana Luísa (Head Ops)">Ana Luísa (Head Ops)</option>
-                <option value="Rodrigo Mendes (Vendas)">Rodrigo Mendes (Vendas)</option>
-                <option value="Felipe Santos (Engenharia)">Felipe Santos (Engenharia)</option>
-                <option value="Camila Rocha (Enterprise)">Camila Rocha (Enterprise)</option>
+                <option value="Rodrigo Mendes (Vendas)">Rodrigo Mendes</option>
+                <option value="Camila Rocha (SDR)">Camila Rocha</option>
+                <option value="Ana Luísa (Gerente)">Ana Luísa</option>
+                <option value="Felipe Santos (Showroom)">Felipe Santos</option>
               </select>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-              Tags / Interesse Técnico
-            </label>
-            <div className="relative">
-              <Tag className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
-              <input
-                id="lead-tags-input"
-                type="text"
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-                placeholder="Ex: Frota Pesada, CAN-Bus, Rastreamento Satelital"
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white placeholder-zinc-500 outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-              Observações & Contexto Inicial
+              Observações do Atendimento
             </label>
             <textarea
               id="lead-notes-input"
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Necessidade do cliente, modelos de veículos, metas de redução de combustível..."
+              placeholder="Preferência de cor, financiamento desejado, melhor horário para visita..."
               className="w-full px-3 py-2 text-sm rounded-xl bg-[#0A0A0B] border border-zinc-700/80 focus:border-[#8B5CF6] text-white placeholder-zinc-500 outline-none resize-none"
             />
           </div>
@@ -280,10 +283,10 @@ export const CreateLeadModal: React.FC<CreateLeadModalProps> = ({
             <button
               type="submit"
               id="submit-create-lead-btn"
-              className="px-5 py-2 text-sm font-bold text-[#2E1065] bg-[#C4B5FD] hover:bg-[#DDD6FE] hover:shadow-lg hover:shadow-[#8B5CF6]/25 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
+              className="px-5 py-2 text-sm font-bold text-white bg-[#8B5CF6] hover:bg-[#7C3AED] hover:shadow-lg hover:shadow-[#8B5CF6]/25 rounded-xl transition-all flex items-center gap-2 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Salvar Lead no Funil</span>
+              <span>Salvar Lead no CRM</span>
             </button>
           </div>
         </form>

@@ -71,6 +71,13 @@ export const CrmView: React.FC = () => {
   // Loss Reason modal
   const [cardToMarkLost, setCardToMarkLost] = useState<CrmCard | null>(null);
 
+  // Drag-and-drop state
+  const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
+  const [dragOverStageId, setDragOverStageId] = useState<string | null>(null);
+
+  // Lead inspection modal
+  const [selectedLeadModalCard, setSelectedLeadModalCard] = useState<CrmCard | null>(null);
+
   // Confirm delete modals
   const [cardToDelete, setCardToDelete] = useState<CrmCard | null>(null);
   const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
@@ -91,12 +98,12 @@ export const CrmView: React.FC = () => {
   const currentPipeline = initialPipelines.find((p) => p.id === selectedPipelineId) || initialPipelines[0];
 
   const handleStageChange = (card: CrmCard, targetStageId: string) => {
-    if (targetStageId === 'perdido') {
+    if (targetStageId === 'perdido' || targetStageId === 'vd-10' || targetStageId === 'pa-7') {
       setCardToMarkLost(card);
       return;
     }
 
-    if (targetStageId === 'fechamento') {
+    if (targetStageId === 'fechamento' || targetStageId === 'vd-9') {
       storageService.markCardWon(card.id, card.vehiclePrice);
       toast.success(`Parabéns! Venda de ${card.contactName} concretizada com sucesso!`, 'Venda Concluída');
       return;
@@ -376,7 +383,35 @@ export const CrmView: React.FC = () => {
               return (
                 <div
                   key={stage.id}
-                  className="w-80 shrink-0 flex flex-col rounded-2xl bg-[#141416] border border-zinc-800/80 overflow-hidden shadow-lg"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    if (dragOverStageId !== stage.id) {
+                      setDragOverStageId(stage.id);
+                    }
+                  }}
+                  onDragLeave={() => {
+                    if (dragOverStageId === stage.id) {
+                      setDragOverStageId(null);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const cardId = e.dataTransfer.getData('text/plain');
+                    setDragOverStageId(null);
+                    setDraggedCardId(null);
+                    if (cardId) {
+                      const card = cards.find((c) => c.id === cardId);
+                      if (card && card.stageId !== stage.id) {
+                        handleStageChange(card, stage.id);
+                      }
+                    }
+                  }}
+                  className={`w-80 shrink-0 flex flex-col rounded-2xl border transition-all duration-200 overflow-hidden shadow-lg ${
+                    dragOverStageId === stage.id
+                      ? 'border-[#8B5CF6] bg-[#8B5CF6]/10 ring-2 ring-[#8B5CF6]/40 scale-[1.01]'
+                      : 'border-zinc-800/80 bg-[#141416]'
+                  }`}
                 >
                   {/* Stage Header */}
                   <div className="p-3.5 border-b border-zinc-800/80 bg-[#1C1C1E] flex items-center justify-between">
@@ -407,7 +442,19 @@ export const CrmView: React.FC = () => {
                     {stageCards.map((card) => (
                       <div
                         key={card.id}
-                        className="p-3.5 rounded-xl bg-[#1C1C1E] border border-zinc-800 hover:border-[#8B5CF6]/50 shadow-md transition-all space-y-2.5 text-xs group"
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData('text/plain', card.id);
+                          setDraggedCardId(card.id);
+                        }}
+                        onDragEnd={() => {
+                          setDraggedCardId(null);
+                          setDragOverStageId(null);
+                        }}
+                        onClick={() => setSelectedLeadModalCard(card)}
+                        className={`p-3.5 rounded-xl bg-[#1C1C1E] border hover:border-[#8B5CF6]/50 shadow-md transition-all space-y-2.5 text-xs group cursor-grab active:cursor-grabbing ${
+                          draggedCardId === card.id ? 'opacity-40 border-dashed border-[#8B5CF6]' : 'border-zinc-800'
+                        }`}
                       >
                         {/* Vehicle Photo & Price Tag */}
                         {card.vehiclePhoto && (
@@ -465,7 +512,7 @@ export const CrmView: React.FC = () => {
                         </div>
 
                         {/* Interactive Stage Actions & Quick Move */}
-                        <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between gap-1">
+                        <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between gap-1" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-1">
                             {prevStage && (
                               <button
@@ -805,6 +852,168 @@ export const CrmView: React.FC = () => {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Lead Details Inspection Modal */}
+      {selectedLeadModalCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div
+            className="relative w-full max-w-xl bg-[#141416] border border-[#8B5CF6]/40 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-zinc-800 bg-[#1C1C1E] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#8B5CF6]/20 border border-[#8B5CF6]/40 flex items-center justify-center text-[#DDD6FE] font-bold">
+                  {selectedLeadModalCard.contactName.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    {selectedLeadModalCard.contactName}
+                    {selectedLeadModalCard.temperature && getTemperatureBadge(selectedLeadModalCard.temperature)}
+                  </h3>
+                  <p className="text-xs text-zinc-400">
+                    Origem: <span className="text-zinc-200">{selectedLeadModalCard.origin}</span> • Score:{' '}
+                    <span className="text-[#DDD6FE] font-bold font-mono">{selectedLeadModalCard.gridScore} pts</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedLeadModalCard(null)}
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              {/* Vehicle Banner */}
+              {selectedLeadModalCard.vehiclePhoto && (
+                <div className="relative h-44 w-full rounded-xl overflow-hidden border border-zinc-800">
+                  <img
+                    src={selectedLeadModalCard.vehiclePhoto}
+                    alt={selectedLeadModalCard.vehicleName}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-4">
+                    <div>
+                      <span className="text-xs text-purple-300 font-semibold uppercase tracking-wider">Veículo de Interesse</span>
+                      <h4 className="text-lg font-bold text-white">{selectedLeadModalCard.vehicleName}</h4>
+                      <p className="text-sm font-bold text-emerald-400 font-mono">
+                        R$ {selectedLeadModalCard.vehiclePrice?.toLocaleString('pt-BR')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Quick Contacts & Consultor */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-[#0A0A0B] border border-zinc-800 space-y-1">
+                  <span className="text-[10px] text-zinc-500 uppercase font-semibold">Contato Direto</span>
+                  <p className="text-xs text-zinc-200 font-mono flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                    {selectedLeadModalCard.contactPhone}
+                  </p>
+                  {selectedLeadModalCard.contactEmail && (
+                    <p className="text-xs text-zinc-300 flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-zinc-400" />
+                      {selectedLeadModalCard.contactEmail}
+                    </p>
+                  )}
+                </div>
+
+                <div className="p-3 rounded-xl bg-[#0A0A0B] border border-zinc-800 space-y-1">
+                  <span className="text-[10px] text-zinc-500 uppercase font-semibold">Atendimento Comercial</span>
+                  <p className="text-xs text-zinc-200 flex items-center gap-1.5">
+                    <UserCheck className="w-3.5 h-3.5 text-[#8B5CF6]" />
+                    Resp: <strong>{selectedLeadModalCard.assignedTo}</strong>
+                  </p>
+                  <p className="text-[11px] text-zinc-400 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                    Tempo na etapa: {selectedLeadModalCard.timeInStage}
+                  </p>
+                </div>
+              </div>
+
+              {/* Trade in & Downpayment */}
+              {selectedLeadModalCard.tradeInVehicle && (
+                <div className="p-3 rounded-xl bg-purple-950/20 border border-[#8B5CF6]/30 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Car className="w-4 h-4 text-[#A78BFA]" />
+                    <div>
+                      <span className="text-[10px] text-purple-300 font-semibold block">Veículo Dado na Troca</span>
+                      <span className="text-xs font-bold text-white">{selectedLeadModalCard.tradeInVehicle}</span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#8B5CF6]/20 text-[#DDD6FE] border border-[#8B5CF6]/40">
+                    Avaliação Pendente
+                  </span>
+                </div>
+              )}
+
+              {/* Stage Transition Quick Buttons */}
+              <div className="space-y-2 pt-2 border-t border-zinc-800">
+                <label className="block text-xs font-bold text-zinc-300">
+                  Mover Etapa no Funil ({currentPipeline.name})
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {currentPipeline.stages.map((stage) => {
+                    const isCurrent = stage.id === selectedLeadModalCard.stageId;
+                    return (
+                      <button
+                        key={stage.id}
+                        type="button"
+                        onClick={() => {
+                          handleStageChange(selectedLeadModalCard, stage.id);
+                          setSelectedLeadModalCard((prev) => (prev ? { ...prev, stageId: stage.id } : null));
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                          isCurrent
+                            ? 'bg-[#8B5CF6] text-white font-bold shadow-md shadow-[#8B5CF6]/30 ring-2 ring-[#8B5CF6]/50'
+                            : 'bg-[#0A0A0B] hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700'
+                        }`}
+                      >
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: stage.color }} />
+                        <span>{stage.name}</span>
+                        {isCurrent && <Check className="w-3 h-3 ml-0.5" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-3 border-t border-zinc-800 flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleStageChange(selectedLeadModalCard, 'vd-10');
+                    setSelectedLeadModalCard(null);
+                  }}
+                  className="px-3 py-2 text-xs font-bold text-rose-400 hover:text-white bg-rose-500/10 hover:bg-rose-500/30 border border-rose-500/30 rounded-xl transition-colors cursor-pointer"
+                >
+                  Marcar Venda Perdida
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleStageChange(selectedLeadModalCard, 'vd-9');
+                      setSelectedLeadModalCard(null);
+                    }}
+                    className="px-4 py-2 text-xs font-bold text-emerald-300 hover:text-white bg-emerald-500/20 hover:bg-emerald-500/40 border border-emerald-500/40 rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>Concretizar Venda Fechada</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

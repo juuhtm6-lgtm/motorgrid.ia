@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Phone, Mail, Building2, Car, DollarSign, Tag } from 'lucide-react';
+import { X, User, Phone, Mail, Car, DollarSign, Tag, RefreshCw, AlertCircle } from 'lucide-react';
 import { LeadItem, LeadStatus, LeadSource } from '../../types';
 
 interface EditLeadModalProps {
@@ -18,9 +18,13 @@ export const EditLeadModal: React.FC<EditLeadModalProps> = ({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [company, setCompany] = useState('');
-  const [fleetSize, setFleetSize] = useState(1);
-  const [estimatedValue, setEstimatedValue] = useState(0);
+  const [company, setCompany] = useState('Pessoa Física');
+  const [vehicleInterest, setVehicleInterest] = useState('');
+  const [tradeInVehicle, setTradeInVehicle] = useState('');
+  const [downPayment, setDownPayment] = useState<number>(0);
+  const [estimatedValue, setEstimatedValue] = useState<number>(0);
+  const [finalPrice, setFinalPrice] = useState<number>(0);
+  const [lossReason, setLossReason] = useState('Preço / Condição de Pagamento');
   const [source, setSource] = useState<LeadSource>('WhatsApp Direto');
   const [status, setStatus] = useState<LeadStatus>('Novo');
   const [assignedTo, setAssignedTo] = useState('Rodrigo Mendes');
@@ -29,15 +33,19 @@ export const EditLeadModal: React.FC<EditLeadModalProps> = ({
 
   useEffect(() => {
     if (lead) {
-      setName(lead.name);
-      setEmail(lead.email);
-      setPhone(lead.phone);
-      setCompany(lead.company);
-      setFleetSize(lead.fleetSize);
-      setEstimatedValue(lead.estimatedValue);
-      setSource(lead.source);
-      setStatus(lead.status);
-      setAssignedTo(lead.assignedTo);
+      setName(lead.name || '');
+      setEmail(lead.email || '');
+      setPhone(lead.phone || '');
+      setCompany(lead.company || 'Pessoa Física');
+      setVehicleInterest((lead as any).vehicleInterest || lead.notes || '');
+      setTradeInVehicle((lead as any).tradeInVehicle || '');
+      setDownPayment((lead as any).downPayment || 0);
+      setEstimatedValue(lead.estimatedValue || 0);
+      setFinalPrice((lead as any).finalPrice || lead.estimatedValue || 0);
+      setLossReason((lead as any).lossReason || 'Preço / Condição de Pagamento');
+      setSource(lead.source || 'WhatsApp Direto');
+      setStatus(lead.status || 'Novo');
+      setAssignedTo(lead.assignedTo || 'Rodrigo Mendes');
       setNotes(lead.notes || '');
       setError('');
     }
@@ -47,24 +55,36 @@ export const EditLeadModal: React.FC<EditLeadModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim() || !company.trim()) {
-      setError('Por favor preencha nome, telefone e empresa.');
+    if (!name.trim() || !phone.trim()) {
+      setError('Por favor preencha nome e telefone do cliente.');
       return;
     }
 
-    onSave({
+    const updatedLeadData: LeadItem = {
       ...lead,
-      name,
-      email,
-      phone,
-      company,
-      fleetSize: Number(fleetSize) || 1,
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      company: company.trim() || 'Pessoa Física',
+      fleetSize: lead.fleetSize || 1,
       estimatedValue: Number(estimatedValue) || 0,
       source,
       status,
       assignedTo,
       notes,
-    });
+    };
+
+    (updatedLeadData as any).vehicleInterest = vehicleInterest;
+    (updatedLeadData as any).tradeInVehicle = tradeInVehicle;
+    (updatedLeadData as any).downPayment = Number(downPayment) || 0;
+    if (status === 'Ganho') {
+      (updatedLeadData as any).finalPrice = Number(finalPrice) || estimatedValue;
+    }
+    if (status === 'Perdido') {
+      (updatedLeadData as any).lossReason = lossReason;
+    }
+
+    onSave(updatedLeadData);
     onClose();
   };
 
@@ -86,7 +106,7 @@ export const EditLeadModal: React.FC<EditLeadModalProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">Nome do Contato *</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Nome do Cliente *</label>
               <input
                 type="text"
                 required
@@ -108,7 +128,7 @@ export const EditLeadModal: React.FC<EditLeadModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">E-mail Corporativo</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">E-mail</label>
               <input
                 type="email"
                 value={email}
@@ -118,29 +138,29 @@ export const EditLeadModal: React.FC<EditLeadModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">Empresa / Razão Social *</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Veículo de Interesse</label>
               <input
                 type="text"
-                required
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
+                value={vehicleInterest}
+                onChange={(e) => setVehicleInterest(e.target.value)}
+                placeholder="Ex: BMW 320i M Sport"
                 className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white focus:border-[#8B5CF6] outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">Tamanho da Frota (Veículos)</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Veículo para Troca</label>
               <input
-                type="number"
-                min="1"
-                value={fleetSize}
-                onChange={(e) => setFleetSize(Number(e.target.value))}
+                type="text"
+                value={tradeInVehicle}
+                onChange={(e) => setTradeInVehicle(e.target.value)}
+                placeholder="Ex: Jeep Compass 2022"
                 className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white focus:border-[#8B5CF6] outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">Valor Estimado (R$/mês)</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Valor do Negócio (R$)</label>
               <input
                 type="number"
                 min="0"
@@ -160,14 +180,16 @@ export const EditLeadModal: React.FC<EditLeadModalProps> = ({
                 <option value="Novo">Novo</option>
                 <option value="Em Contato">Em Contato</option>
                 <option value="Qualificado">Qualificado</option>
+                <option value="Agendado">Agendado (Test Drive)</option>
+                <option value="Em Atendimento">Em Atendimento</option>
                 <option value="Proposta Enviada">Proposta Enviada</option>
-                <option value="Ganho">Ganho</option>
+                <option value="Ganho">Ganho (Venda Fechada)</option>
                 <option value="Perdido">Perdido</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">Vendedor Responsável</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Consultor Responsável</label>
               <select
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
@@ -176,10 +198,43 @@ export const EditLeadModal: React.FC<EditLeadModalProps> = ({
                 <option value="Rodrigo Mendes">Rodrigo Mendes</option>
                 <option value="Camila Rocha">Camila Rocha</option>
                 <option value="Lucas Silveira">Lucas Silveira</option>
-                <option value="Ana Beatriz">Ana Beatriz</option>
+                <option value="Ana Luísa">Ana Luísa</option>
+                <option value="Felipe Santos">Felipe Santos</option>
               </select>
             </div>
           </div>
+
+          {/* Conditional Fields: Motivo de Perda */}
+          {status === 'Perdido' && (
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 space-y-1.5">
+              <label className="block text-xs font-semibold text-rose-300">Motivo da Perda *</label>
+              <select
+                value={lossReason}
+                onChange={(e) => setLossReason(e.target.value)}
+                className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-rose-500/40 text-white focus:border-rose-400 outline-none"
+              >
+                <option value="Preço / Condição de Pagamento">Preço / Condição de Pagamento</option>
+                <option value="Comprou na Concorrência">Comprou na Concorrência</option>
+                <option value="Desistiu da Compra">Desistiu da Compra</option>
+                <option value="Avaliação do Usado Baixa">Avaliação do Usado Baixa</option>
+                <option value="Financiamento Reprovado">Financiamento Reprovado</option>
+                <option value="Sem Contato / Parou de Responder">Sem Contato / Parou de Responder</option>
+              </select>
+            </div>
+          )}
+
+          {/* Conditional Fields: Valor Final de Venda */}
+          {status === 'Ganho' && (
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-1.5">
+              <label className="block text-xs font-semibold text-emerald-300">Valor Final Fechado (R$) *</label>
+              <input
+                type="number"
+                value={finalPrice}
+                onChange={(e) => setFinalPrice(Number(e.target.value))}
+                className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-emerald-500/40 text-white focus:border-emerald-400 outline-none"
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-semibold text-zinc-300 mb-1">Canal de Origem</label>
@@ -189,10 +244,11 @@ export const EditLeadModal: React.FC<EditLeadModalProps> = ({
               className="w-full px-3 py-2 text-xs rounded-xl bg-[#0A0A0B] border border-zinc-700 text-white focus:border-[#8B5CF6] outline-none"
             >
               <option value="WhatsApp Direto">WhatsApp Direto</option>
+              <option value="Instagram Ads">Instagram Ads</option>
+              <option value="Facebook Ads">Facebook Ads</option>
+              <option value="Webmotors Pro">Webmotors Pro</option>
               <option value="Site / Landing Page">Site / Landing Page</option>
-              <option value="Indicação de Frotista">Indicação de Frotista</option>
-              <option value="Tráfego Pago">Tráfego Pago</option>
-              <option value="Feira Automotiva">Feira Automotiva</option>
+              <option value="Showroom Presencial">Showroom Presencial</option>
             </select>
           </div>
 

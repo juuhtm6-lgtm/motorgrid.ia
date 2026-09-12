@@ -188,24 +188,26 @@ class StorageService {
     const updated = [newLead, ...leads];
     this.setStored(STORAGE_KEYS.LEADS, updated);
 
-    // Also register in CRM Cards (Pipeline Kanban)
+    // Also register in CRM Cards (Pipeline Kanban - Vendas)
     const cards = this.getCrmCards();
     const newCard: CrmCard = {
       id: `card-${Date.now()}`,
       pipelineId: 'vendas',
-      stageId: 'lead_novo',
+      stageId: 'vd-1', // Canonical stage: 'Novo Lead Recebido'
       contactName: newLead.name,
       contactPhone: newLead.phone,
       contactEmail: newLead.email,
-      origin: newLead.source || 'Website / Frotas',
+      origin: newLead.source || 'Website / Showroom',
       unitId: 'unit-matriz',
       timeInStage: '0d',
       lastInteraction: 'Criado agora',
-      vehicleName: newLead.notes || `${newLead.company} (${newLead.fleetSize} un)`,
+      vehicleName: newLead.vehicleInterest || newLead.notes || `${newLead.company}`,
       vehiclePrice: newLead.estimatedValue || 289900,
+      vehiclePhoto: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&auto=format&fit=crop&q=80',
       temperature: 'Quente',
       gridScore: 90,
       assignedTo: newLead.assignedTo || 'Rodrigo Mendes',
+      tradeInVehicle: (newLead as any).tradeInVehicle,
     };
     this.setStored(STORAGE_KEYS.CRM_CARDS, [newCard, ...cards]);
 
@@ -381,7 +383,23 @@ class StorageService {
   // 3. CRM CARDS / PIPELINE DEALS
   // ==========================================
   public getCrmCards(): CrmCard[] {
-    return this.getStored<CrmCard[]>(STORAGE_KEYS.CRM_CARDS, initialCrmCards);
+    const rawCards = this.getStored<CrmCard[]>(STORAGE_KEYS.CRM_CARDS, initialCrmCards);
+    // Normalize any legacy/non-canonical stage IDs so cards never disappear from Kanban
+    return rawCards.map((card) => {
+      let stageId = card.stageId;
+      if (stageId === 'lead_novo' || stageId === 'novo_lead') {
+        stageId = card.pipelineId === 'pre-atendimento' ? 'pa-1' : 'vd-1';
+      } else if (stageId === 'fechamento' || stageId === 'ganho') {
+        stageId = card.pipelineId === 'pre-atendimento' ? 'pa-6' : 'vd-9';
+      } else if (stageId === 'perdido') {
+        stageId = card.pipelineId === 'pre-atendimento' ? 'pa-7' : 'vd-10';
+      } else if (stageId === 'visita_agendada' || stageId === 'agendamento') {
+        stageId = card.pipelineId === 'pre-atendimento' ? 'pa-5' : 'vd-4';
+      } else if (stageId === 'qualificacao') {
+        stageId = card.pipelineId === 'pre-atendimento' ? 'pa-4' : 'vd-3';
+      }
+      return { ...card, stageId };
+    });
   }
 
   public addCrmCard(cardData: Omit<CrmCard, 'id' | 'createdAt'>): CrmCard {
@@ -414,12 +432,85 @@ class StorageService {
   }
 
   public moveCardStage(id: string, targetStageId: string): void {
-    this.updateCrmCard(id, { stageId: targetStageId });
+    const card = this.updateCrmCard(id, { stageId: targetStageId });
+    if (!card) return;
+
+    // 1. Map targetStageId to LeadStatus and ExecutiveLeadRecord status
+    let leadStatus: LeadStatus = 'Novo';
+    let execStatus: ExecutiveLeadRecord['status'] = 'novo';
+    let isScheduled = false;
+    let isVisited = false;
+    let isProposal = false;
+
+    if (targetStageId === 'vd-1' || targetStageId === 'pa-1') {
+      leadStatus = 'Novo';
+      execStatus = 'novo';
+    } else if (targetStageId === 'vd-2' || targetStageId === 'pa-2') {
+      leadStatus = 'Em Contato';
+      execStatus = 'em_atendimento';
+    } else if (targetStageId === 'vd-3' || targetStageId === 'pa-3' || targetStageId === 'pa-4') {
+      leadStatus = 'Qualificado';
+      execStatus = 'qualificado';
+    } else if (targetStageId === 'vd-4' || targetStageId === 'pa-5') {
+      leadStatus = 'Agendado';
+      execStatus = 'agendado';
+      isScheduled = true;
+    } else if (targetStageId === 'vd-5') {
+      leadStatus = 'Negociação';
+      execStatus = 'visitou';
+      isScheduled = true;
+      isVisited = true;
+    } else if (targetStageId === 'vd-6' || targetStageId === 'vd-7' || targetStageId === 'vd-8') {
+      leadStatus = 'Proposta Enviada';
+      execStatus = 'proposta';
+      isScheduled = true;
+      isVisited = true;
+      isProposal = true;
+    } else if (targetStageId === 'vd-9' || targetStageId === 'pa-6') {
+      leadStatus = 'Ganho';
+      execStatus = 'ganho';
+      isScheduled = true;
+      isVisited = true;
+      isProposal = true;
+    } else if (targetStageId === 'vd-10' || targetStageId === 'pa-7') {
+      leadStatus = 'Perdido';
+      execStatus = 'perdido';
+    }
+
+    // 2. Sync matching Lead in CRM
+    const leads = this.getLeads();
+    const matchedLead = leads.find(
+      (l) => l.name === card.contactName || l.phone === card.contactPhone
+    );
+    if (matchedLead) {
+      this.updateLead(matchedLead.id, { status: leadStatus });
+    }
+
+    // 3. Sync matching Dashboard Funnel Record
+    const records = this.getDashboardRecords();
+    let recordUpdated = false;
+    const updatedRecords = records.map((r) => {
+      if (r.contactName === card.contactName || r.contactPhone === card.contactPhone) {
+        recordUpdated = true;
+        return {
+          ...r,
+          status: execStatus,
+          isScheduled: isScheduled || r.isScheduled,
+          isVisited: isVisited || r.isVisited,
+          isProposal: isProposal || r.isProposal,
+        };
+      }
+      return r;
+    });
+
+    if (recordUpdated) {
+      this.setStored(STORAGE_KEYS.DASHBOARD_RECORDS, updatedRecords);
+    }
   }
 
   public markCardWon(id: string, finalPrice?: number): void {
     const card = this.updateCrmCard(id, {
-      stageId: 'fechamento',
+      stageId: 'vd-9',
       vehiclePrice: finalPrice || undefined,
     });
 
@@ -485,7 +576,7 @@ class StorageService {
 
   public markCardLost(id: string, lossReason: string): void {
     const card = this.updateCrmCard(id, {
-      stageId: 'perdido',
+      stageId: 'vd-10',
       lossReason,
     });
 
@@ -632,11 +723,13 @@ class StorageService {
       this.updateLead(matchedLead.id, { status: 'Agendado' });
     }
 
-    // Sync matching CRM Card stage to 'visita_agendada'
+    // Sync matching CRM Card stage to Agendamento Test Drive ('vd-4' or 'pa-5')
     const cards = this.getCrmCards();
     const matchedCard = cards.find((c) => c.contactName === newApt.contactName || c.contactPhone === newApt.contactPhone);
     if (matchedCard) {
-      this.updateCrmCard(matchedCard.id, { stageId: 'visita_agendada' });
+      this.updateCrmCard(matchedCard.id, {
+        stageId: matchedCard.pipelineId === 'pre-atendimento' ? 'pa-5' : 'vd-4',
+      });
     }
 
     // Sync Dashboard records

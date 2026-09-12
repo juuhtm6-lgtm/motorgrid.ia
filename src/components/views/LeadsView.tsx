@@ -278,7 +278,7 @@ export const LeadsView: React.FC<LeadsViewProps> = ({
 
     storageService.addCrmCard({
       pipelineId: 'vendas',
-      stageId: 'lead_novo',
+      stageId: 'vd-1',
       contactName: lead.name,
       contactPhone: lead.phone,
       contactEmail: lead.email,
