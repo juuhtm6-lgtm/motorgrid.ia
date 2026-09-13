@@ -2404,6 +2404,197 @@ body.dark .grid-ia-wordmark-grid rect,
   filter: none !important;
 }
 
+/* ==========================================================================
+   GRID IA — CORREÇÃO DE VISIBILIDADE NO MODO LIGHT
+   1. Botão "Painel de Ação" (Zap + Texto)
+   2. Botão quadrado com ícone de IA / Brilho (Sparkles)
+   3. Botão com ícone "X" de fechar
+   4. Badge "Painel de Ação" no cabeçalho do contexto
+   5. Preservação estrita do Dark Mode
+   ========================================================================== */
+
+/* 1. BOTÃO "PAINEL DE AÇÃO" (LIGHT MODE) */
+html.light #btn-abrir-painel-acao,
+html.light .btn-painel-acao-action,
+body.light #btn-abrir-painel-acao,
+body.light .btn-painel-acao-action,
+.light #btn-abrir-painel-acao,
+.light .btn-painel-acao-action {
+  background: linear-gradient(135deg, #A78BFA, #7C3AED) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  border: 1px solid rgba(124, 58, 237, 0.25) !important;
+  box-shadow: 0px 4px 12px rgba(124, 58, 237, 0.20) !important;
+  transition: all 0.2s ease !important;
+  opacity: 1 !important;
+}
+
+html.light #btn-abrir-painel-acao:hover,
+html.light .btn-painel-acao-action:hover,
+body.light #btn-abrir-painel-acao:hover,
+body.light .btn-painel-acao-action:hover,
+.light #btn-abrir-painel-acao:hover,
+.light .btn-painel-acao-action:hover {
+  background: linear-gradient(135deg, #9061F9, #6D28D9) !important;
+  box-shadow: 0px 6px 16px rgba(124, 58, 237, 0.32) !important;
+  transform: translateY(-1px) !important;
+}
+
+html.light #btn-abrir-painel-acao svg,
+html.light #btn-abrir-painel-acao .btn-painel-acao-icon,
+html.light .btn-painel-acao-action svg,
+body.light #btn-abrir-painel-acao svg,
+body.light .btn-painel-acao-action svg,
+.light #btn-abrir-painel-acao svg,
+.light .btn-painel-acao-action svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  stroke-width: 2.2px !important;
+  font-weight: 700 !important;
+  transition: all 0.2s ease !important;
+}
+
+html.light #btn-abrir-painel-acao span,
+html.light #btn-abrir-painel-acao .btn-painel-acao-text,
+html.light .btn-painel-acao-action span,
+body.light #btn-abrir-painel-acao span,
+body.light .btn-painel-acao-action span,
+.light #btn-abrir-painel-acao span,
+.light .btn-painel-acao-action span {
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+}
+
+/* 2. BOTÃO DO ÍCONE DE IA / BRILHO (LIGHT MODE) */
+html.light #btn-context-ai-simulator,
+html.light .btn-ai-sparkle-action,
+html.light #atendimento-context-header button[title*="Simulador IA"],
+body.light #btn-context-ai-simulator,
+body.light .btn-ai-sparkle-action,
+body.light #atendimento-context-header button[title*="Simulador IA"],
+.light #btn-context-ai-simulator,
+.light .btn-ai-sparkle-action,
+.light #atendimento-context-header button[title*="Simulador IA"] {
+  background: linear-gradient(135deg, #A78BFA, #7C3AED) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(124, 58, 237, 0.25) !important;
+  box-shadow: 0px 4px 12px rgba(124, 58, 237, 0.20) !important;
+  transition: all 0.2s ease !important;
+  opacity: 1 !important;
+}
+
+html.light #btn-context-ai-simulator:hover,
+html.light .btn-ai-sparkle-action:hover,
+html.light #atendimento-context-header button[title*="Simulador IA"]:hover,
+body.light #btn-context-ai-simulator:hover,
+body.light .btn-ai-sparkle-action:hover,
+body.light #atendimento-context-header button[title*="Simulador IA"]:hover,
+.light #btn-context-ai-simulator:hover,
+.light .btn-ai-sparkle-action:hover,
+.light #atendimento-context-header button[title*="Simulador IA"]:hover {
+  background: linear-gradient(135deg, #9061F9, #6D28D9) !important;
+  box-shadow: 0px 6px 16px rgba(124, 58, 237, 0.32) !important;
+  transform: translateY(-1px) !important;
+}
+
+html.light #btn-context-ai-simulator svg,
+html.light .btn-ai-sparkle-action svg,
+html.light #atendimento-context-header button[title*="Simulador IA"] svg,
+body.light #btn-context-ai-simulator svg,
+body.light .btn-ai-sparkle-action svg,
+body.light #atendimento-context-header button[title*="Simulador IA"] svg,
+.light #btn-context-ai-simulator svg,
+.light .btn-ai-sparkle-action svg,
+.light #atendimento-context-header button[title*="Simulador IA"] svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  stroke-width: 2.2px !important;
+  transition: all 0.2s ease !important;
+}
+
+/* 3. ÍCONE "X" DE FECHAR (LIGHT MODE) */
+html.light #btn-context-close,
+html.light .btn-context-close-action,
+html.light #atendimento-context-header button[title*="Ocultar Painel Lateral"],
+body.light #btn-context-close,
+body.light .btn-context-close-action,
+body.light #atendimento-context-header button[title*="Ocultar Painel Lateral"],
+.light #btn-context-close,
+.light .btn-context-close-action,
+.light #atendimento-context-header button[title*="Ocultar Painel Lateral"] {
+  color: #475569 !important;
+  background-color: transparent !important;
+  border: 1px solid transparent !important;
+  transition: all 0.2s ease !important;
+}
+
+html.light #btn-context-close:hover,
+html.light .btn-context-close-action:hover,
+html.light #atendimento-context-header button[title*="Ocultar Painel Lateral"]:hover,
+body.light #btn-context-close:hover,
+body.light .btn-context-close-action:hover,
+body.light #atendimento-context-header button[title*="Ocultar Painel Lateral"]:hover,
+.light #btn-context-close:hover,
+.light .btn-context-close-action:hover,
+.light #atendimento-context-header button[title*="Ocultar Painel Lateral"]:hover {
+  color: #111827 !important;
+  background-color: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light #btn-context-close svg,
+html.light .btn-context-close-action svg,
+html.light #atendimento-context-header button[title*="Ocultar Painel Lateral"] svg,
+body.light #btn-context-close svg,
+body.light .btn-context-close-action svg,
+body.light #atendimento-context-header button[title*="Ocultar Painel Lateral"] svg,
+.light #btn-context-close svg,
+.light .btn-context-close-action svg,
+.light #atendimento-context-header button[title*="Ocultar Painel Lateral"] svg {
+  color: #475569 !important;
+  stroke: #475569 !important;
+  stroke-width: 2px !important;
+  transition: all 0.2s ease !important;
+}
+
+html.light #btn-context-close:hover svg,
+html.light .btn-context-close-action:hover svg,
+html.light #atendimento-context-header button[title*="Ocultar Painel Lateral"]:hover svg,
+body.light #btn-context-close:hover svg,
+body.light .btn-context-close-action:hover svg,
+body.light #atendimento-context-header button[title*="Ocultar Painel Lateral"]:hover svg,
+.light #btn-context-close:hover svg,
+.light .btn-context-close-action:hover svg,
+.light #atendimento-context-header button[title*="Ocultar Painel Lateral"]:hover svg {
+  color: #111827 !important;
+  stroke: #111827 !important;
+}
+
+/* 4. BADGE PAINEL DE AÇÃO NO CABEÇALHO DO PAINEL LATERAL (LIGHT MODE) */
+html.light #badge-context-painel-acao,
+html.light .badge-painel-acao-icon,
+body.light #badge-context-painel-acao,
+body.light .badge-painel-acao-icon,
+.light #badge-context-painel-acao,
+.light .badge-painel-acao-icon {
+  background: linear-gradient(135deg, #A78BFA, #7C3AED) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0px 2px 8px rgba(124, 58, 237, 0.20) !important;
+  border: 1px solid rgba(124, 58, 237, 0.25) !important;
+}
+
+html.light #badge-context-painel-acao svg,
+html.light .badge-painel-acao-icon svg,
+body.light #badge-context-painel-acao svg,
+body.light .badge-painel-acao-icon svg,
+.light #badge-context-painel-acao svg,
+.light .badge-painel-acao-icon svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  stroke-width: 2.2px !important;
+}
+
+
 
 
 

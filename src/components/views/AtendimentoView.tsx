@@ -933,11 +933,11 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   type="button"
                   id="btn-abrir-painel-acao"
                   onClick={() => setShowContactInfo(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#8B5CF6]/15 hover:bg-[#8B5CF6]/25 text-[#8B5CF6] border border-[#8B5CF6]/30 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                  className="btn-painel-acao-action flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#8B5CF6]/15 hover:bg-[#8B5CF6]/25 text-[#8B5CF6] border border-[#8B5CF6]/30 text-xs font-semibold transition-all cursor-pointer shadow-sm"
                   title="Abrir Painel de Ação"
                 >
-                  <Zap className="w-3.5 h-3.5 text-[#8B5CF6]" />
-                  <span className="hidden sm:inline">Painel de Ação</span>
+                  <Zap className="w-3.5 h-3.5 text-[#8B5CF6] btn-painel-acao-icon" />
+                  <span className="hidden sm:inline btn-painel-acao-text">Painel de Ação</span>
                 </button>
               )}
             </div>
@@ -1338,7 +1338,7 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
                   <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
                 </button>
 
-                <span className="p-1.5 rounded-lg bg-[#8B5CF6]/20 text-[#8B5CF6] shrink-0">
+                <span id="badge-context-painel-acao" className="badge-painel-acao-icon p-1.5 rounded-lg bg-[#8B5CF6]/20 text-[#8B5CF6] shrink-0">
                   <Zap className="w-4 h-4" />
                 </span>
                 <div className="min-w-0">
@@ -1350,19 +1350,21 @@ ${apt.notes ? `📝 *Observações:* ${apt.notes}` : ''}
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
+                  id="btn-context-ai-simulator"
                   onClick={() => setIsFinancingModalOpen(true)}
-                  className="p-1.5 rounded-lg hover:bg-[#8B5CF6]/20 text-[#8B5CF6] transition-colors cursor-pointer"
+                  className="btn-ai-sparkle-action p-1.5 rounded-lg hover:bg-[#8B5CF6]/20 text-[#8B5CF6] transition-colors cursor-pointer"
                   title="Abrir Simulador IA Completo"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 btn-ai-sparkle-icon" />
                 </button>
                 <button
                   type="button"
+                  id="btn-context-close"
                   onClick={() => setShowContactInfo(false)}
-                  className="p-1.5 rounded-lg hover:bg-white/10 text-[#A1A1AA] hover:text-white transition-colors cursor-pointer"
+                  className="btn-context-close-action p-1.5 rounded-lg hover:bg-white/10 text-[#A1A1AA] hover:text-white transition-colors cursor-pointer"
                   title="Ocultar Painel Lateral"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4 btn-context-close-icon" />
                 </button>
               </div>
             </div>
