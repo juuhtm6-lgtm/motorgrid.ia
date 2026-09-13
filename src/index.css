@@ -1518,67 +1518,166 @@ html.light #card-context-simulator-banner .bg-\[\#8B5CF6\] svg {
 }
 
 /* ==========================================================================
-   2. GRID AI / INTELIGÊNCIA ARTIFICIAL (ROXO MOTORGRID #7C3AED)
-   Cor Principal: #7C3AED | Fundo: #F3E8FF | Borda: #C4B5FD
+   2. BOTÃO IA NO MODO LIGHT (GRID IA)
+   Fundo: Gradiente Roxo Moderno e Premium
+   Ícone: Branco puro (#FFFFFF) com traço nítido
+   Texto: Branco puro (#FFFFFF), peso 700, legibilidade máxima
+   Borda: 1px solid rgba(124, 58, 237, 0.35)
+   Sombra: 0 4px 12px rgba(124, 58, 237, 0.20)
+   Hover: translateY(-1px) + sombra 0 6px 16px rgba(124, 58, 237, 0.28)
+   Ativo: Roxo intenso, borda 1px solid rgba(109, 40, 217, 0.60), sombra 0 6px 18px rgba(124, 58, 237, 0.35)
    ========================================================================== */
 html.light .btn-grid-ai,
 html.light #btn-summary-generate-ai,
-html.light #btn-summary-update-ai {
-  background-color: #F3E8FF !important;
-  border: 1px solid #C4B5FD !important;
-  color: #7C3AED !important;
-  font-weight: 600 !important;
+html.light #btn-summary-update-ai,
+html.light #navbar-ai-copilot-btn,
+body.light .btn-grid-ai,
+body.light #btn-summary-generate-ai,
+body.light #btn-summary-update-ai,
+body.light #navbar-ai-copilot-btn,
+.light .btn-grid-ai,
+.light #btn-summary-generate-ai,
+.light #btn-summary-update-ai,
+.light #navbar-ai-copilot-btn {
+  background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 45%, #7C3AED 100%) !important;
+  border: 1px solid rgba(124, 58, 237, 0.35) !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.20) !important;
+  transition: all 0.2s ease !important;
+  opacity: 1 !important;
 }
 
+html.light .btn-grid-ai:hover:not(:disabled),
+html.light #btn-summary-generate-ai:hover:not(:disabled),
+html.light #btn-summary-update-ai:hover:not(:disabled),
+html.light #navbar-ai-copilot-btn:hover,
+body.light .btn-grid-ai:hover:not(:disabled),
+body.light #btn-summary-generate-ai:hover:not(:disabled),
+body.light #btn-summary-update-ai:hover:not(:disabled),
+body.light #navbar-ai-copilot-btn:hover,
+.light .btn-grid-ai:hover:not(:disabled),
+.light #btn-summary-generate-ai:hover:not(:disabled),
+.light #btn-summary-update-ai:hover:not(:disabled),
+.light #navbar-ai-copilot-btn:hover {
+  background: linear-gradient(135deg, #9061F9 0%, #7C3AED 45%, #6D28D9 100%) !important;
+  border-color: rgba(109, 40, 217, 0.50) !important;
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.28) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Ícone do Botão IA (SVG) */
 html.light .btn-grid-ai svg,
 html.light #btn-summary-generate-ai svg,
-html.light #btn-summary-update-ai svg {
-  color: #7C3AED !important;
+html.light #btn-summary-update-ai svg,
+html.light #navbar-ai-copilot-btn svg,
+body.light .btn-grid-ai svg,
+body.light #btn-summary-generate-ai svg,
+body.light #btn-summary-update-ai svg,
+body.light #navbar-ai-copilot-btn svg,
+.light .btn-grid-ai svg,
+.light #btn-summary-generate-ai svg,
+.light #btn-summary-update-ai svg,
+.light #navbar-ai-copilot-btn svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  stroke-width: 2.2px !important;
+  transition: all 0.2s ease !important;
 }
 
+/* Texto do Botão IA */
 html.light .btn-grid-ai span,
 html.light #btn-summary-generate-ai span,
-html.light #btn-summary-update-ai span {
-  color: #7C3AED !important;
+html.light #btn-summary-update-ai span,
+html.light #navbar-ai-copilot-btn span,
+body.light .btn-grid-ai span,
+body.light #btn-summary-generate-ai span,
+body.light #btn-summary-update-ai span,
+body.light #navbar-ai-copilot-btn span,
+.light .btn-grid-ai span,
+.light #btn-summary-generate-ai span,
+.light #btn-summary-update-ai span,
+.light #navbar-ai-copilot-btn span {
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
 }
 
-html.light .btn-grid-ai:hover,
-html.light #btn-summary-generate-ai:hover:not(:disabled),
-html.light #btn-summary-update-ai:hover:not(:disabled) {
-  background-color: #EDE9FE !important;
-  border-color: #8B5CF6 !important;
-  color: #7C3AED !important;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.22) !important;
-}
-
-html.light .btn-grid-ai:hover svg,
-html.light #btn-summary-generate-ai:hover:not(:disabled) svg,
-html.light #btn-summary-update-ai:hover:not(:disabled) svg {
-  color: #7C3AED !important;
-}
-
-/* Quando ativo / processando IA */
+/* Quando ativo / processando IA / selecionado */
 html.light .btn-grid-ai.active,
 html.light .btn-grid-ai:active,
 html.light #btn-summary-generate-ai.active,
-html.light #btn-summary-generate-ai:disabled {
-  background-color: #7C3AED !important;
-  border-color: #7C3AED !important;
+html.light #btn-summary-generate-ai:active,
+html.light #btn-summary-generate-ai:disabled,
+html.light #navbar-ai-copilot-btn.active,
+html.light #navbar-ai-copilot-btn:active,
+body.light .btn-grid-ai.active,
+body.light .btn-grid-ai:active,
+body.light #btn-summary-generate-ai.active,
+body.light #btn-summary-generate-ai:active,
+body.light #btn-summary-generate-ai:disabled,
+body.light #navbar-ai-copilot-btn.active,
+body.light #navbar-ai-copilot-btn:active,
+.light .btn-grid-ai.active,
+.light .btn-grid-ai:active,
+.light #btn-summary-generate-ai.active,
+.light #btn-summary-generate-ai:active,
+.light #btn-summary-generate-ai:disabled,
+.light #navbar-ai-copilot-btn.active,
+.light #navbar-ai-copilot-btn:active {
+  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 50%, #6D28D9 100%) !important;
+  border: 1px solid rgba(109, 40, 217, 0.60) !important;
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.35) !important;
   color: #FFFFFF !important;
 }
 
 html.light .btn-grid-ai.active svg,
 html.light .btn-grid-ai:active svg,
 html.light #btn-summary-generate-ai.active svg,
-html.light #btn-summary-generate-ai:disabled svg {
+html.light #btn-summary-generate-ai:active svg,
+html.light #btn-summary-generate-ai:disabled svg,
+html.light #navbar-ai-copilot-btn.active svg,
+html.light #navbar-ai-copilot-btn:active svg,
+body.light .btn-grid-ai.active svg,
+body.light .btn-grid-ai:active svg,
+body.light #btn-summary-generate-ai.active svg,
+body.light #btn-summary-generate-ai:active svg,
+body.light #btn-summary-generate-ai:disabled svg,
+body.light #navbar-ai-copilot-btn.active svg,
+body.light #navbar-ai-copilot-btn:active svg,
+.light .btn-grid-ai.active svg,
+.light .btn-grid-ai:active svg,
+.light #btn-summary-generate-ai.active svg,
+.light #btn-summary-generate-ai:active svg,
+.light #btn-summary-generate-ai:disabled svg,
+.light #navbar-ai-copilot-btn.active svg,
+.light #navbar-ai-copilot-btn:active svg {
   color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
 }
 
 html.light .btn-grid-ai.active span,
 html.light .btn-grid-ai:active span,
 html.light #btn-summary-generate-ai.active span,
-html.light #btn-summary-generate-ai:disabled span {
+html.light #btn-summary-generate-ai:active span,
+html.light #btn-summary-generate-ai:disabled span,
+html.light #navbar-ai-copilot-btn.active span,
+html.light #navbar-ai-copilot-btn:active span,
+body.light .btn-grid-ai.active span,
+body.light .btn-grid-ai:active span,
+body.light #btn-summary-generate-ai.active span,
+body.light #btn-summary-generate-ai:active span,
+body.light #btn-summary-generate-ai:disabled span,
+body.light #navbar-ai-copilot-btn.active span,
+body.light #navbar-ai-copilot-btn:active span,
+.light .btn-grid-ai.active span,
+.light .btn-grid-ai:active span,
+.light #btn-summary-generate-ai.active span,
+.light #btn-summary-generate-ai:active span,
+.light #btn-summary-generate-ai:disabled span,
+.light #navbar-ai-copilot-btn.active span,
+.light #navbar-ai-copilot-btn:active span {
   color: #FFFFFF !important;
+  font-weight: 700 !important;
 }
 
 /* ==========================================================================
